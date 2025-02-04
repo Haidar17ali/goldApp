@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'AdminLTE 3',
+    'title' => 'Jati Makmur',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
+    'logo' => '<b>Jati Makmur</b>',
     'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -376,6 +376,26 @@ return [
                 ],
             ],
         ],
+        
+        [
+            'text' => 'Pengelolaan Pengguna',
+            'icon' => 'fas fa-users',
+            'url' => '#',
+            'submenu' => [
+                [
+                    'text' => 'Role',
+                    'url' => 'JM/role',
+                ],
+                [
+                    'text' => 'Permissions',
+                    'url' => 'JM/permission',
+                ],
+                [
+                    'text' => 'Pengguna',
+                    'url' => '#',
+                ],
+            ],
+        ],
         ['header' => 'labels'],
         [
             'text' => 'important',
@@ -496,6 +516,21 @@ return [
                     'type' => 'js',
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                ],
+            ],
+        ],
+        'Toast' => [
+            'active' => false,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => '//cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'https://cdn.jsdelivr.net/npm/toastify-js',
                 ],
             ],
         ],

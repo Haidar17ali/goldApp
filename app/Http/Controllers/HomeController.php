@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 class HomeController extends Controller
 {
@@ -23,6 +24,17 @@ class HomeController extends Controller
      */
     public function index()
     {
+        // $routes = Route::getRoutes()->getRoutes();
+
+        // $adminRoutes = [];
+        // foreach($routes as $route){
+        //     // Periksa apakah URI rute dimulai dengan 'admin'
+        //     if (str_starts_with($route->uri(), 'JM')) {
+        //        $adminRoutes[] = $route->getName();
+        //     }
+        // }
+        // dd($adminRoutes);
+
         return view('home');
     }
 }
