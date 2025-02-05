@@ -1,25 +1,25 @@
 @extends('adminlte::page')
 
-@section('title', 'Buat Role')
+@section('title', 'Ubah Role')
 
 @section('content_header')
-    <h1>Buat Role</h1>
+    <h1>Ubah Role</h1>
 @stop
 
 @section('content')
     <div class="card">
         <div class="card-header">
-            <div class="badge badge-primary float-right">Buat Role</div>
+            <div class="badge badge-success float-right">Ubah Role</div>
         </div>
         <div class="card-body">
-            <form action="{{ route('role.buat') }}" method="POST">
+            <form action="{{ route('role.update', $role->id) }}" method="POST">
                 @csrf
-                @method('post')
+                @method('patch')
                 <div class="form-group row">
                     <label for="name" class="col-sm-2 col-form-label">Name</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" id="name" name="name"
-                            value="{{ old('name') }}">
+                            value="{{ old('name', $role->name) }}">
                     </div>
                 </div>
                 {{-- pilih permission --}}
@@ -32,7 +32,8 @@
                                 <!-- Tombol Toggle -->
                                 <label class="switch">
                                     <input type="checkbox" value="{{ $permission->id }}" id="{{ $permission->name }}"
-                                        name="permissions[]">
+                                        name="permissions[]"
+                                        {{ $role->permissions->contains($permission->id) ? 'checked' : '' }}>
                                     <span class="slider round"></span>
                                 </label>
                                 <!-- Tulisan di samping tombol -->

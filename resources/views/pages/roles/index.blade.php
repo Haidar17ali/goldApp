@@ -30,7 +30,7 @@
                                 <td>{{ $role->name }}</td>
                                 <td>
                                     <a href="{{ route('role.ubah', $role->id) }}" class="badge badge-success"><i
-                                            class="fas fa-pencil"></i></a>
+                                            class="fas fa-pencil-alt"></i></a>
                                     <form action="{{ route('role.hapus', $role->id) }}" class="d-inline"
                                         id="delete{{ $role->id }}" method="post">
                                         @csrf
@@ -64,7 +64,7 @@
         // toast
         @section('plugins.Toast', true)
             var status = "{{ session('status') }}";
-            if (status == "added") {
+            if (status == "saved") {
                 Toastify({
                     text: "Permission baru berhasil ditambahkan!",
                     className: "info",
@@ -73,9 +73,27 @@
                         background: "#28A745",
                     }
                 }).showToast();
+            } else if (status == 'edited') {
+                Toastify({
+                    text: "Data berhasil diubah!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
+            } else if (status == 'deleted') {
+                Toastify({
+                    text: "Data berhasil dihapus!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
             } else if (status == "none") {
                 Toastify({
-                    text: "Tidak ada penambahan permission!",
+                    text: "Permision tidak ditemukan",
                     className: "info",
                     close: true,
                     style: {
@@ -85,21 +103,21 @@
             }
 
             // delete
-            // $(".badge-delete").click(function(e) {
-            //     var form = $(this).closest("form");
-            //     Swal.fire({
-            //         title: 'Hapus Data!',
-            //         text: "Apakah anda yakin akan menghapus data ini?",
-            //         icon: 'warning',
-            //         confirmButtonColor: '#3085d6',
-            //         showCancelButton: true,
-            //         cancelButtonColor: '#d33',
-            //         confirmButtonText: 'Hapus!!'
-            //     }).then((result) => {
-            //         if (result.value === true) {
-            //             form.closest("form").submit();
-            //         }
-            //     })
-            // });
+            $(".badge-delete").click(function(e) {
+                var form = $(this).closest("form");
+                Swal.fire({
+                    title: 'Hapus Data!',
+                    text: "Apakah anda yakin akan menghapus data ini?",
+                    icon: 'warning',
+                    confirmButtonColor: '#3085d6',
+                    showCancelButton: true,
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Hapus!!'
+                }).then((result) => {
+                    if (result.value === true) {
+                        form.closest("form").submit();
+                    }
+                })
+            });
     </script>
 @stop
