@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\PositionController;
 use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,4 +30,13 @@ Route::prefix('JM')
         Route::patch("/role/{id}/ubah", [RoleController::class, "update"])->name('role.update');
         Route::delete("/role/{id}/hapus", [RoleController::class, "delete"])->name('role.hapus');
 
+        // position
+        Route::get('/bagian', [PositionController::class, 'index'])->name('bagian.index');
+        Route::get("/bagian/buat", [PositionController::class, "create"])->name('bagian.buat');
+        Route::post("/bagian/buat", [PositionController::class, "store"])->name('bagian.simpan');
+        Route::get("/bagian/{id}/ubah", [PositionController::class, "edit"])->name('bagian.ubah');
+        Route::patch("/bagian/{id}/ubah", [PositionController::class, "update"])->name('bagian.update');
+        Route::delete("/bagian/{id}/hapus", [PositionController::class, "delete"])->name('bagian.hapus');
+        // ajax position
+        Route::get('bagian/ajax', [PositionController::class, 'selectType'])->name('bagian.tipe');
     });
