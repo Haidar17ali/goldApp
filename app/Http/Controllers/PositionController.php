@@ -14,7 +14,8 @@ class PositionController extends Controller
      */
     public function index()
     {
-        $positions = Position::where('type', "Divisi")->orderBy('id', 'desc')->with(['children.children'])->paginate(10);
+        $positions = Position::where('type', "Divisi")->orderBy('id', 'desc')->with(['children.children'])->get();
+        // dd($positions[0]->children);
         return view('pages.positions.index', compact('positions'));
     }
 

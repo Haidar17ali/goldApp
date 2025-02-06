@@ -14,91 +14,11 @@
         </div>
         <div class="card-body">
             <div class="list-group">
-                @if (count($positions))
-                    @foreach ($positions as $position)
-                        <span class="list-group-item d-flex justify-content-between align-items-center"
-                            onclick="toggleList('{{ $position->name }}')">
-                            <a href="#" style="color: #000">{{ $position->name }}</a>
-                            <span>
-                                <a href="{{ route('bagian.ubah', $position->id) }}" class="badge badge-success"><i
-                                        class="fas fa-pencil-alt"></i>
-                                    Edit</a>
-                                <form action="{{ route('bagian.hapus', $position->id) }}" class="d-inline" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <a href="#" class="badge badge-danger badge-delete border-0"><i
-                                            class="fas fa-trash"></i>
-                                        Delete</a>
-                                </form>
-                            </span>
-                        </span>
-                        @if (count($position->children))
-                            @foreach ($position->children as $department)
-                                <div id="{{ $position->name }}" class="ml-3 d-none"
-                                    onclick="toggleList('{{ $position->name . $department->name }}')">
-                                    <span class="list-group-item d-flex justify-content-between align-items-center">
-                                        <a href="#" style="color: #000">{{ $department->name }}</a>
-                                        <span>
-                                            <a href="{{ route('bagian.ubah', $department->id) }}"
-                                                class="badge badge-success"><i class="fas fa-pencil-alt"></i>
-                                                Edit</a>
-                                            <form action="{{ route('bagian.hapus', $department->id) }}" class="d-inline"
-                                                method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <a href="#" class="badge badge-danger badge-delete border-0"><i
-                                                        class="fas fa-trash"></i>
-                                                    Delete</a>
-                                            </form>
-                                        </span>
-                                    </span>
-                                    @if (count($department->children))
-                                        @foreach ($department->children as $subPosition)
-                                            <div id="{{ $position->name . $department->name }}" class="ml-4 d-none">
-                                                <span
-                                                    class="list-group-item d-flex justify-content-between align-items-center">{{ $subPosition->name }}
-                                                    <span>
-                                                        <a href="{{ route('bagian.ubah', $subPosition->id) }}"
-                                                            class="badge badge-success"><i class="fas fa-pencil-alt"></i>
-                                                            Edit</a>
-                                                        <form action="{{ route('bagian.hapus', $subPosition->id) }}"
-                                                            class="d-inline" method="POST">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <a href="#"
-                                                                class="badge badge-danger badge-delete border-0"><i
-                                                                    class="fas fa-trash"></i>
-                                                                Delete</a>
-                                                        </form>
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                </div>
-                            @endforeach
-                        @endif
-                    @endforeach
-                @else
-                    <div class="mx-auto">
-                        <h3>
-                            <b class="text-center">Data bagian tidak ditemukan!</b>
-                        </h3>
-                    </div>
-                @endif
-
-                {{-- <span class="list-group-item d-flex justify-content-between align-items-center">
-                    <a href="#" onclick="toggleList('divisi2')">Divisi 2</a>
-                    <span>
-                        <a href="#" class="badge badge-success"><i class="fas fa-pencil-alt"></i> Edit</a>
-                        <form class="d-inline" method="POST">
-                            <button class="badge badge-danger border-0"><i class="fas fa-trash"></i> Delete</button>
-                        </form>
-                    </span>
-                </span>
-                <div id="divisi2" class="ml-3 d-none">
-                    <span class="list-group-item d-flex justify-content-between align-items-center">
-                        <a href="#" onclick="toggleList('departemen2')">Departemen 2</a>
+                @foreach ($positions as $division)
+                    <!-- Divisi -->
+                    <span class="list-group-item d-flex justify-content-between align-items-center"
+                        onclick="toggleList(event, 'divisi-{{ $division->id }}')">
+                        <a href="#" style="color: #000">{{ $division->name }}</a>
                         <span>
                             <a href="#" class="badge badge-success"><i class="fas fa-pencil-alt"></i> Edit</a>
                             <form class="d-inline" method="POST">
@@ -106,25 +26,39 @@
                             </form>
                         </span>
                     </span>
-                    <div id="departemen2" class="ml-4 d-none">
-                        <span class="list-group-item d-flex justify-content-between align-items-center">Bagian C
-                            <span>
-                                <a href="#" class="badge badge-success"><i class="fas fa-pencil-alt"></i> Edit</a>
-                                <form class="d-inline" method="POST">
-                                    <button class="badge badge-danger border-0"><i class="fas fa-trash"></i> Delete</button>
-                                </form>
+                    <div id="divisi-{{ $division->id }}" class="ml-3 d-none">
+                        @foreach ($division->children as $department)
+                            <!-- Departemen -->
+                            <span class="list-group-item d-flex justify-content-between align-items-center"
+                                onclick="toggleList(event, 'departemen-{{ $department->id }}')">
+                                <a href="#" style="color: #000">{{ $department->name }}</a>
+                                <span>
+                                    <a href="#" class="badge badge-success"><i class="fas fa-pencil-alt"></i> Edit</a>
+                                    <form class="d-inline" method="POST">
+                                        <button class="badge badge-danger border-0"><i class="fas fa-trash"></i>
+                                            Delete</button>
+                                    </form>
+                                </span>
                             </span>
-                        </span>
-                        <span class="list-group-item d-flex justify-content-between align-items-center">Bagian D
-                            <span>
-                                <a href="#" class="badge badge-success"><i class="fas fa-pencil-alt"></i> Edit</a>
-                                <form class="d-inline" method="POST">
-                                    <button class="badge badge-danger border-0"><i class="fas fa-trash"></i> Delete</button>
-                                </form>
-                            </span>
-                        </span>
+                            <div id="departemen-{{ $department->id }}" class="ml-4 d-none">
+                                @foreach ($department->children as $section)
+                                    <!-- Bagian -->
+                                    <span class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ $section->name }}
+                                        <span>
+                                            <a href="#" class="badge badge-success"><i class="fas fa-pencil-alt"></i>
+                                                Edit</a>
+                                            <form class="d-inline" method="POST">
+                                                <button class="badge badge-danger border-0"><i class="fas fa-trash"></i>
+                                                    Delete</button>
+                                            </form>
+                                        </span>
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endforeach
                     </div>
-                </div> --}}
+                @endforeach
             </div>
         </div>
     </div>
@@ -196,14 +130,10 @@
                 })
             });
 
-            // list gorup
-            function toggleList(id) {
-                let element = document.getElementById(id);
-                if (element.classList.contains('d-none')) {
-                    element.classList.remove('d-none');
-                } else {
-                    element.classList.add('d-none');
-                }
+            // list gorup       
+            function toggleList(event, id) {
+                event.preventDefault(); // Mencegah link melakukan navigasi
+                document.getElementById(id).classList.toggle('d-none');
             }
     </script>
 @stop

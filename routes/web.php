@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\RoleController;
@@ -39,4 +40,12 @@ Route::prefix('JM')
         Route::delete("/bagian/{id}/hapus", [PositionController::class, "destroy"])->name('bagian.hapus');
         // ajax position
         Route::get('bagian/ajax', [PositionController::class, 'selectType'])->name('bagian.tipe');
+
+        // Karyawan
+        Route::get('/karyawan', [EmployeeController::class, 'index'])->name('karyawan.index');
+        Route::get('/karyawan/buat', [EmployeeController::class, 'create'])->name('karyawan.buat');
+        Route::post('/karyawan/buat', [EmployeeController::class, 'store'])->name('karyawan.simpan');
+        Route::get('/karyawan/{id}/ubah', [EmployeeController::class, 'edit'])->name('karyawan.edit');
+        Route::patch('/karyawan/{id}/ubah', [EmployeeController::class, 'update'])->name('karyawan.update');
+        Route::delete('/karyawan/{id}/hapus', [EmployeeController::class, 'destroy'])->name('karyawan.hapus');
     });
