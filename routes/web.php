@@ -28,7 +28,7 @@ Route::prefix('JM')
         Route::post("/role/buat", [RoleController::class, "store"])->name('role.simpan');
         Route::get("/role/{id}/ubah", [RoleController::class, "edit"])->name('role.ubah');
         Route::patch("/role/{id}/ubah", [RoleController::class, "update"])->name('role.update');
-        Route::delete("/role/{id}/hapus", [RoleController::class, "delete"])->name('role.hapus');
+        Route::delete("/role/{id}/hapus", [RoleController::class, "destroy"])->name('role.hapus');
 
         // position
         Route::get('/bagian', [PositionController::class, 'index'])->name('bagian.index');
@@ -36,7 +36,7 @@ Route::prefix('JM')
         Route::post("/bagian/buat", [PositionController::class, "store"])->name('bagian.simpan');
         Route::get("/bagian/{id}/ubah", [PositionController::class, "edit"])->name('bagian.ubah');
         Route::patch("/bagian/{id}/ubah", [PositionController::class, "update"])->name('bagian.update');
-        Route::delete("/bagian/{id}/hapus", [PositionController::class, "delete"])->name('bagian.hapus');
+        Route::delete("/bagian/{id}/hapus", [PositionController::class, "destroy"])->name('bagian.hapus');
         // ajax position
         Route::get('bagian/ajax', [PositionController::class, 'selectType'])->name('bagian.tipe');
     });

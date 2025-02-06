@@ -85,7 +85,7 @@ class RoleController extends Controller
         return redirect()->route('role.index')->with('status', 'edited');
     }
 
-    public function delete($id){
+    public function destroy($id){
         $role = Role::with(['permissions', 'users'])->findOrFail($id);
 
         // cek apakah user ada atau tidak

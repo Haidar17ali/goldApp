@@ -14,7 +14,7 @@ class PositionController extends Controller
      */
     public function index()
     {
-        $positions = Position::orderBy('id', 'desc')->paginate(10);
+        $positions = Position::where('type', "Divisi")->orderBy('id', 'desc')->with(['children.children'])->paginate(10);
         return view('pages.positions.index', compact('positions'));
     }
 
@@ -33,7 +33,7 @@ class PositionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|unique:positions,name',
+            'name' => 'required',
             "type" => 'required|in:Divisi,Departemen,Bagian'
         ]);
 
@@ -60,7 +60,10 @@ class PositionController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $position = Position::with('children.children')->findOrFail($id);
+        $types = ["Divisi", "Departemen", "Bagian"];
+        return view('pages.positions.edit', compact(['types', 'position']));
+
     }
 
     /**
@@ -68,7 +71,19 @@ class PositionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $position = Position::with('children.children')->findOrFail($id);
+        $request->validate([
+            'name' => 'required',
+            "type" => 'required|in:Divisi,Departemen,Bagian'
+        ]);
+
+        
+            $position->name = $request->name;
+            $position->type = $request->type;
+            $position->parent= (int)$request->parent;
+            $position->save();
+        
+        return redirect()->route('bagian.index')->with("status", "edited");
     }
 
     /**
@@ -76,7 +91,20 @@ class PositionController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $position = Position::with('children.children')->findOrFail($id);
+
+        if(count($position->children)){
+            foreach ($position->children as $department) {
+                if(count($department->children)){
+                    foreach ($department->children as $subPosition) {
+                        $subPosition->delete();
+                    }
+                }
+                $department->delete();
+            }
+        }
+        $position->delete();
+        return redirect()->back()->with('status', 'deleted');
     }
 
     public function selectType(Request $request) {

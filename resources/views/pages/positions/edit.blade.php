@@ -1,25 +1,25 @@
 @extends('adminlte::page')
 
-@section('title', 'Buat Posisi')
+@section('title', 'Ubah Posisi')
 
 @section('content_header')
-    <h1>Buat Posisi</h1>
+    <h1>Ubah Posisi</h1>
 @stop
 
 @section('content')
     <div class="card">
         <div class="card-header">
-            <div class="badge badge-primary float-right">Buat Posisi</div>
+            <div class="badge badge-primary float-right">Ubah Posisi</div>
         </div>
         <div class="card-body">
-            <form action="{{ route('bagian.buat') }}" method="POST">
+            <form action="{{ route('bagian.update', $position->id) }}" method="POST">
                 @csrf
-                @method('post')
+                @method('patch')
                 <div class="form-group row">
                     <label for="name" class="col-sm-2 col-form-label">Name</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
-                            name="name" value="{{ old('name') }}">
+                            name="name" value="{{ old('name', $position->name) }}">
                         @error('name')
                             <small class="invalid-feedback">{{ $message }}</small>
                         @enderror
@@ -29,9 +29,10 @@
                     <label for="type" class="col-sm-2 col-form-label">Tipe</label>
                     <div class="col-sm-10">
                         <select name="type" class="form-control @error('type') is-invalid @enderror" id="type">
-                            <option selected value="null">Silahkan Pilih Tipe</option>
+                            <option value="null">Silahkan Pilih Tipe</option>
                             @foreach ($types as $type)
-                                <option value="{{ $type }}">{{ $type }}</option>
+                                <option {{ $position->type == $type ? 'selected' : '' }} value="{{ $type }}">
+                                    {{ $type }}</option>
                             @endforeach
                         </select>
                         @error('type')
@@ -73,6 +74,33 @@
             $('#parent').select2({
                 theme: "bootstrap4",
             });
+
+            var parent = {{ $position->parent }}
+
+            if ($("#type").val() !== null) {
+                $.ajax({
+                    url: "{{ route('bagian.tipe') }}",
+                    type: "GET",
+                    data: {
+                        type: $("#type").val()
+                    },
+                    success: function(response) {
+                        $('#parent').empty().append(
+                            '<option value="">Silahkan Pilih Induk Bagian</option>'
+                        );
+                        $.each(response, function(key, value) {
+                            let parentBadge = value.parent ?
+                                `<span class="badge badge-primary ml-2">[${value.parent.name}]</span>` :
+                                "";
+
+                            $('#parent').append(
+                                `<option ${value.id == parent? 'selected' : ''} value="${value.id}">${value.name} ${parentBadge}</option>`
+                            );
+                        });
+                        $('#parent').prop('disabled', false);
+                    }
+                })
+            }
 
             // ajax data select parent
             $('#type').on("select2:select", function(e) {
