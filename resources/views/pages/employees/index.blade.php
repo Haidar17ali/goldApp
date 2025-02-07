@@ -40,8 +40,8 @@
                                 <td>{{ $employee->fullname }}</td>
                                 <td>{{ $employee->alias_name }}</td>
                                 <td>{{ $employee->entry_date }}</td>
-                                <td>{{ $employee->salary->salary }}</td>
-                                <td>{{ $employee->premi }}</td>
+                                <td>Rp.{{ money_format($employee->salary != null ? $employee->salary->salary : 0) }}</td>
+                                <td>Rp.{{ money_format($employee->premi) }}</td>
                                 <td>
                                     <a href="{{ route('karyawan.ubah', $employee->id) }}" class="badge badge-success"><i
                                             class="fas fa-pencil-alt"></i></a>

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->enum('type', ['Divisi','Departemen', 'Bagian']);
-            $table->integer('parent')->nullable();
+            $table->integer('parent_id')->nullable();
             $table->timestamps();
         });
     }

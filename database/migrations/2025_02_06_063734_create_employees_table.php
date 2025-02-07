@@ -24,10 +24,10 @@ return new class extends Migration
             $table->enum('employee_type', ['Harian', 'Bulanan']);
             $table->integer('position_id');
             $table->date('entry_date');
-            $table->enum('salary_type', ['ATM', 'Tunai']);
+            $table->enum('payment_type', ['ATM', 'Tunai']);
             $table->string('bank_name')->nullable();
             $table->string('bank_account')->nullable();
-            $table->bigInteger('number_account')->nullable();
+            $table->string('number_account')->nullable();
             $table->integer('salary_id');
             $table->integer('premi')->nullable();
             $table->enum('location', ['Bukir Utara', 'Bukir Selatan', 'Kaligung']);

@@ -41,7 +41,7 @@ class PositionController extends Controller
         $data = [
             "name" => $request->name,
             "type" => $request->type,
-            "parent" => (int)$request->parent,
+            "parent_id" => (int)$request->parent,
         ];
 
         Position::create($data);
@@ -81,7 +81,7 @@ class PositionController extends Controller
         
             $position->name = $request->name;
             $position->type = $request->type;
-            $position->parent= (int)$request->parent;
+            $position->parent_id= (int)$request->parent;
             $position->save();
         
         return redirect()->route('bagian.index')->with("status", "edited");

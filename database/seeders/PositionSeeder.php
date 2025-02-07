@@ -17,30 +17,30 @@ class PositionSeeder extends Seeder
 
         DB::table('positions')->insert([
             // divisi plywood
-            ['id' => 1, 'name' => 'Wood Working', 'type' => 'Divisi', 'parent' => null],
+            ['id' => 1, 'name' => 'Wood Working', 'type' => 'Divisi', 'parent_id' => null],
             // department plywood
-            ['id' => 2, 'name' => 'GA', 'type' => 'Departemen', 'parent' => 1],
-            ['id' => 3, 'name' => 'Maintenance', 'type' => 'Departemen', 'parent' => 1],
-            ['id' => 4, 'name' => 'Production', 'type' => 'Departemen', 'parent' => 1],
-            ['id' => 5, 'name' => 'Sawmill', 'type' => 'Departemen', 'parent' => 1],
-            ['id' => 6, 'name' => 'Warehouse', 'type' => 'Departemen', 'parent' => 1],
+            ['id' => 2, 'name' => 'GA', 'type' => 'Departemen', 'parent_id' => 1],
+            ['id' => 3, 'name' => 'Maintenance', 'type' => 'Departemen', 'parent_id' => 1],
+            ['id' => 4, 'name' => 'Production', 'type' => 'Departemen', 'parent_id' => 1],
+            ['id' => 5, 'name' => 'Sawmill', 'type' => 'Departemen', 'parent_id' => 1],
+            ['id' => 6, 'name' => 'Warehouse', 'type' => 'Departemen', 'parent_id' => 1],
             // bagian GA
-            ['id' => 7, 'name' => 'Soper', 'type' => 'Bagian', 'parent' => 2],
-            ['id' => 8, 'name' => 'Soper Forklift', 'type' => 'Bagian', 'parent' => 2],
-            ['id' => 9, 'name' => 'Kernet', 'type' => 'Bagian', 'parent' => 2],
-            ['id' => 10, 'name' => 'Kebersihan', 'type' => 'Bagian', 'parent' => 2],
+            ['id' => 7, 'name' => 'Soper', 'type' => 'Bagian', 'parent_id' => 2],
+            ['id' => 8, 'name' => 'Soper Forklift', 'type' => 'Bagian', 'parent_id' => 2],
+            ['id' => 9, 'name' => 'Kernet', 'type' => 'Bagian', 'parent_id' => 2],
+            ['id' => 10, 'name' => 'Kebersihan', 'type' => 'Bagian', 'parent_id' => 2],
             // bagian maintenance
-            ['id' => 11, 'name' => 'Teknisi Listrik', 'type' => 'Bagian', 'parent' => 3],
+            ['id' => 11, 'name' => 'Teknisi Listrik', 'type' => 'Bagian', 'parent_id' => 3],
             // bagian production
-            ['id' => 12, 'name' => 'Cross Cut', 'type' => 'Bagian', 'parent' => 4],
-            ['id' => 13, 'name' => 'Finger Joint', 'type' => 'Bagian', 'parent' => 4],
-            ['id' => 14, 'name' => 'Moulding', 'type' => 'Bagian', 'parent' => 4],
-            ['id' => 15, 'name' => 'Packing', 'type' => 'Bagian', 'parent' => 4],
+            ['id' => 12, 'name' => 'Cross Cut', 'type' => 'Bagian', 'parent_id' => 4],
+            ['id' => 13, 'name' => 'Finger Joint', 'type' => 'Bagian', 'parent_id' => 4],
+            ['id' => 14, 'name' => 'Moulding', 'type' => 'Bagian', 'parent_id' => 4],
+            ['id' => 15, 'name' => 'Packing', 'type' => 'Bagian', 'parent_id' => 4],
             // bagian Sawmil
-            ['id' => 16, 'name' => 'Bandsaw', 'type' => 'Bagian', 'parent' => 5],
+            ['id' => 16, 'name' => 'Bandsaw', 'type' => 'Bagian', 'parent_id' => 5],
             // bagian Warehouse
-            ['id' => 17, 'name' => 'Kiln Dry', 'type' => 'Bagian', 'parent' => 6],
-            ['id' => 18, 'name' => 'Stick', 'type' => 'Bagian', 'parent' => 6],
+            ['id' => 17, 'name' => 'Kiln Dry', 'type' => 'Bagian', 'parent_id' => 6],
+            ['id' => 18, 'name' => 'Stick', 'type' => 'Bagian', 'parent_id' => 6],
         ]);
     }
 }

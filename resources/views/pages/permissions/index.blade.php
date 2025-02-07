@@ -20,7 +20,7 @@
             @if (count($permissions))
                 @foreach ($permissions as $permission)
                     <div class="col-md-2 card">
-                        <p class="text-center mx-auto"><i class="fas fa-dot-circle"></i> {{ $permission->name }}</p>
+                        <p class="text-left mx-auto"><i class="fas fa-dot-circle"></i> {{ $permission->name }}</p>
                     </div>
                 @endforeach
             @else

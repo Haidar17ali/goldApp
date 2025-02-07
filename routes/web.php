@@ -45,7 +45,7 @@ Route::prefix('JM')
         Route::get('/karyawan', [EmployeeController::class, 'index'])->name('karyawan.index');
         Route::get('/karyawan/buat', [EmployeeController::class, 'create'])->name('karyawan.buat');
         Route::post('/karyawan/buat', [EmployeeController::class, 'store'])->name('karyawan.simpan');
-        Route::get('/karyawan/{id}/ubah', [EmployeeController::class, 'edit'])->name('karyawan.edit');
+        Route::get('/karyawan/{id}/ubah', [EmployeeController::class, 'edit'])->name('karyawan.ubah');
         Route::patch('/karyawan/{id}/ubah', [EmployeeController::class, 'update'])->name('karyawan.update');
         Route::delete('/karyawan/{id}/hapus', [EmployeeController::class, 'destroy'])->name('karyawan.hapus');
     });

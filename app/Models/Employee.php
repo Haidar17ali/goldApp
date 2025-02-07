@@ -16,9 +16,10 @@ class Employee extends Model
         'alias_name',
         'gender',
         'address_id',
+        'employee_type',
         'position_id',
         'entry_date',
-        'salary_type',
+        'payment_type',
         'bank_name',
         'bank_account',
         'number_account',
@@ -32,4 +33,12 @@ class Employee extends Model
         'exit_date',
         'status',
     ];
+
+    public function salary(){
+        return $this->belongsTo(Salary::class, 'salary_id');
+    }
+
+    public function address(){
+        return $this->belongsTo(Address::class, 'address_id');
+    }
 }
