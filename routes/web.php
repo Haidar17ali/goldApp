@@ -48,4 +48,8 @@ Route::prefix('JM')
         Route::get('/karyawan/{id}/ubah', [EmployeeController::class, 'edit'])->name('karyawan.ubah');
         Route::patch('/karyawan/{id}/ubah', [EmployeeController::class, 'update'])->name('karyawan.update');
         Route::delete('/karyawan/{id}/hapus', [EmployeeController::class, 'destroy'])->name('karyawan.hapus');
+        // import dan export karyawan
+        Route::post('/import-karyawan', [EmployeeController::class, 'importEmployees'])->name('karyawan.import');
+        // ajax dapatkan alamat yang ada di db
+        Route::get('bagian/ajax', [EmployeeController::class, 'getAddress'])->name('karyawan.alamat');
     });

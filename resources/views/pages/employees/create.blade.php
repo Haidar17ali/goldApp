@@ -286,6 +286,34 @@
                     $('#number_account').prop('disabled', true);
                 }
             })
+
+            $("#address").on('select2:select', function() {
+                let idAddress = $(this).val();
+
+                $.ajax({
+                    url: "{{ route('karyawan.alamat') }}",
+                    type: "GET",
+                    data: {
+                        id: idAddress
+                    },
+                    success: function(response) {
+                        if (response != null) {
+                            $("#rt").val(response.rt);
+                            $("#rw").val(response.rw);
+                            $("#kelurahan").val(response.kelurahan);
+                            $("#kecamatan").val(response.kecamatan);
+                            $("#city").val(response.city);
+                        } else {
+                            $("#rt").val("");
+                            $("#rw").val("");
+                            $("#kelurahan").val("");
+                            $("#kecamatan").val("");
+                            $("#city").val("");
+                        }
+
+                    }
+                })
+            })
         });
     </script>
 @stop

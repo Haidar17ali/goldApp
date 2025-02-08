@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\EmployeeImport;
 use App\Models\Address;
 use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Salary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
 {
@@ -176,7 +178,7 @@ class EmployeeController extends Controller
 
         $id_address = 0;
         // ambil data dari db berdasarkan alamat yg di input
-        $db_address = Address::where('id', $address)->first();
+        $db_address = Address::where('id', $address)->where('rt', $rt)->where('rw', $rw)->where('city', $city)->first();
         // cek alamat apakah alamat sudah ada kalau tidak ada bikin baru
         if($db_address == null){
             if($address == null || $rt == null|| $rw == null|| $kelurahan == null|| $kecamatan == null || $city == null){
@@ -394,7 +396,7 @@ class EmployeeController extends Controller
 
         $id_address = 0;
         // ambil data dari db berdasarkan alamat yg di input
-        $db_address = Address::where('id', $address)->first();
+        $db_address = Address::where('id', $address)->where('rt', $rt)->where('rw', $rw)->where('city', $city)->first();
         // cek alamat apakah alamat sudah ada kalau tidak ada bikin baru
         if($db_address == null){
             if($address == null || $rt == null|| $rw == null|| $kelurahan == null|| $kecamatan == null || $city == null){
@@ -451,5 +453,36 @@ class EmployeeController extends Controller
     public function destroy($id){
         Employee::findOrFail($id)->delete();
         return redirect()->back()->with('status', 'deleted');
+    }
+
+    public function importEmployees(Request $request){
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ]);
+
+        $import = new EmployeeImport();
+
+        try {
+            Excel::import($import, $request->file('file'));
+        } catch (\Exception $e) {
+            // Tangani exception jika ada kesalahan
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+
+        // Ambil pesan error jika ada
+        $errors = $import->getErrors();
+
+        if (!empty($errors)) {
+            return redirect()->back()->with('import_errors', $errors);
+        }
+
+        return redirect()->back()->with('status', 'importSuccess');
+    }
+
+    public function getAddress(Request $request){
+        $typeValue = $request->type;
+
+        $response = Address::where("id", $request->id)->first();
+        return response()->json($response);
     }
 }

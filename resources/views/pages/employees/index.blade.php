@@ -9,6 +9,30 @@
 @section('content')
     <div class="card">
         <div class="card-header">
+            @if (session('import_errors'))
+                <div class="alert alert-danger">
+                    <h4>Kesalahan File Excel:</h4>
+                    <ul>
+                        @foreach (session('import_errors') as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-success ml-2 float-right" data-toggle="modal" data-target="#importKaryawan">
+                <i class="fas fa-file-import"></i> Import Data Karyawan
+            </button>
+
             <a href="{{ route('karyawan.buat') }}" class="btn btn-primary float-right" type="submit"><i
                     class="fas fa-plus"></i>
                 Karyawan</a>
@@ -66,6 +90,41 @@
             </table>
         </div>
     </div>
+
+    {{-- modal box untuk import karyawan --}}
+    <!-- Modal -->
+    <div class="modal fade" id="importKaryawan" tabindex="-1" aria-labelledby="importKaryawan" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('karyawan.import') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Import Karyawan</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        @csrf
+                        @method('post')
+                        <div class="row">
+                            <label for="file" class="col-sm-2 col-form-label">Excel</label>
+                            <div class="col-sm-10">
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" name="file" id="file">
+                                    <label class="custom-file-label" for="file">Choose file</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-download"></i> Import</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
 @stop
 
 @section('css')
@@ -74,7 +133,11 @@
 @stop
 
 @section('js')
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
     <script>
+        $(document).ready(function() {
+            bsCustomFileInput.init()
+        })
         // toast
         @section('plugins.Toast', true)
             var status = "{{ session('status') }}";
@@ -105,9 +168,9 @@
                         background: "#28A745",
                     }
                 }).showToast();
-            } else if (status == "none") {
+            } else if (status == "importSuccess") {
                 Toastify({
-                    text: "Permision tidak ditemukan",
+                    text: "Data karyawan berhasil diimport!",
                     className: "info",
                     close: true,
                     style: {
@@ -116,7 +179,7 @@
                 }).showToast();
             }
 
-            // delete
+            // delete 
             $(".badge-delete").click(function(e) {
                 var form = $(this).closest("form");
                 Swal.fire({
