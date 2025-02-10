@@ -4,6 +4,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -52,4 +53,12 @@ Route::prefix('JM')
         Route::post('/import-karyawan', [EmployeeController::class, 'importEmployees'])->name('karyawan.import');
         // ajax dapatkan alamat yang ada di db
         Route::get('bagian/ajax', [EmployeeController::class, 'getAddress'])->name('karyawan.alamat');
+        
+        // supplier
+        Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier.index');
+        Route::get('/supplier/buat', [SupplierController::class, 'create'])->name('supplier.buat');
+        Route::post('/supplier/buat', [SupplierController::class, 'store'])->name('supplier.simpan');
+        Route::get('/supplier/{id}/ubah', [SupplierController::class, 'edit'])->name('supplier.ubah');
+        Route::patch('/supplier/{id}/ubah', [SupplierController::class, 'update'])->name('supplier.update');
+        Route::delete('/supplier/{id}/hapus', [SupplierController::class, 'destroy'])->name('supplier.hapus');
     });

@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('addresses', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->text('address');
-            $table->integer('rt');
-            $table->integer('rw');
+            $table->integer('rt')->nullable();
+            $table->integer('rw')->nullable();
             $table->integer('zip_code')->nullable();
-            $table->string('kelurahan');
-            $table->string('kecamatan');
-            $table->string('city');
+            $table->string('kelurahan')->nullable();
+            $table->string('kecamatan')->nullable();
+            $table->string('city')->nullable();
             $table->timestamps();
         });
     }

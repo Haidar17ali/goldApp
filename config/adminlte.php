@@ -334,6 +334,10 @@ return [
                     'text' => 'Karyawan',
                     'url' => 'JM/karyawan',
                 ],
+                [
+                    'text' => 'Supplier',
+                    'url' => 'JM/supplier',
+                ],
             ],
         ],
         // [
