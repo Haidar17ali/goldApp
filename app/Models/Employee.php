@@ -20,9 +20,7 @@ class Employee extends Model
         'position_id',
         'entry_date',
         'payment_type',
-        'bank_name',
-        'bank_account',
-        'number_account',
+        'bank_id',
         'salary_id',
         'premi',
         'location',
@@ -40,5 +38,9 @@ class Employee extends Model
 
     public function address(){
         return $this->belongsTo(Address::class, 'address_id');
+    }
+
+    public function bank(){
+        return $this->belongsTo(Bank::class, 'bank_id');
     }
 }

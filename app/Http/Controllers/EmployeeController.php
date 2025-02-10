@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Imports\EmployeeImport;
 use App\Models\Address;
+use App\Models\Bank;
 use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Salary;
@@ -66,6 +67,7 @@ class EmployeeController extends Controller
         ];
 
         $addresses = Address::orderBy('id', 'desc')->get();
+        $banks = Bank::orderBy('id', 'desc')->get();
         $positions = Position::where("type", "Bagian")->with(['parent.parent'])->get()->map(function($position){
             return [
                 'id' => $position->id,
@@ -82,7 +84,8 @@ class EmployeeController extends Controller
             'payments',
             'mariage_statuses',
             'statuses',
-            'employee_types'
+            'employee_types',
+            'banks'
         ]));
     }
 
@@ -134,22 +137,6 @@ class EmployeeController extends Controller
         $jkp_number = $request->jkp_number;
         $status = $request->status;
 
-        // validasi tambahan
-        if($premi != null){
-            $request->validate([
-                "premi" => 'required'
-            ]);
-        }
-        if($jkn_number != null){
-            $request->validate([
-                "jkn_number" => 'required'
-            ]);
-        }
-        if($jkp_number != null){
-            $request->validate([
-                "jkp_number" => 'required'
-            ]);
-        }
 
 
         // buat nip karyawan berdasarkan tanggal masuk
@@ -178,7 +165,7 @@ class EmployeeController extends Controller
 
         $id_address = 0;
         // ambil data dari db berdasarkan alamat yg di input
-        $db_address = Address::where('id', $address)->where('rt', $rt)->where('rw', $rw)->where('city', $city)->first();
+        $db_address = Address::where('id', $address)->orWhere('address', $address)->where('rt', $rt)->where('rw', $rw)->where('city', $city)->first();
         // cek alamat apakah alamat sudah ada kalau tidak ada bikin baru
         if($db_address == null){
             if($address == null || $rt == null|| $rw == null|| $kelurahan == null|| $kecamatan == null || $city == null){
@@ -221,10 +208,20 @@ class EmployeeController extends Controller
             'status' => $status,
         ];
 
+        $bank_id = 0;
         if($payment_type == "ATM"){
-            $dataEmployee['bank_name'] = $bank_name;
-            $dataEmployee['bank_account'] = $bank_account;
-            $dataEmployee['number_account'] = $number_account;
+            $db_bank = Bank::where('id', $number_account)->orWhere('number_account', $number_account)->first();
+            if($db_bank == null){
+                $bankData = [
+                    "bank_name" => $bank_name,
+                    "bank_account" => $bank_account,
+                    "number_account" => $number_account,
+                ];
+                $bank_id = Bank::create($bankData);
+            }else{
+                $bank_id = $db_bank->id;
+            }
+            $dataEmployee['bank_id'] = $bank_id;
         }
         Employee::create($dataEmployee);
         return redirect()->route('karyawan.index')->with('status', 'saved');
@@ -279,6 +276,7 @@ class EmployeeController extends Controller
         ];
 
         $addresses = Address::orderBy('id', 'desc')->get();
+        $banks = Bank::orderBy('id', 'desc')->get();
         $positions = Position::where("type", "Bagian")->with(['parent.parent'])->get()->map(function($position){
             return [
                 'id' => $position->id,
@@ -296,11 +294,12 @@ class EmployeeController extends Controller
             'payments',
             'mariage_statuses',
             'statuses',
-            'employee_types'
+            'employee_types',
+            'banks'
         ]));
     }
     public function update(Request $request, $id){
-        $employee = Employee::with(['salary', 'address'])->findOrFail($id);
+        $employee = Employee::with(['salary', 'address', 'bank'])->findOrFail($id);
         
         // membuat validasi karyawan
         $request->validate([
@@ -396,7 +395,7 @@ class EmployeeController extends Controller
 
         $id_address = 0;
         // ambil data dari db berdasarkan alamat yg di input
-        $db_address = Address::where('id', $address)->where('rt', $rt)->where('rw', $rw)->where('city', $city)->first();
+        $db_address = Address::where('id', $address)->orWhere('address', $address)->where('rt', $rt)->where('rw', $rw)->where('city', $city)->first();
         // cek alamat apakah alamat sudah ada kalau tidak ada bikin baru
         if($db_address == null){
             if($address == null || $rt == null|| $rw == null|| $kelurahan == null|| $kecamatan == null || $city == null){
@@ -412,7 +411,7 @@ class EmployeeController extends Controller
             ];
             $id_address = Address::create($data);
         }else{
-            $id_address = $db_address->id;
+            $id_address = $db_address;
         }
 
             $employee->nip = $kode;
@@ -426,7 +425,7 @@ class EmployeeController extends Controller
             $employee->mariage_status = $mariage_status;
             $employee->family_depents = $family_depents;
             $employee->employee_type = $employee_type;
-            $employee->address_id = $id_address;
+            $employee->address_id = $id_address->id;
             $employee->position_id = $position;
             $employee->entry_date = $entry_date;
             $employee->salary_id = $id_salary;
@@ -437,15 +436,21 @@ class EmployeeController extends Controller
             $employee->jkp_number = $jkp_number;
             $employee->status = $status;
 
-        if($payment_type == "ATM"){
-            $employee->bank_name = $bank_name;
-            $employee->bank_account = $bank_account;
-            $employee->number_account = $number_account;
-        }else{
-            $employee->bank_name = null;
-            $employee->bank_account = null;
-            $employee->number_account = null;
-        }
+            $bank_id = 0;
+            if($payment_type == "ATM"){
+                $db_bank = Bank::where('id', $number_account)->orWhere('number_account', $number_account)->first();
+                if($db_bank == null){
+                    $bankData = [
+                        "bank_name" => $bank_name,
+                        "bank_account" => $bank_account,
+                        "number_account" => $number_account,
+                    ];
+                    $bank_id = Bank::create($bankData);
+                }else{
+                    $bank_id = $db_bank;
+                }
+                $employee->bank_id = $bank_id->id;
+            }
         $employee->save();
         return redirect()->route('karyawan.index')->with('status', 'edited');
     }

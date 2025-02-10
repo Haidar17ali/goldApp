@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\Employee;
 use App\Models\Salary;
 use App\Models\Address;
+use App\Models\Bank;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -47,6 +48,16 @@ class EmployeeImport implements ToModel , WithHeadingRow, WithBatchInserts, Skip
         if (!$address) {
             $address = Address::create($addressData);
         }
+        // Ambil atau buat bank baru
+        $bankData = [
+            'bank_name' => $row['bank_name'],
+            'bank_account' => $row['bank_account'],
+            'number_account' => $row['number_account'],
+        ];
+        $bank = Bank::where($bankData)->first();
+        if (!$bank) {
+            $bank = Bank::create($bankData);
+        }
         // Buat NIP
         $entryDate = str_replace('-', '', $entry_date);
         $maxCode = Employee::where('entry_date', 'like', $entry_date . '%')->max('nip');
@@ -77,9 +88,7 @@ class EmployeeImport implements ToModel , WithHeadingRow, WithBatchInserts, Skip
         ];
         
         if ($row['payment_type'] == "ATM") {
-            $dataEmployee['bank_name'] = $row['bank_name'];
-            $dataEmployee['bank_account'] = $row['bank_account'];
-            $dataEmployee['number_account'] = $row['number_account'];
+            $dataEmployee['bank_id'] = $bank->id;
         }
 
         return new Employee($dataEmployee);

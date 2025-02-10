@@ -196,10 +196,14 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <label for="bank_name" class="col-sm-2 col-form-label">Nama Bank</label>
+                            <label for="number_account" class="col-sm-2 col-form-label">No Rek</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" disabled id="bank_name" name="bank_name"
-                                    value="{{ old('bank_name') }}">
+                                <select class="form-control" name="number_account" id="number_account">
+                                    <option>Silahkan Isi No Rek Atau Pilih Rek</option>
+                                    @foreach ($banks as $bank)
+                                        <option value="{{ $bank->id }}">{{ $bank->number_account }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -208,10 +212,10 @@
                                 <input type="text" class="form-control" disabled id="bank_account"
                                     name="bank_account" value="{{ old('bank_account') }}">
                             </div>
-                            <label for="number_account" class="col-sm-2 col-form-label">No Rek</label>
+                            <label for="bank_name" class="col-sm-2 col-form-label">Nama Bank</label>
                             <div class="col-sm-4">
-                                <input type="number" disabled class="form-control" id="number_account"
-                                    name="number_account" value="{{ old('number_account') }}">
+                                <input type="text" class="form-control" disabled id="bank_name" name="bank_name"
+                                    value="{{ old('bank_name') }}">
                             </div>
                         </div>
                         <h3>Lain-lain</h3>
@@ -273,6 +277,10 @@
             });
             $('#position').select2({
                 theme: "bootstrap4",
+            });
+            $('#number_account').select2({
+                theme: "bootstrap4",
+                tags: true
             });
 
             $("#payment_type").on("change", function() {
