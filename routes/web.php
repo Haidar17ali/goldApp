@@ -61,4 +61,6 @@ Route::prefix('JM')
         Route::get('/supplier/{id}/ubah', [SupplierController::class, 'edit'])->name('supplier.ubah');
         Route::patch('/supplier/{id}/ubah', [SupplierController::class, 'update'])->name('supplier.update');
         Route::delete('/supplier/{id}/hapus', [SupplierController::class, 'destroy'])->name('supplier.hapus');
+        // import dan export karyawan
+        Route::post('/import-supplier', [SupplierController::class, 'importSupplier'])->name('supplier.import');
     });

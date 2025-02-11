@@ -15,9 +15,10 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('npwp_number');
             $table->string('nitku');
-            $table->integer('nik');
+            $table->bigInteger('nik');
             $table->enum('supplier_type', ['Sengon', 'Merbau', 'Pembantu']);
             $table->string('name');
+            $table->string('phone')->nullable();
             $table->integer('address_id')->nullable();
             $table->integer('bank_id')->nullable();
             $table->timestamps();

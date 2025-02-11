@@ -92,7 +92,7 @@
     <!-- Modal -->
     <div class="modal fade" id="importSupplier" tabindex="-1" aria-labelledby="importKaryawan" aria-hidden="true">
         <div class="modal-dialog">
-            <form action="{{ route('karyawan.import') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('supplier.import') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">Import Supplier</h5>

@@ -66,6 +66,13 @@
                                     value="{{ old('name') }}">
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="phone" class="col-sm-2 col-form-label">No Telp.</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="phone" name="phone"
+                                    value="{{ old('phone') }}">
+                            </div>
+                        </div>
                         <h3>Alamat</h3>
                         <hr>
 
@@ -137,7 +144,7 @@
                             </div>
                         </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('karyawan.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            <a href="{{ route('supplier.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>
