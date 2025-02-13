@@ -12,6 +12,7 @@ class Supplier extends Model
         'nik',
         'supplier_type',
         'name',
+        'phone',
         'address_id',
         'bank_id',
     ];

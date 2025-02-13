@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Supplier')
+@section('title', 'Surat Jalan')
 
 @section('content_header')
-    <h1>Supplier</h1>
+    <h1>Surat Jalan{{ $type == 'In' ? ' Masuk' : ' Keluar' }}</h1>
 @stop
 
 @section('content')
@@ -29,50 +29,56 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <button type="button" class="btn btn-success ml-2 float-right" data-toggle="modal" data-target="#importSupplier">
-                <i class="fas fa-file-import"></i> Import Data Supplier
-            </button>
-            <a href="{{ route('supplier.buat') }}" class="btn btn-primary float-right" type="submit"><i
-                    class="fas fa-plus"></i>
-                Supplier</a>
+            <a href="{{ route('surat-jalan.buat', $type) }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
+                Surat Jalan {{ $type == 'In' ? ' Masuk' : ' Keluar' }}</a>
         </div>
         <div class="card-body row">
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">NPWP</th>
-                        <th scope="col">NITKU</th>
-                        <th scope="col">NIK</th>
-                        <th scope="col">Tipe</th>
-                        <th scope="col">Nama</th>
-                        <th scope="col">Phone</th>
-                        <th scope="col">Nama Rek</th>
-                        <th scope="col">No Rek</th>
+                        <th scope="col">Tanggal</th>
+                        <th scope="col">Jam Masuk</th>
+                        <th scope="col">Jam Keluar</th>
+                        <th scope="col">Pembongkar</th>
+                        <th scope="col">Pengirim</th>
+                        <th scope="col">Penerima</th>
+                        <th scope="col">Nopol</th>
+                        <th scope="col">Soper</th>
+                        <th scope="col">Lok Bongkar</th>
+                        <th scope="col">Nomer Sill</th>
+                        <th scope="col">Nomer Container</th>
+                        <th scope="col">Pembuat</th>
+                        <th scope="col">Pengedit</th>
                         <th scope="col">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (count($suppliers))
-                        @foreach ($suppliers as $supplier)
+                    @if (count($road_permits))
+                        @foreach ($road_permits as $road_permit)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $supplier->npwp_number }}</td>
-                                <td>{{ $supplier->nitku }}</td>
-                                <td>{{ $supplier->nik }}</td>
-                                <td>{{ $supplier->supplier_type }}</td>
-                                <td>{{ $supplier->name }}</td>
-                                <td>{{ $supplier->phone }}</td>
-                                <td>{{ $supplier->bank != null ? $supplier->bank->bank_account : '' }}</td>
-                                <td>{{ $supplier->bank != null ? $supplier->bank->number_account : '' }}</td>
+                                <td>{{ $road_permit->date }}</td>
+                                <td>{{ $road_permit->in }}</td>
+                                <td>{{ $road_permit->out }}</td>
+                                <td>{{ $road_permit->handyman != null ? $road_permit->handyman->alias_name : '' }}</td>
+                                <td>{{ $road_permit->from }}</td>
+                                <td>{{ $road_permit->destination }}</td>
+                                <td>{{ $road_permit->nopol }}</td>
+                                <td>{{ $road_permit->driver }}</td>
+                                <td>{{ $road_permit->unpack_location }}</td>
+                                <td>{{ $road_permit->sill_number }}</td>
+                                <td>{{ $road_permit->container_number }}</td>
+                                <td>{{ $road_permit->createdBy != null ? $road_permit->createdBy->username : '' }}</td>
+                                <td>{{ $road_permit->editedBy != null ? $road_permit->editedBy->username : '' }}</td>
                                 <td>
-                                    <a href="{{ route('supplier.ubah', $supplier->id) }}" class="badge badge-success"><i
-                                            class="fas fa-pencil-alt"></i></a>
-                                    <form action="{{ route('supplier.hapus', $supplier->id) }}" class="d-inline"
-                                        id="delete{{ $supplier->id }}" method="post">
+                                    <a href="{{ route('surat-jalan.ubah', $road_permit->id) }}"
+                                        class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
+                                    <form action="{{ route('surat-jalan.hapus', $road_permit->id) }}" class="d-inline"
+                                        id="delete{{ $road_permit->id }}" method="post">
                                         @csrf
                                         @method('DELETE')
-                                        <a href="#" data-id="{{ $supplier->id }}"
+                                        <a href="#" data-id="{{ $road_permit->id }}"
                                             class="badge badge-pill badge-delete badge-danger d-inline">
                                             <i class="fas fa-trash"></i>
                                         </a>
@@ -82,7 +88,7 @@
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="10" class="text-center"><b>Data Supplier tidak ditemukan!</b></td>
+                            <td colspan="10" class="text-center"><b>Data surat-jalan tidak ditemukan!</b></td>
                         </tr>
                     @endif
                 </tbody>

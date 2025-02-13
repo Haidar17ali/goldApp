@@ -340,6 +340,25 @@ return [
                 ],
             ],
         ],
+        [
+            'text' => 'Pekerjaan',
+            'icon' => 'fas fa-database',
+            'submenu' => [
+                [
+                    'text' => 'Surat Jalan',
+                    'submenu' => [
+                      [
+                        'text' => 'Barang Masuk',
+                        'url' => 'JM/surat-jalan/In',
+                      ],
+                      [
+                        'text' => 'Barang Masuk',
+                        'url' => 'JM/Out/surat-jalan/Out',
+                      ]  
+                    ],
+                ],
+            ],
+        ],
         // [
         //     'text' => 'pages',
         //     'url' => 'admin/pages',

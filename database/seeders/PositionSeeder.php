@@ -16,9 +16,9 @@ class PositionSeeder extends Seeder
         DB::table('positions')->truncate();
 
         DB::table('positions')->insert([
-            // divisi plywood
+            // divisi ww
             ['id' => 1, 'name' => 'Wood Working', 'type' => 'Divisi', 'parent_id' => null],
-            // department plywood
+            // department ww
             ['id' => 2, 'name' => 'GA', 'type' => 'Departemen', 'parent_id' => 1],
             ['id' => 3, 'name' => 'Maintenance', 'type' => 'Departemen', 'parent_id' => 1],
             ['id' => 4, 'name' => 'Production', 'type' => 'Departemen', 'parent_id' => 1],
@@ -41,6 +41,9 @@ class PositionSeeder extends Seeder
             // bagian Warehouse
             ['id' => 17, 'name' => 'Kiln Dry', 'type' => 'Bagian', 'parent_id' => 6],
             ['id' => 18, 'name' => 'Stick', 'type' => 'Bagian', 'parent_id' => 6],
+
+            // divis plywood
+            ['id' => 19, 'name' => 'Plywood', 'type' => 'Divis', 'parent_id' => null],
         ]);
     }
 }

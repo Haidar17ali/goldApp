@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('alias_name');
             $table->boolean('gender');
             $table->integer('address_id')->nullable();
-            $table->enum('employee_type', ['Harian', 'Bulanan']);
+            $table->enum('employee_type', ['Harian', 'Bulanan','Borongan']);
             $table->integer('position_id');
             $table->date('entry_date');
             $table->enum('payment_type', ['ATM', 'Tunai']);

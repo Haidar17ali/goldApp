@@ -59,6 +59,7 @@ class EmployeeController extends Controller
         $employee_types = [
             'Harian',
             'Bulanan',
+            'Borongan'
         ];
 
         $payments = [
@@ -268,6 +269,7 @@ class EmployeeController extends Controller
         $employee_types = [
             'Harian',
             'Bulanan',
+            'Borongan'
         ];
 
         $payments = [

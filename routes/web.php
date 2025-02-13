@@ -3,6 +3,7 @@
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PositionController;
+use App\Http\Controllers\RoadPermitController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +62,14 @@ Route::prefix('JM')
         Route::get('/supplier/{id}/ubah', [SupplierController::class, 'edit'])->name('supplier.ubah');
         Route::patch('/supplier/{id}/ubah', [SupplierController::class, 'update'])->name('supplier.update');
         Route::delete('/supplier/{id}/hapus', [SupplierController::class, 'destroy'])->name('supplier.hapus');
-        // import dan export karyawan
+        // import dan export supplier
         Route::post('/import-supplier', [SupplierController::class, 'importSupplier'])->name('supplier.import');
+
+        // surat jalan
+        Route::get('/surat-jalan/{type}', [RoadPermitController::class, 'index'])->name('surat-jalan.index');
+        Route::get('/surat-jalan/{type}/buat', [RoadPermitController::class, 'create'])->name('surat-jalan.buat');
+        Route::post('/surat-jalan/{type}/buat', [RoadPermitController::class, 'store'])->name('surat-jalan.simpan');
+        Route::get('/surat-jalan/{id}/ubah', [RoadPermitController::class, 'edit'])->name('surat-jalan.ubah');
+        Route::patch('/surat-jalan/{id}/ubah', [RoadPermitController::class, 'update'])->name('surat-jalan.update');
+        Route::delete('/surat-jalan/{id}/hapus', [RoadPermitController::class, 'destroy'])->name('surat-jalan.hapus');
     });
