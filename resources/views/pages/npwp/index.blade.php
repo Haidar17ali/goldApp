@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Surat Jalan')
+@section('title', 'NPWP')
 
 @section('content_header')
-    <h1>Surat Jalan{{ $type == 'In' ? ' Masuk' : ' Keluar' }}</h1>
+    <h1>NPWP</h1>
 @stop
 
 @section('content')
@@ -29,64 +29,39 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('surat-jalan.buat', $type) }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Surat Jalan {{ $type == 'In' ? ' Masuk' : ' Keluar' }}</a>
+            <button type="button" class="btn btn-success ml-2 float-right" data-toggle="modal" data-target="#importNPWP">
+                <i class="fas fa-file-import"></i> Import Data NPWP
+            </button>
+            <a href="{{ route('npwp.buat') }}" class="btn btn-primary float-right" type="submit"><i class="fas fa-plus"></i>
+                NPWP</a>
         </div>
         <div class="card-body row">
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Tanggal</th>
-                        <th scope="col">Jam Masuk</th>
-                        <th scope="col">Jam Keluar</th>
-                        <th scope="col">Pembongkar</th>
-                        <th scope="col">Pengirim</th>
-                        <th scope="col">Penerima</th>
-                        <th scope="col">Nopol</th>
-                        <th scope="col">Soper</th>
-                        {{-- <th scope="col">Lok Bongkar</th> --}}
-                        <th scope="col">Nomer Sill</th>
-                        <th scope="col">Nomer Container</th>
-                        {{-- <th scope="col">Pembuat</th>
-                        <th scope="col">Pengedit</th> --}}
+                        <th scope="col">NPWP</th>
+                        <th scope="col">NITKU</th>
+                        <th scope="col">Nama</th>
                         <th scope="col">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (count($road_permits))
-                        @foreach ($road_permits as $road_permit)
+                    @if (count($datas))
+                        @foreach ($datas as $data)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ date('d-m-Y', strtotime($road_permit->date)) }}</td>
-                                <td>{{ $road_permit->in }}</td>
-                                <td>{{ $road_permit->out == null ? '' : date('d-m-Y H:i:s', strtotime($road_permit->out)) }}
-                                </td>
-                                <td>{{ $road_permit->handyman != null ? $road_permit->handyman->alias_name : '' }}</td>
-                                <td>{{ $road_permit->from }}</td>
-                                <td>{{ $road_permit->destination }}</td>
-                                <td>{{ $road_permit->nopol }}</td>
-                                <td>{{ $road_permit->driver }}</td>
-                                {{-- <td>{{ $road_permit->unpack_location }}</td> --}}
-                                <td>{{ $road_permit->sill_number }}</td>
-                                <td>{{ $road_permit->container_number }}</td>
-                                {{-- <td>{{ $road_permit->createdBy != null ? $road_permit->createdBy->username : '' }}</td>
-                                <td>{{ $road_permit->editedBy != null ? $road_permit->editedBy->username : '' }}</td> --}}
+                                <td>{{ $data->npwp }}</td>
+                                <td>{{ $data->nitku }}</td>
+                                <td>{{ $data->name }}</td>
                                 <td>
-                                    @if ($road_permit->out == null)
-                                        <a href="{{ route('surat-jalan.keluar', $road_permit->id) }}"
-                                            class="badge badge-warning"><i class="fas fa-hourglass-end"></i></a>
-                                        {{-- edit data --}}
-                                        <a href="{{ route('surat-jalan.set-pembongkar', ['type' => $type, 'id' => $road_permit->id]) }}"
-                                            class="badge badge-primary"><i class="fas fa-male"></i></a>
-                                        <a href="{{ route('surat-jalan.ubah', ['type' => $type, 'id' => $road_permit->id]) }}"
-                                            class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
-                                    @endif
-                                    <form action="{{ route('surat-jalan.hapus', $road_permit->id) }}" class="d-inline"
-                                        id="delete{{ $road_permit->id }}" method="post">
+                                    <a href="{{ route('npwp.ubah', $data->id) }}" class="badge badge-success"><i
+                                            class="fas fa-pencil-alt"></i></a>
+                                    <form action="{{ route('npwp.hapus', $data->id) }}" class="d-inline"
+                                        id="delete{{ $data->id }}" method="post">
                                         @csrf
                                         @method('DELETE')
-                                        <a href="#" data-id="{{ $road_permit->id }}"
+                                        <a href="#" data-id="{{ $data->id }}"
                                             class="badge badge-pill badge-delete badge-danger d-inline">
                                             <i class="fas fa-trash"></i>
                                         </a>
@@ -96,7 +71,7 @@
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="10" class="text-center"><b>Data surat-jalan tidak ditemukan!</b></td>
+                            <td colspan="6" class="text-center"><b>Data NPWP tidak ditemukan!</b></td>
                         </tr>
                     @endif
                 </tbody>
@@ -106,12 +81,12 @@
 
     {{-- modal box untuk import karyawan --}}
     <!-- Modal -->
-    <div class="modal fade" id="importSupplier" tabindex="-1" aria-labelledby="importKaryawan" aria-hidden="true">
+    <div class="modal fade" id="importNPWP" tabindex="-1" aria-labelledby="importNPWP" aria-hidden="true">
         <div class="modal-dialog">
-            <form action="{{ route('supplier.import') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('npwp.import') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Import Supplier</h5>
+                        <h5 class="modal-title" id="exampleModalLabel">Import NPWP</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>

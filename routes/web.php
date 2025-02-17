@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\NPWPController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\RoadPermitController;
@@ -75,4 +76,14 @@ Route::prefix('JM')
         Route::get('/surat-jalan/{id}/out', [RoadPermitController::class, 'out'])->name("surat-jalan.keluar");
         Route::get('/surat-jalan/{id}/set-handyman/{type}', [RoadPermitController::class, 'setHandyman'])->name('surat-jalan.set-pembongkar');
         Route::patch('/surat-jalan/{id}/set-handyman/{type}', [RoadPermitController::class, 'saveHandyman'])->name('surat-jalan.simpan-pembongkar');
+
+        // npwp
+        Route::get('/NPWP', [NPWPController::class, 'index'])->name('npwp.index');
+        Route::get('/NPWP/buat', [NPWPController::class, 'create'])->name('npwp.buat');
+        Route::post('/NPWP/buat', [NPWPController::class, 'store'])->name('npwp.simpan');
+        Route::get('/NPWP/{id}/ubah', [NPWPController::class, 'edit'])->name('npwp.ubah');
+        Route::patch('/NPWP/{id}/ubah', [NPWPController::class, 'update'])->name('npwp.update');
+        Route::delete('/NPWP/{id}/hapus', [NPWPController::class, 'destroy'])->name('npwp.hapus');
+        // import dan export NPWP
+        Route::post('/import-NPWP', [NPWPController::class, 'importNPWP'])->name('npwp.import');
     });

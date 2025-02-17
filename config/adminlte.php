@@ -338,6 +338,10 @@ return [
                     'text' => 'Supplier',
                     'url' => 'JM/supplier',
                 ],
+                [
+                    'text' => 'NPWP',
+                    'url' => 'JM/NPWP',
+                ],
             ],
         ],
         [

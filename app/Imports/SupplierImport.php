@@ -3,10 +3,8 @@
 namespace App\Imports;
 
 use App\Models\Supplier;
-use App\Models\Salary;
 use App\Models\Address;
 use App\Models\Bank;
-use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;

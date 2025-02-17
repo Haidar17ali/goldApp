@@ -143,7 +143,7 @@
             var status = "{{ session('status') }}";
             if (status == "saved") {
                 Toastify({
-                    text: "Permission baru berhasil ditambahkan!",
+                    text: "Data baru berhasil ditambahkan!",
                     className: "info",
                     close: true,
                     style: {
