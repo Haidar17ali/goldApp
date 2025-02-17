@@ -342,6 +342,20 @@ return [
                     'text' => 'NPWP',
                     'url' => 'JM/NPWP',
                 ],
+                [
+                    'text' => 'Stok',
+                    'icon' => 'fas fa-warehouse',
+                    'submenu' => [
+                      [
+                        'text' => 'Sengon',
+                        'url' => 'JM/log/Sengon',
+                      ],
+                      [
+                        'text' => 'Merbau',
+                        'url' => 'JM/Out/log/Merbau',
+                      ]  
+                    ],
+                ]
             ],
         ],
         [

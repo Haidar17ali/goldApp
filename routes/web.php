@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\NPWPController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PositionController;
@@ -86,4 +87,14 @@ Route::prefix('JM')
         Route::delete('/NPWP/{id}/hapus', [NPWPController::class, 'destroy'])->name('npwp.hapus');
         // import dan export NPWP
         Route::post('/import-NPWP', [NPWPController::class, 'importNPWP'])->name('npwp.import');
+        
+        // Log
+        Route::get('/log/{type}', [LogController::class, 'index'])->name('log.index');
+        Route::get('/log/{type}/buat', [LogController::class, 'create'])->name('log.buat');
+        Route::post('/log/{type}/buat', [LogController::class, 'store'])->name('log.simpan');
+        Route::get('/log/{id}/ubah/{type}', [LogController::class, 'edit'])->name('log.ubah');
+        Route::patch('/log/{id}/ubah/{type}', [LogController::class, 'update'])->name('log.update');
+        Route::delete('/log/{id}/hapus', [LogController::class, 'destroy'])->name('log.hapus');
+        // import dan export log
+        Route::post('/import-log/{type}', [LogController::class, 'importLog'])->name('log.import');
     });
