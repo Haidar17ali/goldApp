@@ -26,9 +26,6 @@ class SupplierController extends Controller
 
     public function store(Request $request){
         $request->validate([
-            'npwp_number' => 'required',
-            'nitku' => 'required',
-            'nik' => 'required',
             'type' => 'required|in:Sengon,Merbau,Pembantu',
             'name' => 'required',
         ]);
@@ -40,8 +37,6 @@ class SupplierController extends Controller
         }
 
         // inisialisasi
-        $npwp_number = $request->npwp_number;
-        $nitku = $request->nitku;
         $nik = $request->nik;
         $type = $request->type;
         $name = $request->name;
@@ -88,8 +83,6 @@ class SupplierController extends Controller
         }
         
         $dataSupplier = [
-            'npwp_number' => $npwp_number,
-            'nitku' => $nitku,
             'nik' => $nik,
             'supplier_type' => $type,
             'name' => $name,
@@ -115,9 +108,6 @@ class SupplierController extends Controller
         $supplier = Supplier::with(['bank', 'address'])->findOrFail($id);
 
         $request->validate([
-            'npwp_number' => 'required',
-            'nitku' => 'required',
-            'nik' => 'required',
             'type' => 'required|in:Sengon,Merbau,Pembantu',
             'name' => 'required',
         ]);
@@ -129,8 +119,6 @@ class SupplierController extends Controller
         }
 
         // inisialisasi
-        $npwp_number = $request->npwp_number;
-        $nitku = $request->nitku;
         $nik = $request->nik;
         $type = $request->type;
         $name = $request->name;
@@ -176,8 +164,6 @@ class SupplierController extends Controller
             $bank_id = $db_bank;
         }
         
-        $supplier->npwp_number = $npwp_number;
-        $supplier->nitku = $nitku;
         $supplier->nik = $nik;
         $supplier->supplier_type = $type;
         $supplier->name = $name;

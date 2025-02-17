@@ -29,20 +29,6 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
-                            <label for="npwp_number" class="col-sm-2 col-form-label">NPWP</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="npwp_number" name="npwp_number"
-                                    value="{{ old('npwp_number', $supplier->npwp_number) }}">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="nitku" class="col-sm-2 col-form-label">NITKU</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="nitku" name="nitku"
-                                    value="{{ old('nitku', $supplier->nitku) }}">
-                            </div>
-                        </div>
-                        <div class="form-group row">
                             <label for="nik" class="col-sm-2 col-form-label">NIK</label>
                             <div class="col-sm-10">
                                 <input type="number" class="form-control" id="nik" name="nik"
