@@ -29,8 +29,6 @@ class SupplierImport implements ToModel, WithHeadingRow, WithBatchInserts, Skips
     public function model(array $row)
     {
         // inisialisasi
-        $npwp_number = $row['npwp'];
-        $nitku = $row['nitku'];
         $nik = $row['nik'];
         $type = $row['type'];
         $name = $row['name'];
@@ -78,8 +76,6 @@ class SupplierImport implements ToModel, WithHeadingRow, WithBatchInserts, Skips
 
         // Data karyawan
         $dataSupplier = [
-            'npwp_number' => $npwp_number,
-            'nitku' => $nitku,
             'nik' => $nik,
             'supplier_type' => $type,
             'name' => $name,
@@ -99,12 +95,9 @@ class SupplierImport implements ToModel, WithHeadingRow, WithBatchInserts, Skips
     public function rules(): array
     {
         return [
-            'npwp_number' => 'required',
-            'nitku' => 'required',
-            'nik' => 'required',
             'type' => 'required|in:Sengon,Merbau,Pembantu',
             'name' => 'required',
-            'name' => 'numeric',
+            'phone' => 'numeric',
         ];
     }
 

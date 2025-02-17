@@ -41,8 +41,6 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">NPWP</th>
-                        <th scope="col">NITKU</th>
                         <th scope="col">NIK</th>
                         <th scope="col">Tipe</th>
                         <th scope="col">Nama</th>
@@ -57,8 +55,6 @@
                         @foreach ($suppliers as $supplier)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $supplier->npwp_number }}</td>
-                                <td>{{ $supplier->nitku }}</td>
                                 <td>{{ $supplier->nik }}</td>
                                 <td>{{ $supplier->supplier_type }}</td>
                                 <td>{{ $supplier->name }}</td>
