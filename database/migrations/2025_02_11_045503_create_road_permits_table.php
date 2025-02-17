@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->date('date');
             $table->time('in');
-            $table->time('out')->nullable();
+            $table->dateTime('out')->nullable();
             $table->text('description')->nullable();
             $table->integer('handyman_id')->nullable();
             $table->string('from');
@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('sill_number')->nullable();
             $table->string('container_number')->nullable();
             $table->enum('type', ['In', 'Out']);
+            $table->enum('type_item', ['Sengon', "Merbau", 'Pembantu'])->nullable();
             $table->integer('created_by');
             $table->integer('edited_by')->nullable();
             $table->timestamps();

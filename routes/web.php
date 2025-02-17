@@ -69,7 +69,10 @@ Route::prefix('JM')
         Route::get('/surat-jalan/{type}', [RoadPermitController::class, 'index'])->name('surat-jalan.index');
         Route::get('/surat-jalan/{type}/buat', [RoadPermitController::class, 'create'])->name('surat-jalan.buat');
         Route::post('/surat-jalan/{type}/buat', [RoadPermitController::class, 'store'])->name('surat-jalan.simpan');
-        Route::get('/surat-jalan/{id}/ubah', [RoadPermitController::class, 'edit'])->name('surat-jalan.ubah');
-        Route::patch('/surat-jalan/{id}/ubah', [RoadPermitController::class, 'update'])->name('surat-jalan.update');
+        Route::get('/surat-jalan/{id}/ubah/{type}', [RoadPermitController::class, 'edit'])->name('surat-jalan.ubah');
+        Route::patch('/surat-jalan/{id}/ubah/{type}', [RoadPermitController::class, 'update'])->name('surat-jalan.update');
         Route::delete('/surat-jalan/{id}/hapus', [RoadPermitController::class, 'destroy'])->name('surat-jalan.hapus');
+        Route::get('/surat-jalan/{id}/out', [RoadPermitController::class, 'out'])->name("surat-jalan.keluar");
+        Route::get('/surat-jalan/{id}/set-handyman/{type}', [RoadPermitController::class, 'setHandyman'])->name('surat-jalan.set-pembongkar');
+        Route::patch('/surat-jalan/{id}/set-handyman/{type}', [RoadPermitController::class, 'saveHandyman'])->name('surat-jalan.simpan-pembongkar');
     });

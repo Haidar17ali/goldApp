@@ -45,11 +45,11 @@
                         <th scope="col">Penerima</th>
                         <th scope="col">Nopol</th>
                         <th scope="col">Soper</th>
-                        <th scope="col">Lok Bongkar</th>
+                        {{-- <th scope="col">Lok Bongkar</th> --}}
                         <th scope="col">Nomer Sill</th>
                         <th scope="col">Nomer Container</th>
-                        <th scope="col">Pembuat</th>
-                        <th scope="col">Pengedit</th>
+                        {{-- <th scope="col">Pembuat</th>
+                        <th scope="col">Pengedit</th> --}}
                         <th scope="col">Aksi</th>
                     </tr>
                 </thead>
@@ -58,22 +58,30 @@
                         @foreach ($road_permits as $road_permit)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $road_permit->date }}</td>
+                                <td>{{ date('d-m-Y', strtotime($road_permit->date)) }}</td>
                                 <td>{{ $road_permit->in }}</td>
-                                <td>{{ $road_permit->out }}</td>
+                                <td>{{ $road_permit->out == null ? '' : date('d-m-Y H:i:s', strtotime($road_permit->out)) }}
+                                </td>
                                 <td>{{ $road_permit->handyman != null ? $road_permit->handyman->alias_name : '' }}</td>
                                 <td>{{ $road_permit->from }}</td>
                                 <td>{{ $road_permit->destination }}</td>
                                 <td>{{ $road_permit->nopol }}</td>
                                 <td>{{ $road_permit->driver }}</td>
-                                <td>{{ $road_permit->unpack_location }}</td>
+                                {{-- <td>{{ $road_permit->unpack_location }}</td> --}}
                                 <td>{{ $road_permit->sill_number }}</td>
                                 <td>{{ $road_permit->container_number }}</td>
-                                <td>{{ $road_permit->createdBy != null ? $road_permit->createdBy->username : '' }}</td>
-                                <td>{{ $road_permit->editedBy != null ? $road_permit->editedBy->username : '' }}</td>
+                                {{-- <td>{{ $road_permit->createdBy != null ? $road_permit->createdBy->username : '' }}</td>
+                                <td>{{ $road_permit->editedBy != null ? $road_permit->editedBy->username : '' }}</td> --}}
                                 <td>
-                                    <a href="{{ route('surat-jalan.ubah', $road_permit->id) }}"
-                                        class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
+                                    @if ($road_permit->out == null)
+                                        <a href="{{ route('surat-jalan.keluar', $road_permit->id) }}"
+                                            class="badge badge-warning"><i class="fas fa-hourglass-end"></i></a>
+                                        {{-- edit data --}}
+                                        <a href="{{ route('surat-jalan.set-pembongkar', ['type' => $type, 'id' => $road_permit->id]) }}"
+                                            class="badge badge-primary"><i class="fas fa-male"></i></a>
+                                        <a href="{{ route('surat-jalan.ubah', ['type' => $type, 'id' => $road_permit->id]) }}"
+                                            class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
+                                    @endif
                                     <form action="{{ route('surat-jalan.hapus', $road_permit->id) }}" class="d-inline"
                                         id="delete{{ $road_permit->id }}" method="post">
                                         @csrf

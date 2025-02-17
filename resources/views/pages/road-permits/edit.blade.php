@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Ubah Supplier')
+@section('title', 'Ubah Surat Jalan')
 
 @section('content_header')
-    <h1>Ubah Supplier</h1>
+    <h1>Ubah Surat Jalan</h1>
 @stop
 
 @section('content')
@@ -18,10 +18,13 @@
                     </ul>
                 </div>
             @endif
-            <div class="badge badge-primary float-right">Ubah Supplier</div>
+
+            <div id="error-messages"></div>
+            <div class="badge badge-primary float-right">Ubah Surat Jalan</div>
         </div>
     </div>
-    <form action="{{ route('supplier.update', $supplier->id) }}" method="POST">
+    <form action="{{ route('surat-jalan.update', ['id' => $road_permit->id, 'type' => $type]) }}" method="POST"
+        id="formRP">
         @csrf
         @method('patch')
         <div class="row">
@@ -29,125 +32,108 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
-                            <label for="npwp_number" class="col-sm-2 col-form-label">NPWP</label>
+                            <label for="from" class="col-sm-2 col-form-label">Pengirim*</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="npwp_number" name="npwp_number"
-                                    value="{{ old('npwp_number', $supplier->npwp_number) }}">
+                                <input type="text" class="form-control" id="from" name="from"
+                                    value="{{ old('from', $road_permit->from) }}">
+                                <span class="text-danger error-text" id="from_error"></span>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="nitku" class="col-sm-2 col-form-label">NITKU</label>
+                            <label for="destination" class="col-sm-2 col-form-label">Penerima*</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="nitku" name="nitku"
-                                    value="{{ old('nitku', $supplier->nitku) }}">
+                                <input type="text" class="form-control" id="destination" name="destination"
+                                    value="{{ old('destination', $road_permit->destination) }}">
+                                <span class="text-danger error-text" id="destination_error"></span>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="nik" class="col-sm-2 col-form-label">NIK</label>
+                            <label for="item_type" class="col-sm-2 col-form-label">Jenis Barang</label>
                             <div class="col-sm-10">
-                                <input type="number" class="form-control" id="nik" name="nik"
-                                    value="{{ old('nik', $supplier->nik) }}">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="type" class="col-sm-2 col-form-label">Jenis</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="type" id="type">
-                                    @foreach ($types as $type)
-                                        <option {{ $type == $supplier->supplier_type ? 'selected' : '' }}
-                                            value="{{ $type }}">{{ $type }}</option>
+                                <select class="form-control" name="item_type" id="item_type">
+                                    @foreach ($item_types as $item_type)
+                                        <option {{ $item_type == $road_permit->type_item ? 'selected' : '' }}
+                                            value="{{ $item_type }}">{{ $item_type }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="name" class="col-sm-2 col-form-label">Nama</label>
+                            <label for="vehicle" class="col-sm-2 col-form-label">Kendaraan</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="name" name="name"
-                                    value="{{ old('name', $supplier->name) }}">
+                                <select class="form-control" name="vehicle" id="vehicle">
+                                    @foreach ($trucks as $truck)
+                                        <option {{ $truck == $road_permit->vehicle ? 'selected' : '' }}
+                                            value="{{ $truck }}">{{ $truck }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="phone" class="col-sm-2 col-form-label">No Telp</label>
+                            <label for="nopol" class="col-sm-2 col-form-label">Nopol*</label>
                             <div class="col-sm-10">
-                                <input type="number" class="form-control" id="phone" name="phone"
-                                    value="{{ old('phone', $supplier->nik) }}">
+                                <input type="text" class="form-control" id="nopol" name="nopol"
+                                    value="{{ old('nopol', $road_permit->nopol) }}">
+                                <span class="text-danger error-text" id="nopol_error"></span>
                             </div>
                         </div>
-                        <h3>Alamat</h3>
+                        <div class="form-group row">
+                            <label for="driver" class="col-sm-2 col-form-label">Soper*</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="driver" name="driver"
+                                    value="{{ old('driver', $road_permit->driver) }}">
+                                <span class="text-danger error-text" id="driver_error"></span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="handyman" class="col-sm-2 col-form-label">Pembongkar</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="handyman" id="handyman">
+                                    @foreach ($trucks as $truck)
+                                        <option value="{{ $truck }}">{{ $truck }}</option>
+                                    @endforeach
+                                </select>
+                                <span class="text-danger error-text" id="handyman_error"></span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="unpack_location" class="col-sm-2 col-form-label">Lokasi Bongkar</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="unpack_location" name="unpack_location"
+                                    value="{{ old('unpack_location', $road_permit->unpack_location) }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="sill_number" class="col-sm-2 col-form-label">Nomer Sill</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="sill_number" name="sill_number"
+                                    value="{{ old('sill_number', $road_permit->sill_number) }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="container_number" class="col-sm-2 col-form-label">Nomer Container</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="container_number" name="container_number"
+                                    value="{{ old('container_number', $road_permit->container_number) }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="description" class="col-sm-2 col-form-label">Keterangan</label>
+                            <div class="col-sm-10">
+                                <textarea type="text" class="form-control" id="description" name="description"
+                                    value="{{ old('description', $road_permit->description) }}"></textarea>
+                            </div>
+                        </div>
+                        <h3>Data Muatan</h3>
                         <hr>
+                        <span class="text-danger error-text" id="road_permit_details_error"></span>
+                        <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
+                        <div id="handsontable-container"></div>
+                        <input type="hidden" name="road_permit_details[]" id="road_permit_details">
 
-                        <div class="form-group row">
-                            <label for="address" class="col-sm-2 col-form-label">Alamat</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="address" id="address">
-                                    <option>Silahkan Isi Alamat Atau Pilih Alamat</option>
-                                    @foreach ($addresses as $address)
-                                        <option {{ $supplier->address_id == $address->id ? 'selected' : '' }}
-                                            value="{{ $address->id }}">{{ $address->address }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="rt" class="col-sm-2 col-form-label">RT</label>
-                            <div class="col-sm-4">
-                                <input type="number" class="form-control" id="rt" name="rt"
-                                    value="{{ old('rt', $supplier->address != null ? $supplier->address->rt : '') }}">
-                            </div>
-                            <label for="rw" class="col-sm-2 col-form-label">RW</label>
-                            <div class="col-sm-4">
-                                <input type="number" class="form-control" id="rw" name="rw"
-                                    value="{{ old('rw', $supplier->address != null ? $supplier->address->rw : '') }}">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="kelurahan" class="col-sm-2 col-form-label">Kelurahan</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="kelurahan" name="kelurahan"
-                                    value="{{ old('kelurahan', $supplier->address != null ? $supplier->address->kelurahan : '') }}">
-                            </div>
-                            <label for="kecamatan" class="col-sm-2 col-form-label">Kecamatan</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="kecamatan" name="kecamatan"
-                                    value="{{ old('kecamatan', $supplier->address != null ? $supplier->address->kecamatan : '') }}">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="city" class="col-sm-2 col-form-label">Kab/Kota</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="city" name="city"
-                                    value="{{ old('city', $supplier->address != null ? $supplier->address->city : '') }}">
-                            </div>
-                        </div>
-                        <h3>Pembayaran</h3>
-                        <hr>
-                        <div class="form-group row">
-                            <label for="number_account" class="col-sm-2 col-form-label">No Rek</label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="number_account" id="number_account">
-                                    <option>Silahkan Isi No Rek Atau Pilih Rek</option>
-                                    @foreach ($banks as $bank)
-                                        <option {{ $supplier->bank_id == $bank->id ? 'selected' : '' }}
-                                            value="{{ $bank->id }}">{{ $bank->number_account }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="bank_account" class="col-sm-2 col-form-label">Nama Rek</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="bank_account" name="bank_account"
-                                    value="{{ old('bank_account', $supplier->bank != null ? $supplier->bank->bank_account : '') }}">
-                            </div>
-                            <label for="bank_name" class="col-sm-2 col-form-label">Nama Bank</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="bank_name" name="bank_name"
-                                    value="{{ old('bank_name', $supplier->bank != null ? $supplier->bank->bank_name : '') }}">
-                            </div>
-                        </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('supplier.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            <a href="{{ route('surat-jalan.index', $type) }}"
+                                class="btn btn-danger rounded-pill mr-2">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>
@@ -155,68 +141,243 @@
             </div>
         </div>
     </form>
+
+    <div id="loading" style="display: none;">
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <i class="fa fa-spinner fa-spin fa-3x"></i> <!-- Font Awesome spinner -->
+            <p>Loading...</p>
+        </div>
+    </div>
 @stop
 
 @section('css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/styles/handsontable.min.css" />
     <style>
-        /*  */
+        /* Mengubah warna header */
+        .ht_clone_top th {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+        }
+
+        /* Mengatur border tabel */
+        .htCore {
+            border-collapse: collapse;
+            border: 2px solid #ddd;
+        }
+
+        /* Mengubah warna sel saat dipilih */
+        .ht_master .current {
+            background-color: #a3a3a3 !important;
+        }
+
+        /* Mengatur padding dan font */
+        .htCore td,
+        .htCore th {
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 @stop
 
 @section('js')
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+
     <script>
         $(document).ready(function() {
-            $('#address').select2({
-                theme: "bootstrap4",
-                tags: true
-            });
-            $('#position').select2({
-                theme: "bootstrap4",
-            });
-            $('#number_account').select2({
-                theme: "bootstrap4",
-                tags: true
-            });
-
-            $("#payment_type").on("change", function() {
-                if ($(this).val() == "ATM") {
-                    $('#bank_name').prop('disabled', false);
-                    $('#bank_account').prop('disabled', false);
-                    $('#number_account').prop('disabled', false);
-                } else {
-                    $('#bank_name').prop('disabled', true);
-                    $('#bank_account').prop('disabled', true);
-                    $('#number_account').prop('disabled', true);
-                }
-            })
-
-            $("#address").on('select2:select', function() {
-                let idAddress = $(this).val();
-
-                $.ajax({
-                    url: "{{ route('karyawan.alamat') }}",
-                    type: "GET",
-                    data: {
-                        id: idAddress
+            // handsontable
+            const container = document.getElementById('handsontable-container');
+            const hot = new Handsontable(container, {
+                minSpareRows: 1,
+                data: [],
+                columns: [{
+                        data: 'load',
+                        type: 'text'
                     },
-                    success: function(response) {
-                        if (response != null) {
-                            $("#rt").val(response.rt);
-                            $("#rw").val(response.rw);
-                            $("#kelurahan").val(response.kelurahan);
-                            $("#kecamatan").val(response.kecamatan);
-                            $("#city").val(response.city);
-                        } else {
-                            $("#rt").val("");
-                            $("#rw").val("");
-                            $("#kelurahan").val("");
-                            $("#kecamatan").val("");
-                            $("#city").val("");
+                    {
+                        data: 'amount',
+                        type: 'numeric'
+                    },
+                    {
+                        data: 'unit',
+                        type: 'text'
+                    },
+                    {
+                        data: 'size',
+                        type: 'text'
+                    },
+                    {
+                        data: 'cubication',
+                        type: 'numeric'
+                    },
+                ],
+                rowHeaders: true,
+                colHeaders: ['Muatan', 'Jumlah', 'Satuan', 'Ukuran', 'Kubikasi'],
+                contextMenu: true,
+                autoColumnSize: true,
+                autoRowSize: true,
+                // manualRowResize: true,
+                // manualColumnResize: true,
+                persistentState: true,
+                licenseKey: 'non-commercial-and-evaluation',
+                stretchH: 'all',
+                afterChange: function(changes, source) {
+
+                    if (source === 'edit' || source === 'paste') {
+                        const data = hot.getData();
+                        localStorage.setItem('editRoadPermitDetails', JSON.stringify(data));
+                    }
+                },
+            });
+
+            // function setLocalStorage() {
+            //     const data = {!! $road_permit->details != null ? json_encode($road_permit->details) : '' !!}
+
+            //     localStorage.setItem('editRoadPermitDetils', JSON.stringify(data));
+            // }
+
+            // setLocalStorage();
+
+
+            // Isi data dari localStorage saat halaman dimuat
+            function getLocalStorage() {
+                const savedData = localStorage.getItem('editRoadPermitDetails');
+
+                if (savedData) {
+                    try {
+                        const parsedData = JSON.parse(savedData);
+                        const columnHeaders = ["load", "amount", "unit", "size",
+                            "cubication"
+                        ]; // Sesuaikan dengan jumlah kolom
+                        if (Array.isArray(parsedData)) {
+                            if (typeof parsedData[0] === 'object' && !Array.isArray(parsedData[0])) {
+                                hot.loadData(parsedData);
+                            } else {
+                                const formattedData = parsedData.map(row => {
+                                    let obj = {};
+                                    if (Array.isArray(row)) {
+                                        row.forEach((value, index) => {
+                                            obj[columnHeaders[index]] =
+                                                value; // Konversi array ke objek dengan key yang benar
+                                        });
+                                        return obj;
+                                    }
+                                });
+                                hot.loadData(formattedData); // Memuat data ke Handsontable
+                            }
                         }
 
+                    } catch (error) {
+                        console.error("Gagal memuat data dari localStorage:", error);
                     }
-                })
-            })
+                } else {
+                    // Jika tidak ada data di localStorage, gunakan data awal dari database
+                    const initialData = {!! $road_permit->details != null ? json_encode($road_permit->details) : [] !!}
+
+                    hot.loadData(initialData);
+                    localStorage.setItem('editRoadPermitDetails', JSON.stringify(initialData));
+                }
+            };
+
+
+            $('#formRP').on('submit', function(e) {
+                e.preventDefault();
+                document.getElementById('loading').style.display = 'flex';
+
+                let data = hot.getSourceData();
+                data = data.slice(0, -1);
+
+                let permits = document.getElementById('road_permit_details').value =
+                    JSON.stringify(data);
+
+                const form = e.target;
+                const formData = new FormData(form);
+
+
+                fetch(form.action, {
+                        method: form.method,
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw err; // Lempar error agar bisa ditangkap di catch()
+                            });
+                        }
+                        return response.json();
+                        response.json()
+                    })
+                    .then(data => {
+
+                        if (data.errors) {
+                            $('.error-text').text('');
+                            $.each(data.errors, function(key, value) {
+                                if (key.startsWith('details')) {
+                                    $('#details_error').text(
+                                        'Terdapat kesalahan pada data muatan.');
+                                } else {
+                                    $('#' + key + '_error').text(value[0]);
+                                }
+                            });
+                        } else {
+                            localStorage.removeItem('editRoadPermitDetails');
+                            window.location.href = "{{ route('surat-jalan.index', $type) }}";
+                        }
+                    })
+                    .catch(error => {
+
+                        let errorContainer = document.getElementById("error-datas");
+
+                        // Pastikan elemen ada di DOM
+                        if (!errorContainer) {
+                            console.error("Elemen #error-datas tidak ditemukan di DOM.");
+                        } else {
+                            Object.entries(error.errors).forEach(([field, msgs]) => {
+                                let errorText = `${field}: ${msgs.join("| ")}<br>`;
+                                $("#error-datas").append(errorText)
+                            });
+                        }
+                    })
+                    .finally(() => {
+                        document.getElementById('loading').style.display = 'none';
+                    });
+
+
+            });
+
+            getLocalStorage();
+
+
         });
+        @section('plugins.Toast', true)
+            var status = "{{ session('status') }}";
+            if (status == "detailsNotFound") {
+                Toastify({
+                    text: "Muatan tidak boleh kosong!",
+                    className: "danger",
+                    close: true,
+                    style: {
+                        background: "#red",
+                    }
+                }).showToast();
+            }
     </script>
 @stop
