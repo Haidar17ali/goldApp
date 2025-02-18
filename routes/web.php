@@ -4,6 +4,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\NPWPController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\POController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\RoadPermitController;
 use App\Http\Controllers\RoleController;
@@ -97,4 +98,12 @@ Route::prefix('JM')
         Route::delete('/log/{id}/hapus', [LogController::class, 'destroy'])->name('log.hapus');
         // import dan export log
         Route::post('/import-log/{type}', [LogController::class, 'importLog'])->name('log.import');
+
+        // po
+        Route::get('/purchase-order/{type}', [POController::class, 'index'])->name('purchase-order.index');
+        Route::get('/purchase-order/{type}/buat', [POController::class, 'create'])->name('purchase-order.buat');
+        Route::post('/purchase-order/{type}/buat', [POController::class, 'store'])->name('purchase-order.simpan');
+        Route::get('/purchase-order/{id}/ubah/{type}', [POController::class, 'edit'])->name('purchase-order.ubah');
+        Route::patch('/purchase-order/{id}/ubah/{type}', [POController::class, 'update'])->name('purchase-order.update');
+        Route::delete('/purchase-order/{id}/hapus', [POController::class, 'destroy'])->name('purchase-order.hapus');
     });

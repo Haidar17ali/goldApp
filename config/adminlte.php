@@ -377,6 +377,24 @@ return [
                 ],
             ],
         ],
+        [
+            'text' => 'PO',
+            'icon' => 'fas fa-shopping-cart',
+            'submenu' => [
+              [
+                'text' => 'Barang Pembantu',
+                'url' => 'JM/purchase-order/Bahan-Pembantu',
+              ],
+              [
+                'text' => 'SPK',
+                'url' => 'JM/purchase-order/SPK',
+              ],  
+              [
+                'text' => 'Sengon',
+                'url' => 'JM/purchase-order/Bahan-Baku',
+              ],  
+            ],
+        ],
         // [
         //     'text' => 'pages',
         //     'url' => 'admin/pages',
