@@ -31,16 +31,22 @@ class LogController extends Controller
         if($type == 'Sengon'){
             $code = 'SGN.'. substr($request->quality, 0,2).'.'.$request->length.'.'.$request->diameter;
         }else{
+            $request->validate([
+                'id_produksi' => 'required',
+                'barcode' => 'required'
+            ]);
             $code = 'MBU.'. substr($request->quality, 0,2).'.'.$request->length.'.'.$request->diameter;
         }
 
-        $db_code = Log::where('code', $code)->first();
+        $db_code = Log::where('code', $code)->where('type', $type)->first();
 
         if($db_code){
             $db_code->quantity += $request->quantity;
             $db_code->save();
         }else{
             $data = [
+                'id_produksi' => $request->id_produksi,
+                'barcode' => $request->barcode,
                 'code' => $code,
                 'type' => $type,
                 'quality' => $request->quality,
@@ -74,17 +80,23 @@ class LogController extends Controller
         if($type == 'Sengon'){
             $code = 'SGN.'. substr($request->quality, 0,2).'.'.$request->length.'.'.$request->diameter;
         }elseif($type == 'Merbau'){
+            $request->validate([
+                'id_produksi' => 'required',
+                'barcode' => 'required'
+            ]);
             $code = 'MBU.'. substr($request->quality, 0,2).'.'.$request->length.'.'.$request->diameter;
         }else{
             $code = $log->code;
         }
 
-        $db_code = Log::where('code', $code)->first();
+        $db_code = Log::where('code', $code)->where('type', $type)->first();
 
         if($db_code){
             $db_code->quantity += $request->quantity;
             $db_code->save();
         }else{
+            $log->id_produksi = $request->id_produksi;
+            $log->barcode = $request->barcode;
             $log->code = $code;
             $log->type = $type;
             $log->quality = $request->quality;

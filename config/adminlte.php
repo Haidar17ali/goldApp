@@ -352,7 +352,7 @@ return [
                       ],
                       [
                         'text' => 'Merbau',
-                        'url' => 'JM/Out/log/Merbau',
+                        'url' => 'JM/log/Merbau',
                       ]  
                     ],
                 ]

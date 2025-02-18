@@ -28,6 +28,22 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
+                        @if ($type == 'Merbau')
+                            <div class="form-group row">
+                                <label for="id_produksi" class="col-sm-2 col-form-label">ID Produksi</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="id_produksi" name="id_produksi"
+                                        value="{{ old('id_produksi') }}">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="barcode" class="col-sm-2 col-form-label">Barcode</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="barcode" name="barcode"
+                                        value="{{ old('barcode') }}">
+                                </div>
+                            </div>
+                        @endif
                         <div class="form-group row">
                             <label for="quality" class="col-sm-2 col-form-label">Kualitas</label>
                             <div class="col-sm-10">

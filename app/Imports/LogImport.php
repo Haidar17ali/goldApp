@@ -32,6 +32,8 @@ class LogImport implements ToModel, WithHeadingRow, WithBatchInserts, SkipsOnFai
     public function model(array $row)
     {
         // inisialisasi
+        $id_produksi = $row['id_produksi'];
+        $barcode = $row['barcode'];
         $quality = $row['kualitas'];
         $length = $row['panjang'];
         $diameter = $row['diameter'];
@@ -45,13 +47,15 @@ class LogImport implements ToModel, WithHeadingRow, WithBatchInserts, SkipsOnFai
             $code = 'MBU.'. substr($quality, 0,2).'.'.$length.'.'.$diameter;
         }  
         
-        $db_code = Log::where('code', $code)->first();
+        $db_code = Log::where('code', $code)->where('type', $type)->first();
         
         if($db_code){
             $db_code->quantity += $quantity;
             $db_code->save();
         }else{
             $data = [
+                'id_produksi' => $id_produksi,
+                'barcode' => $barcode,
                 'code' => $code,
                 'type' => $type,
                 'quality' => $quality,
@@ -60,20 +64,30 @@ class LogImport implements ToModel, WithHeadingRow, WithBatchInserts, SkipsOnFai
                 'quantity' => $quantity,
             ];
             
-            $log = Log::create($data);
-            return $log;
+            Log::create($data);
         }
         
     }
 
     public function rules(): array
     {
-        return [
-            'quality' => 'required|in:Super,Afkir',
-            'length' => 'required|decimal:0,4',
-            'diameter' => 'required|decimal:0,4',
-            'quantity' => 'required|decimal:0,4',
-        ];
+        if ($this->type == "Merbau") {
+            return [
+                'id_produksi' => 'required',
+                'barcode' => 'required',
+                'quality' => 'required|in:Super,Afkir',
+                'length' => 'required|decimal:0,4',
+                'diameter' => 'required|decimal:0,4',
+                'quantity' => 'required|decimal:0,4',
+            ];
+        }else{
+            return [
+                'quality' => 'required|in:Super,Afkir',
+                'length' => 'required|decimal:0,4',
+                'diameter' => 'required|decimal:0,4',
+                'quantity' => 'required|decimal:0,4',
+            ];
+        }
     }
 
     public function batchSize(): int
