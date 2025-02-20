@@ -17,12 +17,11 @@ return new class extends Migration
             $table->dateTime('arrival_date')->nullable();
             $table->dateTime('payment_date')->nullable();
             $table->text('po_code');
-            $table->enum('po_type', ['Bahan-Baku', 'Bahan-Pembantu', 'SPK']);
+            $table->enum('po_type', ['Sengon', 'Bahan-Pembantu', 'SPK']);
             $table->bigInteger('supplier_id');
             $table->enum('supplier_type', ['Umum', 'Khusus']);
-            $table->double('ppn')->nullable();
             $table->double('dp')->nullable();
-            $table->enum('status', ['Order', 'Datang', 'Terbayar', 'Aktif', 'Non-Aktif']);
+            $table->enum('status', ['Order', 'Datang', 'Terbayar', 'Aktif', "Pending", 'Non-Aktif']);
             $table->integer('order_by')->nullable();
             $table->integer('created_by');
             $table->integer('edited_by')->nullable();

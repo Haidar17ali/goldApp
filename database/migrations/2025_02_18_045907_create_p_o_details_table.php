@@ -15,9 +15,12 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->integer('po_id');
             $table->string('name')->nullable();
+            $table->enum('quality', ['Super', 'Afkir'])->nullable();
+            $table->enum('length', ['130', '260'])->nullable();
             $table->double('diameter_start')->nullable();
             $table->double('diameter_to')->nullable();
             $table->double('quantity')->nullable();
+            $table->double('ppn')->nullable();
             $table->double('price');
             $table->timestamps();
         });

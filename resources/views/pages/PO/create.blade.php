@@ -19,11 +19,13 @@
                 </div>
             @endif
 
+
+            <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
             <div class="badge badge-primary float-right">Buat Purchase Order {{ $type }}</div>
         </div>
     </div>
-    <form action="{{ route('surat-jalan.simpan', $type) }}" method="POST" id="formRP">
+    <form action="{{ route('purchase-order.simpan', $type) }}" method="POST" id="formRP">
         @csrf
         @method('post')
         <div class="row">
@@ -34,19 +36,21 @@
                             <label for="supplier_id" class="col-sm-2 col-form-label">Supplier</label>
                             <div class="col-sm-10">
                                 <select class="form-control" name="supplier_id" id="supplier_id">
+                                    <option>Silahkan Pilih Supplier</option>
                                     @if (count($suppliers))
-                                        @foreach ($suppliers as $supplier->name)
+                                        @foreach ($suppliers as $supplier)
                                             <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                                         @endforeach
                                     @endif
                                 </select>
                             </div>
                         </div>
-                        @if ($type == 'Bahan-Baku')
+                        @if ($type == 'Sengon')
                             <div class="form-group row">
-                                <label for="supplier_id" class="col-sm-2 col-form-label">Tipe Supplier</label>
+                                <label for="supplier_type" class="col-sm-2 col-form-label">Tipe Supplier</label>
                                 <div class="col-sm-10">
-                                    <select class="form-control" name="supplier_id" id="supplier_id">
+                                    <select class="form-control" name="supplier_type" id="supplier_type">
+                                        <option>Silahkan Pilih Tipe</option>
                                         @if (count($supplier_types))
                                             @foreach ($supplier_types as $supplier_type)
                                                 <option value="{{ $supplier_type }}">{{ $supplier_type }}</option>
@@ -56,7 +60,7 @@
                                 </div>
                             </div>
                         @endif
-                        @if ($type != 'Bahan-Baku')
+                        @if ($type != 'Sengon')
                             <div class="form-group row">
                                 <label for="dp" class="col-sm-2 col-form-label">DP</label>
                                 <div class="col-sm-10">
@@ -80,10 +84,9 @@
                         @endif
                         <h3>Data Barang</h3>
                         <hr>
-                        <span class="text-danger error-text" id="road_permit_details_error"></span>
-                        <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
+                        <span class="text-danger error-text" id="details_error"></span>
                         <div id="handsontable-container"></div>
-                        <input type="hidden" name="road_permit_details[]" id="road_permit_details">
+                        <input type="hidden" name="details[]" id="details">
 
                         <div class="float-right mt-3">
                             <a href="{{ route('surat-jalan.index', $type) }}"
@@ -208,6 +211,7 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js" crossorigin="anonymous"
         referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -234,9 +238,19 @@
                         },
                     ];
 
-                    if (type == "Bahan-Baku") {
-                        colHeadersType = ['Diameter Awal', 'Diameter Akhir', 'Harga'];
+                    if (type == "Sengon") {
+                        colHeadersType = ['Kualitas', 'Panjang', 'Diameter Awal', 'Diameter Akhir', 'Harga'];
                         columnType = [{
+                                data: "quality",
+                                type: 'dropdown',
+                                source: ["Super", "Afkir"] // Dropdown untuk kolom "load"
+                            },
+                            {
+                                data: "length",
+                                type: 'dropdown',
+                                source: ["130", "260"] // Dropdown untuk kolom "load"
+                            },
+                            {
                                 data: 'diameter_start',
                                 type: 'numeric',
                             },
@@ -246,15 +260,126 @@
                             },
                             {
                                 data: 'price',
-                                type: 'numeric',
+                                type: "numeric",
+                                numericFormat: {
+                                    pattern: "0,0", // Format uang tanpa desimal (1.000.000)
+                                    culture: "id-ID" // Gunakan format Indonesia
+                                }
                             },
-                        ];;
+                        ];
                     }
+
 
                     const container = document.getElementById('handsontable-container');
                     const hot = new Handsontable(container, {
                         minSpareRows: 1,
-                        data: [],
+                        data: [
+                            // data afkir
+                            {
+                                quality: "Afkir",
+                                length: 130,
+                                diameter_start: 8,
+                                diameter_to: 9
+                            },
+                            {
+                                quality: "Afkir",
+                                length: 130,
+                                diameter_start: 10,
+                                diameter_to: 14
+                            },
+                            {
+                                quality: "Afkir",
+                                length: 130,
+                                diameter_start: 15,
+                                diameter_to: 19
+                            },
+                            {
+                                quality: "Afkir",
+                                length: 130,
+                                diameter_start: 20,
+                                diameter_to: 24
+                            },
+                            {
+                                quality: "Afkir",
+                                length: 130,
+                                diameter_start: 25,
+                                diameter_to: 60
+                            },
+                            // super 130
+                            {
+                                quality: "Super",
+                                length: 130,
+                                diameter_start: 13,
+                                diameter_to: 14
+                            },
+                            {
+                                quality: "Super",
+                                length: 130,
+                                diameter_start: 15,
+                                diameter_to: 17
+                            },
+                            {
+                                quality: "Super",
+                                length: 130,
+                                diameter_start: 18,
+                                diameter_to: 19
+                            },
+                            {
+                                quality: "Super",
+                                length: 130,
+                                diameter_start: 20,
+                                diameter_to: 24
+                            },
+                            {
+                                quality: "Super",
+                                length: 130,
+                                diameter_start: 25,
+                                diameter_to: 29
+                            },
+                            {
+                                quality: "Super",
+                                length: 130,
+                                diameter_start: 30,
+                                diameter_to: 60
+                            },
+                            // super 260
+                            {
+                                quality: "Super",
+                                length: 260,
+                                diameter_start: 20,
+                                diameter_to: 24
+                            },
+                            {
+                                quality: "Super",
+                                length: 260,
+                                diameter_start: 25,
+                                diameter_to: 29
+                            },
+                            {
+                                quality: "Super",
+                                length: 260,
+                                diameter_start: 30,
+                                diameter_to: 39
+                            },
+                            {
+                                quality: "Super",
+                                length: 260,
+                                diameter_start: 40,
+                                diameter_to: 49
+                            },
+                            {
+                                quality: "Super",
+                                length: 260,
+                                diameter_start: 50,
+                                diameter_to: 59
+                            },
+                            {
+                                quality: "Super",
+                                length: 260,
+                                diameter_start: 60,
+                                diameter_to: 90
+                            },
+                        ],
                         columns: columnType,
                         rowHeaders: true,
                         colHeaders: colHeadersType,
@@ -270,22 +395,38 @@
 
                             if (source === 'edit' || source === 'paste') {
                                 const data = hot.getData();
-                                localStorage.setItem('roadPermitDetails', JSON.stringify(data));
+
+                                localStorage.setItem(type, JSON.stringify(data));
                             }
                         },
                     });
 
                     // Isi data dari localStorage saat halaman dimuat
                     function getLocalStorage() {
-                        const savedData = localStorage.getItem('roadPermitDetails');
+                        let type = "{{ $type }}";
+                        let columnHeadersType = [
+                            'name',
+                            'quantity',
+                            'price',
+                        ];
+
+                        if (type == "Sengon") {
+                            columnHeadersType = [
+                                "quality",
+                                "length",
+                                'diameter_start',
+                                'diameter_to',
+                                'price',
+                            ];
+                        }
+
+                        const savedData = localStorage.getItem(type);
 
                         if (savedData != null) {
                             try {
                                 const parsedData = JSON.parse(savedData);
 
-                                const columnHeaders = ["load", "amount", "unit", "size",
-                                    "cubication"
-                                ]; // Sesuaikan dengan jumlah kolom
+                                const columnHeaders = columnHeadersType; // Sesuaikan dengan jumlah kolom
                                 const formattedData = parsedData.map(row => {
                                     let obj = {};
                                     row.forEach((value, index) => {
@@ -323,11 +464,12 @@
                                 } //punya if
 
 
-                                let permits = document.getElementById('road_permit_details').value =
+                                let permits = document.getElementById('details').value =
                                     JSON.stringify(data);
 
                                 const form = e.target;
                                 const formData = new FormData(form);
+
 
 
                                 fetch(form.action, {
@@ -359,8 +501,8 @@
                                                 }
                                             });
                                         } else {
-                                            localStorage.removeItem('roadPermitDetails');
-                                            window.location.href = "{{ route('surat-jalan.index', $type) }}";
+                                            localStorage.removeItem(type);
+                                            window.location.href = "{{ route('purchase-order.index', $type) }}";
                                         }
                                     })
                                     .catch(error => {

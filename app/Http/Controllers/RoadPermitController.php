@@ -93,8 +93,7 @@ class RoadPermitController extends Controller
         }
     
         session()->flash('status', 'saved');
-        return response()->json(['message' => 'Surat jalan berhasil disimpan'], 200);
-        
+        return response()->json(['message' => 'Surat jalan berhasil disimpan'], 200);        
     }
 
     public function edit($id,$type){

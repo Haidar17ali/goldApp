@@ -391,7 +391,7 @@ return [
               ],  
               [
                 'text' => 'Sengon',
-                'url' => 'JM/purchase-order/Bahan-Baku',
+                'url' => 'JM/purchase-order/Sengon',
               ],  
             ],
         ],

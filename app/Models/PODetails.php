@@ -9,6 +9,8 @@ class PODetails extends Model
     protected $fillable = [
         'po_id',
         'name',
+        'quality',
+        'length',
         'diameter_start',
         'diameter_to',
         'quantity',

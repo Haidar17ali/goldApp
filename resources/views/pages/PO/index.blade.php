@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Purchase Order' . $type)
+@section('title', 'Purchase Order ' . $type)
 
 @section('content_header')
-    <h1>Purchase Order{{ $type }}</h1>
+    <h1>Purchase Order {{ $type }}</h1>
 @stop
 
 @section('content')
@@ -30,11 +30,11 @@
                         <th scope="col">Tanggal PO</th>
                         <th scope="col">Kode PO</th>
                         <th scope="col">Supplier</th>
-                        @if ($type == 'Bahan-Baku')
+                        @if ($type == 'Sengon')
                             <th scope="col">Jenis Supplier</th>
                         @endif
                         <th scope="col">Status</th>
-                        @if ($type != 'Bahan-Baku')
+                        @if ($type != 'Sengon')
                             <th scope="col">PPN</th>
                             <th scope="col">DP</th>
                             <th scope="col">Pemesan</th>
@@ -55,14 +55,16 @@
                                 @if ($type == 'Sengon')
                                     <td>{{ $po->supplier_type }}</td>
                                 @endif
-                                <td>{{ $po->status }}</td>
+                                <td><span
+                                        class="badge {{ ($po->status == 'Aktif' ? 'badge-success' : $po->status == 'Pending') ? 'badge-warning' : 'badge-danger' }}">{{ $po->status }}</span>
+                                </td>
                                 @if ($type != 'Sengon')
                                     <td>{{ $po->ppn }}</td>
                                     <td>{{ $po->dp }}</td>
                                     <td>{{ $po->order_by != null ? $po->order_by->fullname : '' }}
                                 @endif
-                                <td>{{ $po->created_by != null ? $po->created_by->username : '' }}
-                                <td>{{ $po->edited_by != null ? $po->edited_by->username : '' }}
+                                <td>{{ $po->createdBy != null ? $po->createdBy->username : '' }}
+                                <td>{{ $po->edit_by != null ? $po->edit_by->username : '' }}
 
                                 </td>
                                 <td>
@@ -104,6 +106,8 @@
         $(document).ready(function() {
             bsCustomFileInput.init()
         })
+        let type = "{{ $type }}";
+        localStorage.removeItem("edit" + type);
         // toast
         @section('plugins.Toast', true)
             var status = "{{ session('status') }}";

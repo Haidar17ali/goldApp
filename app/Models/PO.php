@@ -30,11 +30,11 @@ class PO extends Model
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
-    public function created_by(){
+    public function createdBy(){
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function edited_by(){
+    public function edit_by(){
         return $this->belongsTo(User::class, 'edited_by');
     }
 
