@@ -359,27 +359,21 @@ return [
             ],
         ],
         [
-            'text' => 'Pekerjaan',
-            'icon' => 'fas fa-database',
+            'text' => 'Surat Jalan',
             'submenu' => [
                 [
-                    'text' => 'Surat Jalan',
-                    'submenu' => [
-                      [
-                        'text' => 'Barang Masuk',
-                        'url' => 'JM/surat-jalan/In',
-                      ],
-                      [
-                        'text' => 'Barang Masuk',
-                        'url' => 'JM/Out/surat-jalan/Out',
-                      ]  
-                    ],
+                'text' => 'Barang Masuk',
+                'url' => 'JM/surat-jalan/In',
                 ],
+                [
+                'text' => 'Barang Masuk',
+                'url' => 'JM/Out/surat-jalan/Out',
+                ]  
             ],
         ],
         [
             'text' => 'PO',
-            'icon' => 'fas fa-shopping-cart',
+            'icon' => 'fas fa-money-bill-wave-alt',
             'submenu' => [
               [
                 'text' => 'Barang Pembantu',
@@ -394,6 +388,11 @@ return [
                 'url' => 'JM/purchase-order/Sengon',
               ],  
             ],
+        ],
+        [
+            'text' => 'LPB',
+            'icon' => 'fas fa-shopping-cart',
+            'url' => 'JM/lpb',        
         ],
         // [
         //     'text' => 'pages',

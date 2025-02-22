@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\LPBController;
 use App\Http\Controllers\NPWPController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POController;
@@ -106,4 +107,12 @@ Route::prefix('JM')
         Route::get('/purchase-order/{id}/ubah/{type}', [POController::class, 'edit'])->name('purchase-order.ubah');
         Route::patch('/purchase-order/{id}/ubah/{type}', [POController::class, 'update'])->name('purchase-order.update');
         Route::delete('/purchase-order/{id}/hapus', [POController::class, 'destroy'])->name('purchase-order.hapus');
+
+        // lpb
+        Route::get('/lpb', [LPBController::class, 'index'])->name('lpb.index');
+        Route::get('/lpb/buat', [LPBController::class, 'create'])->name('lpb.buat');
+        Route::post('/lpb/buat', [LPBController::class, 'store'])->name('lpb.simpan');
+        Route::get('/lpb/{id}/ubah/', [LPBController::class, 'edit'])->name('lpb.ubah');
+        Route::patch('/lpb/{id}/ubah/', [LPBController::class, 'update'])->name('lpb.update');
+        Route::delete('/lpb/{id}/hapus', [LPBController::class, 'destroy'])->name('lpb.hapus');
     });
