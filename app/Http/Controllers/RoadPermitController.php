@@ -22,7 +22,8 @@ class RoadPermitController extends Controller
         return view('pages.road-permits.create', compact(['type', 'trucks', 'item_types']));
     }
     
-    public function store(Request $request, $type){// Set time zone
+    public function store(Request $request, $type){
+        // Set time zone
         date_default_timezone_set('Asia/Jakarta');
         
         // Validasi road permit utama
@@ -64,6 +65,7 @@ class RoadPermitController extends Controller
             'date' => date('Y-m-d'),
             'in' => date('H:i:s', time()),
             'from' => $request->from,
+            'type_item' => $request->item_type,
             'destination' => $request->destination,
             'vehicle' => $request->vehicle,
             'type_item' => $request->item_type,

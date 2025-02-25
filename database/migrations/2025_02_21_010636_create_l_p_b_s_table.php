@@ -23,7 +23,7 @@ return new class extends Migration
             $table->bigInteger('grader_id');
             $table->bigInteger('tally_id');
             $table->bigInteger('created_by');//pembuat
-            $table->bigInteger('edited_by');//pembuat
+            $table->bigInteger('edited_by')->nullable();//pembuat
             $table->bigInteger('approval_by')->nullable();// yang menyetuji
             $table->date('payment_date')->nullable();
             $table->bigInteger('conversion')->nullable(); //untuk menghitung total potongan * harga potongan
