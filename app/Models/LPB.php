@@ -45,7 +45,7 @@ class LPB extends Model
         return $this->belongsTo(User::class, 'approval_by');
     }
 
-    public function grade(){
+    public function grader(){
         return $this->belongsTo(Employee::class, 'grader_id');
     }
 

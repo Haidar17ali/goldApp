@@ -89,20 +89,21 @@ class LPBController extends Controller
             'npwp_id' => $request->npwp_id,
             'nopol' => $request->nopol,
             'conversion' => $request->conversion,
+            'status' => 'Pending',
             'created_by' => Auth::user()->id,
         ];
     
         $lpb = LPB::create($data);
     
         // Simpan detail data jika ada
-        $productCode = "";
-        $length = 130;
-        $poDetail = null;
-        $quality = 'Super';
-        $qty = 0;
         foreach ($details as $key => $detail) {
             // make code
             foreach(array_keys($detail) as $dataKey){
+                $productCode = "";
+                $length = 130;
+                $poDetail = null;
+                $quality = 'Super';
+                $qty = 0;
                 if($dataKey == 130){
                     $poDetail = PODetails::where('po_id', $request->po_id)->where('diameter_start', '<=', $detail['diameter'])->where('diameter_to', '>=', $detail['diameter'])->first();
                     $qty = $detail[130];
@@ -118,17 +119,19 @@ class LPBController extends Controller
                     $qty = $detail['afkir'];
                     $productCode = 'SGN.Af.130'.$detail['diameter'];
                 }
-            }
-            if($qty != null){
-                LPBDetail::create([
-                    'lpb_id' => $lpb->id,
-                    'product_code' => $productCode,
-                    'length' => $length,
-                    'diameter' => $detail['diameter'],
-                    'qty' => $qty,
-                    'price' => $poDetail->price,
-                    'quality' => $quality,
-                ]);
+                if($qty != ""){
+                    dd([$detail, $qty]);
+                    LPBDetail::create([
+                        'lpb_id' => $lpb->id,
+                        'product_code' => $productCode,
+                        'length' => $length,
+                        'diameter' => $detail['diameter'],
+                        'qty' => $qty,
+                        'price' => $poDetail->price,
+                        'quality' => $quality,
+                    ]);
+                }
+                dd("ok");
             }
         }
     

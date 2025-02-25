@@ -27,15 +27,19 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
+                        <th scope="col">Tanggal LPB</th>
                         <th scope="col">Tanggal Kedatangan</th>
+                        <th scope="col">No Kitir</th>
                         <th scope="col">Nopol</th>
                         <th scope="col">Supplier</th>
                         <th scope="col">NPWP</th>
                         <th scope="col">Grader & Tally</th>
                         <th scope="col">Status</th>
                         <th scope="col">Penyetuju</th>
-                        <th scope="col">Pembuat</th>
-                        <th scope="col">Pengedit</th>
+                        @if (Auth::id() == 1)
+                            <th scope="col">Pembuat</th>
+                            <th scope="col">Pengedit</th>
+                        @endif
                         <th scope="col">Aksi</th>
                     </tr>
                 </thead>
@@ -45,26 +49,34 @@
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
                                 <td>{{ date('d-m-Y', strtotime($lpb->lpb_date)) }}</td>
-                                <td>{{ $lpb->lpb_code }}</td>
-                                <td>{{ $lpb->supplier != null ? $lpb->supplier->name : '' }}</td>
-                                @if ($type == 'Sengon')
-                                    <td>{{ $lpb->supplier_type }}</td>
-                                @endif
-                                <td><span
-                                        class="badge {{ ($lpb->status == 'Aktif' ? 'badge-success' : $lpb->status == 'Pending') ? 'badge-warning' : 'badge-danger' }}">{{ $lpb->status }}</span>
+                                <td>{{ $lpb->roadPermit != null ? date('d-m-Y', strtotime($lpb->roadPermit->date)) : '' }}
                                 </td>
-                                @if ($type != 'Sengon')
-                                    <td>{{ $lpb->ppn }}</td>
-                                    <td>{{ $lpb->dp }}</td>
-                                    <td>{{ $lpb->order_by != null ? $lpb->order_by->fullname : '' }}
-                                @endif
-                                <td>{{ $lpb->createdBy != null ? $lpb->createdBy->username : '' }}
-                                <td>{{ $lpb->edit_by != null ? $lpb->edit_by->username : '' }}
-
+                                <td>{{ $lpb->no_kitir }}</td>
+                                <td>{{ $lpb->nopol }}</td>
+                                <td>{{ $lpb->supplier != null ? $lpb->supplier->name : '' }}</td>
+                                <td>{{ $lpb->npwp != null ? $lpb->npwp->name : '' }}</td>
+                                <td>{{ $lpb->grader != null ? $lpb->grader->fullname : '' }} &
+                                    {{ $lpb->tally != null ? $lpb->tally->fullname : '' }}
                                 </td>
                                 <td>
-                                    <a href="{{ route('lpb.ubah', ['type' => $type, 'id' => $lpb->id]) }}"
-                                        class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
+                                    <span
+                                        class="badge {{ ($lpb->status == 'Sukses' ? 'badge-success' : $lpb->status == 'Pending') ? 'badge-warning' : 'badge-danger' }}">{{ $lpb->status }}</span>
+                                </td>
+                                <td>{{ $lpb->approvalBy != null ? $lpb->approvalBy->username : 'Menunggu Persetujuan' }}
+                                </td>
+                                @if (Auth::id() == 1)
+                                    <td>{{ $lpb->createdBy != null ? $lpb->createdBy->username : '' }}</td>
+                                    <td>{{ $lpb->edit_by != null ? $lpb->edit_by->username : '' }}</td>
+                                @endif
+                                <td>
+                                    @if ($lpb->approvalBy == null)
+                                        <a href="{{ route('lpb.ubah', $lpb->id) }}"
+                                            class="badge badge-sm badge-success">Setujui</a>
+                                        <a href="{{ route('lpb.ubah', $lpb->id) }}"
+                                            class="badge badge-sm badge-danger">Tolak</a>
+                                    @endif
+                                    <a href="{{ route('lpb.ubah', $lpb->id) }}" class="badge badge-success"><i
+                                            class="fas fa-pencil-alt"></i></a>
                                     <form action="{{ route('lpb.hapus', $lpb->id) }}" class="d-inline"
                                         id="delete{{ $lpb->id }}" method="post">
                                         @csrf
