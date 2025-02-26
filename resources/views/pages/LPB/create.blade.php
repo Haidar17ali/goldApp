@@ -344,19 +344,6 @@
                                                 const q260 = hot.getDataAtCell(row,
                                                     3) || 0;
 
-                                                // kubikasi
-                                                const kAfkir = hot.getDataAtCell(row,
-                                                    4) || 0;
-                                                const k130 = hot.getDataAtCell(row,
-                                                    5) || 0;
-                                                const k260 = hot.getDataAtCell(row,
-                                                    6) || 0;
-                                                let totalKubikasi = parseFloat(kAfkir) +
-                                                    parseFloat(k130) + parseFloat(k260);
-
-                                                totalKubikasi = totalKubikasi.toFixed(
-                                                    4
-                                                ); // Batasi 4 angka di belakang koma
 
 
                                                 hot.setDataAtCell(row, 4, kubikasi(
@@ -368,8 +355,28 @@
                                                 hot.setDataAtCell(row, 6, kubikasi(
                                                     diameter, 260,
                                                     q260));
+
+                                                // set total kubikasi
+                                                // kubikasi
+                                                const kAfkir = hot.getDataAtCell(row,
+                                                    4) || 0;
+                                                const k130 = hot.getDataAtCell(row,
+                                                    5) || 0;
+                                                const k260 = hot.getDataAtCell(row,
+                                                    6) || 0;
+
+
+                                                let totalKubikasi = parseFloat(kAfkir) +
+                                                    parseFloat(k130) + parseFloat(k260);
+
+
+                                                totalKubikasi = totalKubikasi.toFixed(
+                                                    4
+                                                ); // Batasi 4 angka di belakang koma
+
                                                 hot.setDataAtCell(row, 7,
                                                     totalKubikasi);
+                                                // end set Total kubikasi
                                             });
                                         });
                                         isUpdating = false; // Reset flag setelah update selesai
@@ -469,7 +476,7 @@
                                                 }
                                             });
                                         } else {
-                                            localStorage.removeItem(type);
+                                            localStorage.removeItem('setLpb');
                                             window.location.href = "{{ route('lpb.index') }}";
                                         }
                                     })

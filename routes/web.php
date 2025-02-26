@@ -10,6 +10,7 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\RoadPermitController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UtilityController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -115,4 +116,7 @@ Route::prefix('JM')
         Route::get('/lpb/{id}/ubah/', [LPBController::class, 'edit'])->name('lpb.ubah');
         Route::patch('/lpb/{id}/ubah/', [LPBController::class, 'update'])->name('lpb.update');
         Route::delete('/lpb/{id}/hapus', [LPBController::class, 'destroy'])->name('lpb.hapus');
+
+        // utility
+        Route::get('/status/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve');
     });

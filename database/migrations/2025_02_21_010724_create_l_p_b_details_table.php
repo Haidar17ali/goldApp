@@ -15,10 +15,10 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('lpb_id');
             $table->string("product_code");
-            $table->integer("length");
-            $table->integer("diameter");
-            $table->integer("price");
-            $table->integer("qty");
+            $table->bigInteger("length");
+            $table->bigInteger("diameter");
+            $table->bigInteger("price");
+            $table->bigInteger("qty");
             $table->enum("quality", ["Afkir", "Super"]);
             $table->timestamps();
         });

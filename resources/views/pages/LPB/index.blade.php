@@ -110,6 +110,7 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
     <script>
+        localStorage.removeItem('editLpb');
         $(document).ready(function() {
             bsCustomFileInput.init()
         })

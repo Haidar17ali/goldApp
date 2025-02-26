@@ -24,6 +24,8 @@ return new class extends Migration
             $table->enum('status', ['Order', 'Datang', 'Terbayar', 'Aktif', "Pending", 'Non-Aktif']);
             $table->integer('order_by')->nullable();
             $table->integer('created_by');
+            $table->integer('approved_by');
+            $table->dateTime('approved_at');
             $table->integer('edited_by')->nullable();
             $table->timestamps();
         });
