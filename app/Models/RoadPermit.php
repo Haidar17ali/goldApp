@@ -21,6 +21,7 @@ class RoadPermit extends Model
         'sill_number',
         'container_number',
         'type',
+        'type_item',
         'created_by',
         'edited_by',
     ];

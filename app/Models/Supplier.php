@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Supplier extends Model
 {
     protected $fillable = [
+        'npwp_id',
         'nik',
         'supplier_type',
         'name',
@@ -23,4 +24,10 @@ class Supplier extends Model
     public function bank(){
         return $this->belongsTo(Bank::class, 'bank_id');
     }
+
+    public function npwp(){
+        return $this->belongsTo(npwp::class, 'npwp_id');
+    }
+
+
 }

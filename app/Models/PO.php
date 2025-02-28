@@ -20,6 +20,10 @@ class PO extends Model
         'order_by',
         'created_by',
         'edited_by',
+        'edited_by',
+        'approved_by',
+        'approved_at',
+        'activation_date',
     ];
 
     public function details(){
@@ -36,6 +40,10 @@ class PO extends Model
 
     public function edit_by(){
         return $this->belongsTo(User::class, 'edited_by');
+    }
+
+    public function approvedBy(){
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function order_by(){

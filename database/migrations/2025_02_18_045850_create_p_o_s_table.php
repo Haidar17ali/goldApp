@@ -21,12 +21,13 @@ return new class extends Migration
             $table->bigInteger('supplier_id');
             $table->enum('supplier_type', ['Umum', 'Khusus']);
             $table->double('dp')->nullable();
-            $table->enum('status', ['Order', 'Datang', 'Terbayar', 'Aktif', "Pending", 'Non-Aktif']);
+            $table->enum('status', ['Order', 'Datang', 'Terbayar', 'Aktif', "Pending", 'Non-Aktif', 'Tidak Disetujui', 'Gagal']);
             $table->integer('order_by')->nullable();
             $table->integer('created_by');
-            $table->integer('approved_by');
-            $table->dateTime('approved_at');
             $table->integer('edited_by')->nullable();
+            $table->integer('approved_by')->nullable();
+            $table->dateTime('approved_at')->nullable();
+            $table->dateTime('activation_date')->nullable();
             $table->timestamps();
         });
     }

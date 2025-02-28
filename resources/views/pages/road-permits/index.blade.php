@@ -48,6 +48,7 @@
                         {{-- <th scope="col">Lok Bongkar</th> --}}
                         <th scope="col">Nomer Sill</th>
                         <th scope="col">Nomer Container</th>
+                        <th scope="col">Status</th>
                         {{-- <th scope="col">Pembuat</th>
                         <th scope="col">Pengedit</th> --}}
                         <th scope="col">Aksi</th>
@@ -70,6 +71,9 @@
                                 {{-- <td>{{ $road_permit->unpack_location }}</td> --}}
                                 <td>{{ $road_permit->sill_number }}</td>
                                 <td>{{ $road_permit->container_number }}</td>
+                                <td><span
+                                        class="badge {{ $road_permit->status == 'Selesai' ? 'badge-success' : ($road_permit->status == 'Proses Bongkar' ? 'badge-warning' : 'badge-primary') }}">{{ $road_permit->status }}</span>
+                                </td>
                                 {{-- <td>{{ $road_permit->createdBy != null ? $road_permit->createdBy->username : '' }}</td>
                                 <td>{{ $road_permit->editedBy != null ? $road_permit->editedBy->username : '' }}</td> --}}
                                 <td>
@@ -96,7 +100,7 @@
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="10" class="text-center"><b>Data surat-jalan tidak ditemukan!</b></td>
+                            <td colspan="13" class="text-center"><b>Data surat-jalan tidak ditemukan!</b></td>
                         </tr>
                     @endif
                 </tbody>

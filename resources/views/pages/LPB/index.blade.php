@@ -69,23 +69,23 @@
                                     <td>{{ $lpb->edit_by != null ? $lpb->edit_by->username : '' }}</td>
                                 @endif
                                 <td>
-                                    @if ($lpb->approvalBy == null)
-                                        <a href="{{ route('lpb.ubah', $lpb->id) }}"
-                                            class="badge badge-sm badge-success">Setujui</a>
-                                        <a href="{{ route('lpb.ubah', $lpb->id) }}"
-                                            class="badge badge-sm badge-danger">Tolak</a>
+                                    @if ($lpb->approved_by == null)
+                                        <a href="{{ route('utility.approve-lpb', ['modelType' => 'LPB', 'id' => $lpb->id, 'status' => 'Pending']) }}"
+                                            class="badge badge-sm badge-success"><i class="fas fa-check"></i></a>
+                                        <a href="{{ route('lpb.ubah', $lpb->id) }}" class="badge badge-sm badge-danger"><i
+                                                class="fas fa-times"></i></a>
+                                        <a href="{{ route('lpb.ubah', $lpb->id) }}" class="badge badge-success"><i
+                                                class="fas fa-pencil-alt"></i></a>
+                                        <form action="{{ route('lpb.hapus', $lpb->id) }}" class="d-inline"
+                                            id="delete{{ $lpb->id }}" method="post">
+                                            @csrf
+                                            @method('DELETE')
+                                            <a href="#" data-id="{{ $lpb->id }}"
+                                                class="badge badge-pill badge-delete badge-danger d-inline">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </form>
                                     @endif
-                                    <a href="{{ route('lpb.ubah', $lpb->id) }}" class="badge badge-success"><i
-                                            class="fas fa-pencil-alt"></i></a>
-                                    <form action="{{ route('lpb.hapus', $lpb->id) }}" class="d-inline"
-                                        id="delete{{ $lpb->id }}" method="post">
-                                        @csrf
-                                        @method('DELETE')
-                                        <a href="#" data-id="{{ $lpb->id }}"
-                                            class="badge badge-pill badge-delete badge-danger d-inline">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </form>
                                 </td>
                             </tr>
                         @endforeach

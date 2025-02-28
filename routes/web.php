@@ -118,5 +118,13 @@ Route::prefix('JM')
         Route::delete('/lpb/{id}/hapus', [LPBController::class, 'destroy'])->name('lpb.hapus');
 
         // utility
-        Route::get('/status/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve');
+            // ajax
+        Route::get('no-rek-id/ajax', [UtilityController::class, 'getNumberAccount'])->name('utility.ajax-no-rek');
+        Route::get('npwp-id/ajax', [UtilityController::class, 'getByID'])->name('utility.npwpId');
+        Route::get('surat-jalan-id/ajax', [UtilityController::class, 'getByID'])->name('utility.suratJalanId');
+            // po
+        Route::get('/persetujuan-po/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-po');
+        Route::get('/aktivasi-po/{modelType}/{id}/{status}', [UtilityController::class, 'activation'])->name('utility.activation-po');
+            // LPB
+        Route::get('/persetujuan-LPB/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-lpb');
     });

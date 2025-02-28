@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('suppliers', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->bigInteger('npwp_id')->nullable();
             $table->bigInteger('nik')->nullable();
             $table->enum('supplier_type', ['Sengon', 'Merbau', 'Pembantu']);
             $table->string('name');

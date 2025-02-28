@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 class POController extends Controller
 {
     public function index($type){
-        $pos = PO::where('po_type', $type)->with(['createdBy', "edit_by"])->orderBy('id', 'desc')->paginate(20);
+        $pos = PO::where('po_type', $type)->with(['createdBy', "edit_by", 'approvedBy'])->orderBy('id', 'desc')->paginate(20);
         return view('pages.PO.index', compact(['pos', 'type']));
     }
 
@@ -32,7 +32,8 @@ class POController extends Controller
         if($type == "Sengon"){
             $request->validate([
                 'supplier_id' => "required|exists:suppliers,id",
-                'supplier_type' => "required|in:Umum,Khusus"
+                'supplier_type' => "required|in:Umum,Khusus",
+                'activation_date' => 'required|date',
             ]);
             $POCode = "PO.". $type. ".". $request->supplier_type.".". date("ymdhis").".".Auth::id();
         }        
@@ -82,6 +83,7 @@ class POController extends Controller
             'po_type' => $type,
             'supplier_id' => $request->supplier_id,
             'supplier_type' => $request->supplier_type,
+            'activation_date' => $request->activation_date,
             'status' => 'Pending',
             'created_by' => Auth::user()->id,
         ];
@@ -124,7 +126,8 @@ class POController extends Controller
         if($type == "Sengon"){
             $request->validate([
                 'supplier_id' => "required|exists:suppliers,id",
-                'supplier_type' => "required|in:Umum,Khusus"
+                'supplier_type' => "required|in:Umum,Khusus",
+                'activation_date' => 'required|date',
             ]);
         }        
         
@@ -170,6 +173,7 @@ class POController extends Controller
             $po->po_type = $type;
             $po->supplier_id = $request->supplier_id;
             $po->supplier_type = $request->supplier_type;
+            $po->activation_date = $request->activation_date;
             $po->status = 'Pending';
             $po->edited_by = Auth::user()->id;
             $po->save();

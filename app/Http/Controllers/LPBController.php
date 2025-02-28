@@ -23,7 +23,7 @@ class LPBController extends Controller
     }
 
     public function create(){
-        $road_permits = RoadPermit::where('type_item', 'Sengon')->get();
+        $road_permits = RoadPermit::where('type_item', 'Sengon')->where('status', 'Sudah dibongkar')->get();
         $purchase_orders = PO::where('po_type', 'Sengon')->where('status','Aktif')->get();
         $npwps = npwp::all();
         $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
@@ -51,10 +51,13 @@ class LPBController extends Controller
 
         // ambil data stringify yang dikirim fe dan decode menjadi json
         $details = json_decode($request->details[0], true);
+        $filteredData = array_filter($details, function ($detail) {
+            return isset($detail['afkir']) || isset($detail[130]) || isset($detail[260]);
+        });
+        $details = $filteredData;
 
         // Validasi road permit details jika ada
-        if(count($details)){
-        
+        if(count($details)){        
             $detailErrors = [];
             foreach ($details as $index => $detail) {
                 $detail['afkir'] = (int)$detail['afkir'];
@@ -121,8 +124,10 @@ class LPBController extends Controller
                     }
 
                     $log = Log::where('code', $productCode)->first();
-                    $log->quantity += $qty;
-                    $log->save();
+                    if($log){
+                        $log->quantity += $qty;
+                        $log->save();
+                    }
         
                     // Simpan ke database
                     LPBDetail::create([
@@ -184,7 +189,7 @@ class LPBController extends Controller
         // Ubah array ke format JSON untuk dikirim ke frontend
         $initialData = json_encode(array_values($data));
 
-        $road_permits = RoadPermit::where('type_item', 'Sengon')->get();
+        $road_permits = RoadPermit::where('type_item', 'Sengon')->where('status', 'Sudah dibongkar')->get();
         $purchase_orders = PO::where('po_type', 'Sengon')->where('status','Aktif')->get();
         $npwps = npwp::all();
         $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
@@ -226,6 +231,11 @@ class LPBController extends Controller
 
         // ambil data stringify yang dikirim fe dan decode menjadi json
         $details = json_decode($request->details[0], true);
+
+        $filteredData = array_filter($details, function ($detail) {
+            return isset($detail['afkir']) || isset($detail[130]) || isset($detail[260]);
+        });
+        dd($filteredData);
 
         // Validasi road permit details jika ada
         if(count($details)){
@@ -292,8 +302,10 @@ class LPBController extends Controller
                     }
 
                     $log = Log::where('code', $productCode)->first();
-                    $log->quantity += $qty;
-                    $log->save();
+                    if($log){
+                        $log->quantity += $qty;
+                        $log->save();
+                    }
         
                     // Simpan ke database
                     LPBDetail::create([

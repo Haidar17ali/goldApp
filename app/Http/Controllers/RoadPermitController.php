@@ -65,7 +65,6 @@ class RoadPermitController extends Controller
             'date' => date('Y-m-d'),
             'in' => date('H:i:s', time()),
             'from' => $request->from,
-            'type_item' => $request->item_type,
             'destination' => $request->destination,
             'vehicle' => $request->vehicle,
             'type_item' => $request->item_type,
@@ -77,6 +76,7 @@ class RoadPermitController extends Controller
             'container_number' => $request->container_number,
             'description' => $request->description,
             'type' => $type,
+            'status' => 'Proses Bongkar',
             'created_by' => Auth::user()->id,
         ];
     
@@ -203,6 +203,7 @@ class RoadPermitController extends Controller
         $road_permit = RoadPermit::findOrFail($id);
 
         $road_permit->out = date('Y-m-d H;i:s', time());
+        $road_permit->status = 'Sudah Dibongkar';
         $road_permit->edited_by = Auth::user()->id;
         $road_permit->save();
         return redirect()->back()->with('status', 'edited');

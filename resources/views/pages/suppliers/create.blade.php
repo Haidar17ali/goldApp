@@ -36,6 +36,17 @@
                             </div>
                         </div>
                         <div class="form-group row">
+                            <label for="npwp" class="col-sm-2 col-form-label">NPWP</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="npwp" id="npwp">
+                                    <option>Silahkan Pilih</option>
+                                    @foreach ($npwps as $npwp)
+                                        <option value="{{ $npwp->id }}">{{ $npwp->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <label for="type" class="col-sm-2 col-form-label">Jenis</label>
                             <div class="col-sm-10">
                                 <select class="form-control" name="type" id="type">
@@ -66,7 +77,7 @@
                             <label for="address" class="col-sm-2 col-form-label">Alamat</label>
                             <div class="col-sm-10">
                                 <select class="form-control" name="address" id="address">
-                                    <option>Silahkan Isi Alamat Atau Pilih Alamat</option>
+                                    <option value="null">Silahkan Isi Alamat Atau Pilih Alamat</option>
                                     @foreach ($addresses as $address)
                                         <option value="{{ $address->id }}">{{ $address->address }}</option>
                                     @endforeach
@@ -147,48 +158,47 @@
 @stop
 
 @section('js')
+    <script src="{{ asset('assets/js/myHelper.js') }}"></script>
     <script>
         $(document).ready(function() {
-            $('#address').select2({
-                theme: "bootstrap4",
-                tags: true
-            });
-            $('#position').select2({
-                theme: "bootstrap4",
-            });
-            $('#number_account').select2({
-                theme: "bootstrap4",
-                tags: true
-            });
+                    $('#address').select2({
+                        theme: "bootstrap4",
+                        tags: true
+                    });
+                    $('#position').select2({
+                        theme: "bootstrap4",
+                    });
+                    $('#number_account').select2({
+                        theme: "bootstrap4",
+                        tags: true
+                    });
 
-            $("#payment_type").on("change", function() {
-                if ($(this).val() == "ATM") {
-                    $('#bank_name').prop('disabled', false);
-                    $('#bank_account').prop('disabled', false);
-                    $('#number_account').prop('disabled', false);
-                } else {
-                    $('#bank_name').prop('disabled', true);
-                    $('#bank_account').prop('disabled', true);
-                    $('#number_account').prop('disabled', true);
-                }
-            })
+                    $("#payment_type").on("change", function() {
+                        if ($(this).val() == "ATM") {
+                            $('#bank_name').prop('disabled', false);
+                            $('#bank_account').prop('disabled', false);
+                            $('#number_account').prop('disabled', false);
+                        } else {
+                            $('#bank_name').prop('disabled', true);
+                            $('#bank_account').prop('disabled', true);
+                            $('#number_account').prop('disabled', true);
+                        }
+                    })
 
-            $("#address").on('select2:select', function() {
-                let idAddress = $(this).val();
+                    $("#address").on('select2:select', function() {
+                        let idAddress = $(this).val();
+                        let url = "{{ route('karyawan.alamat') }}"
+                        let data = {
+                            id: idAddress
+                        }
+                        let jsonData = loadWithData(url, data);
 
-                $.ajax({
-                    url: "{{ route('karyawan.alamat') }}",
-                    type: "GET",
-                    data: {
-                        id: idAddress
-                    },
-                    success: function(response) {
-                        if (response != null) {
-                            $("#rt").val(response.rt);
-                            $("#rw").val(response.rw);
-                            $("#kelurahan").val(response.kelurahan);
-                            $("#kecamatan").val(response.kecamatan);
-                            $("#city").val(response.city);
+                        if (jsonData != null) {
+                            $("#rt").val(jsonData.rt);
+                            $("#rw").val(jsonData.rw);
+                            $("#kelurahan").val(jsonData.kelurahan);
+                            $("#kecamatan").val(jsonData.kecamatan);
+                            $("#city").val(jsonData.city);
                         } else {
                             $("#rt").val("");
                             $("#rw").val("");
@@ -196,10 +206,40 @@
                             $("#kecamatan").val("");
                             $("#city").val("");
                         }
+                    });
 
-                    }
-                })
-            })
-        });
+                    $("#number_account").on('select2:select', function() {
+                        let idAccount = $(this).val();
+                        let url = "{{ route('utility.ajax-no-rek') }}"
+                        let data = {
+                            id: idAccount
+                        }
+                        let jsonData = loadWithData(url, data);
+
+
+                        if (jsonData != null) {
+                            $("#bank_account").val(jsonData.bank_account);
+                            $("#bank_name").val(jsonData.bank_name);
+                        } else {
+                            $("#bank_account").val("");
+                            $("#bank_name").val("");
+                        }
+                    });
+                    // toast
+                    @section('plugins.Toast', true)
+                        var status = "{{ session('status') }}";
+                        console.log(status);
+
+                        if (status == "required_address") {
+                            Toastify({
+                                text: "Alamat tidak boleh kosong!",
+                                className: "info",
+                                close: true,
+                                style: {
+                                    background: "red",
+                                }
+                            }).showToast();
+                        }
+                    });
     </script>
 @stop

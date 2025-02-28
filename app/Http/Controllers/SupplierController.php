@@ -6,6 +6,7 @@ use App\Imports\EmployeeImport;
 use App\Imports\SupplierImport;
 use App\Models\Address;
 use App\Models\Bank;
+use App\Models\npwp;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -20,15 +21,24 @@ class SupplierController extends Controller
     public function create(){
         $banks = Bank::orderBy("id", 'desc')->get();
         $addresses = Address::orderBy("id", 'desc')->get();
+        $npwps = npwp::all();
         $types = ['Sengon', 'Merbau', 'Pembantu'];
-        return view('pages.suppliers.create', compact(['addresses', 'banks', 'types']));
+        return view('pages.suppliers.create', compact(['addresses', 'banks', 'types','npwps']));
     }
 
     public function store(Request $request){
         $request->validate([
             'type' => 'required|in:Sengon,Merbau,Pembantu',
             'name' => 'required',
+            'npwp' => 'required',
+            'number_account' => 'required|numeric',
+            'address' => 'required',
         ]);
+
+        if($request->address == "null"){
+            return redirect()->back()->with('status', 'required_address');
+        }
+        dd("ok");
 
         if($request->phone != null){
             $request->validate([
@@ -37,6 +47,7 @@ class SupplierController extends Controller
         }
 
         // inisialisasi
+        $npwp_id = $request->npwp;
         $nik = $request->nik;
         $type = $request->type;
         $name = $request->name;
@@ -83,6 +94,7 @@ class SupplierController extends Controller
         }
         
         $dataSupplier = [
+            'npwp_id' => $npwp_id,
             'nik' => $nik,
             'supplier_type' => $type,
             'name' => $name,
@@ -99,9 +111,10 @@ class SupplierController extends Controller
         $supplier = Supplier::with(['bank', 'address'])->findOrFail($id);
         $banks = Bank::orderBy("id", 'desc')->get();
         $addresses = Address::orderBy("id", 'desc')->get();
+        $npwps = npwp::all();
         $types = ['Sengon', 'Merbau', 'Pembantu'];
         
-        return view('pages.suppliers.edit', compact(['addresses', 'banks', 'types', 'supplier']));
+        return view('pages.suppliers.edit', compact(['addresses', 'banks', 'types', 'supplier','npwps']));
     }
 
     public function update(Request $request, $id){
@@ -110,6 +123,7 @@ class SupplierController extends Controller
         $request->validate([
             'type' => 'required|in:Sengon,Merbau,Pembantu',
             'name' => 'required',
+            'npwp' => 'required',
         ]);
 
         if($request->phone != null){
@@ -119,6 +133,7 @@ class SupplierController extends Controller
         }
 
         // inisialisasi
+        $npwp_id = $request->npwp;
         $nik = $request->nik;
         $type = $request->type;
         $name = $request->name;
@@ -164,6 +179,7 @@ class SupplierController extends Controller
             $bank_id = $db_bank;
         }
         
+        $supplier->npwp_id = $npwp_id;
         $supplier->nik = $nik;
         $supplier->supplier_type = $type;
         $supplier->name = $name;

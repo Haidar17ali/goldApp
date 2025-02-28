@@ -487,7 +487,6 @@ class EmployeeController extends Controller
     }
 
     public function getAddress(Request $request){
-        $typeValue = $request->type;
 
         $response = Address::where("id", $request->id)->first();
         return response()->json($response);

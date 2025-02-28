@@ -91,9 +91,9 @@
                                     @endif
                                 </select>
                             </div>
-                            <label for="npwp_id" class="col-sm-2 col-form-label">NPWP</label>
+                            <label for="npwp" class="col-sm-2 col-form-label">NPWP</label>
                             <div class="col-sm-4">
-                                <select class="form-control" name="npwp_id" id="npwp_id">
+                                <select class="form-control" name="npwp" disabled id="npwp">
                                     <option>Silahkan Pilih NPWP</option>
                                     @if (count($npwps))
                                         @foreach ($npwps as $npwp)
@@ -101,6 +101,7 @@
                                         @endforeach
                                     @endif
                                 </select>
+                                <input type="hidden" id="npwp_id" name="npwp_id">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -306,6 +307,51 @@
                         });
                     }
 
+                    $("#supplier_id").on('select2:select', function() {
+                        let idAccount = $(this).val();
+                        let url = "{{ route('utility.npwpId') }}"
+                        let data = {
+                            id: idAccount,
+                            model: 'Supplier',
+                            relation: ['npwp'],
+                        }
+                        let jsonData = loadWithData(url, data);
+
+                        if (jsonData != null) {
+                            $('#npwp').empty().append('<option value="">-- Pilih NPWP --</option>');
+
+                            if (jsonData.npwp_id) {
+                                $('#npwp').append('<option value="' + jsonData.npwp.id + '" selected>' + jsonData
+                                    .npwp.name + '</option>');
+                                $('#npwp_id').val(jsonData.npwp.id); // Set nilai ke input hidden
+                            } else {
+                                $('#npwp_id').val('');
+                            }
+
+                            $('#npwp').trigger('change'); // Refresh Select2
+                        } else {
+                            $('#npwp').empty().append('<option value="">-- Pilih NPWP --</option>');
+                        }
+                    });
+
+                    $("#road_permit_id").on('change', function() {
+                        let idAccount = $(this).val();
+                        let url = "{{ route('utility.suratJalanId') }}"
+                        let data = {
+                            id: idAccount,
+                            model: 'RoadPermit',
+                        };
+                        let jsonData = loadWithData(url, data);
+
+                        if (jsonData != null) {
+                            $("#nopol").val(jsonData.nopol);
+                            $('#npwp_id').trigger('change'); // Refresh Select2
+                        } else {
+                            $("#nopol").val("");
+                        }
+
+                    });
+
                     const container = document.getElementById('handsontable-container');
                     let isUpdating = false; // Flag untuk mencegah rekursi
                     const hot = new Handsontable(container, {
@@ -333,46 +379,61 @@
 
                                     setTimeout(() => {
                                         hot.batch(() => {
-                                            changes.forEach(([row, prop, oldVal, newVal]) => {
-                                                const diameter = hot.getDataAtCell(row,
-                                                    0) || 0;
+                                            changes.forEach(([row, prop, oldVal,
+                                                newVal
+                                            ]) => {
+                                                const diameter = hot
+                                                    .getDataAtCell(row,
+                                                        0) || 0;
                                                 // kuantiti
-                                                const qafkir = hot.getDataAtCell(row,
-                                                    1) || 0;
-                                                const q130 = hot.getDataAtCell(row,
+                                                const qafkir = hot
+                                                    .getDataAtCell(row,
+                                                        1) || 0;
+                                                const q130 = hot.getDataAtCell(
+                                                    row,
                                                     2) || 0;
-                                                const q260 = hot.getDataAtCell(row,
+                                                const q260 = hot.getDataAtCell(
+                                                    row,
                                                     3) || 0;
 
 
 
-                                                hot.setDataAtCell(row, 4, kubikasi(
-                                                    diameter, 130,
-                                                    qafkir));
-                                                hot.setDataAtCell(row, 5, kubikasi(
-                                                    diameter, 130,
-                                                    q130));
-                                                hot.setDataAtCell(row, 6, kubikasi(
-                                                    diameter, 260,
-                                                    q260));
+                                                hot.setDataAtCell(row, 4,
+                                                    kubikasi(
+                                                        diameter, 130,
+                                                        qafkir));
+                                                hot.setDataAtCell(row, 5,
+                                                    kubikasi(
+                                                        diameter, 130,
+                                                        q130));
+                                                hot.setDataAtCell(row, 6,
+                                                    kubikasi(
+                                                        diameter, 260,
+                                                        q260));
 
                                                 // set total kubikasi
                                                 // kubikasi
-                                                const kAfkir = hot.getDataAtCell(row,
-                                                    4) || 0;
-                                                const k130 = hot.getDataAtCell(row,
+                                                const kAfkir = hot
+                                                    .getDataAtCell(row,
+                                                        4) || 0;
+                                                const k130 = hot.getDataAtCell(
+                                                    row,
                                                     5) || 0;
-                                                const k260 = hot.getDataAtCell(row,
+                                                const k260 = hot.getDataAtCell(
+                                                    row,
                                                     6) || 0;
 
 
-                                                let totalKubikasi = parseFloat(kAfkir) +
-                                                    parseFloat(k130) + parseFloat(k260);
+                                                let totalKubikasi = parseFloat(
+                                                        kAfkir) +
+                                                    parseFloat(k130) +
+                                                    parseFloat(k260);
 
 
-                                                totalKubikasi = totalKubikasi.toFixed(
-                                                    4
-                                                ); // Batasi 4 angka di belakang koma
+                                                totalKubikasi = totalKubikasi
+                                                    .toFixed(
+                                                        4
+                                                    ); // Batasi 4 angka di belakang koma
 
                                                 hot.setDataAtCell(row, 7,
                                                     totalKubikasi);
@@ -390,7 +451,8 @@
 
                     // Isi data dari localStorage saat halaman dimuat
                     function getLocalStorage() {
-                        let columnHeadersType = ['diameter', 'afkir', '130', '260', 'kubikasi_afkir', 'kubikasi_130',
+                        let columnHeadersType = ['diameter', 'afkir', '130', '260', 'kubikasi_afkir',
+                            'kubikasi_130',
                             'kubikasi_260', 'total'
                         ];
 

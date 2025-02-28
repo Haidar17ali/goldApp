@@ -24,10 +24,11 @@ return new class extends Migration
             $table->bigInteger('tally_id');
             $table->bigInteger('created_by');//pembuat
             $table->bigInteger('edited_by')->nullable();//pembuat
-            $table->bigInteger('approval_by')->nullable();// yang menyetuji
-            $table->date('payment_date')->nullable();
+            $table->bigInteger('approved_by')->nullable();// yang menyetuji
+            $table->date('approved_at')->nullable();
+            // $table->date('payment_date')->nullable();
             $table->bigInteger('conversion')->nullable(); //untuk menghitung total potongan * harga potongan
-            $table->enum('status', ['Pengajuan Pembayaran', 'Terbayar', 'Pending', 'Tolak']); //jika status sukses maka bisa dibayarkan jika pending masih belum
+            $table->enum('status', ['Menunggu Pembayaran','Pengajuan Pembayaran', 'Terbayar', 'Pending', 'Tolak']); //jika status sukses maka bisa dibayarkan jika pending masih belum
             $table->text('address')->nullable(); //Alamat Untuk Sppt
             $table->timestamps();
         });

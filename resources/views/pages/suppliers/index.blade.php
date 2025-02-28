@@ -172,6 +172,15 @@
                         background: "#17a2b8",
                     }
                 }).showToast();
+            } else if (status == "address_required") {
+                Toastify({
+                    text: "Alamat tidak boleh kosong!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "red",
+                    }
+                }).showToast();
             }
 
             // delete 

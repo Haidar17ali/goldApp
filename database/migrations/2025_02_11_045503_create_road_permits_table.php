@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('container_number')->nullable();
             $table->enum('type', ['In', 'Out']);
             $table->enum('type_item', ['Sengon', "Merbau", 'Pembantu'])->nullable();
-            $table->enum('status', ['Proses Bongkar', "Bongkar", 'Selesai']);
+            $table->enum('status', ['Proses Bongkar', "Sudah dibongkar", 'Selesai']);
             $table->integer('created_by');
             $table->integer('edited_by')->nullable();
             $table->timestamps();

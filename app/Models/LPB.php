@@ -18,8 +18,8 @@ class LPB extends Model
         'tally_id',
         'created_by',
         'edited_by',
-        'approval_by',
-        'payment_date',
+        'approved_by',
+        'approved_at',
         'conversion',
         'status',
         'address',
@@ -42,7 +42,7 @@ class LPB extends Model
     }
 
     public function approvalBy(){
-        return $this->belongsTo(User::class, 'approval_by');
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function grader(){

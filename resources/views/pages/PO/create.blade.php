@@ -59,6 +59,14 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <label for="activation_date" class="col-sm-2 col-form-label">Tanggal Aktif</label>
+                                <div class="col-sm-4">
+                                    <input type="date" class="form-control" id="activation_date" name="activation_date"
+                                        value="{{ old('activation_date') }}">
+                                    <span class="text-danger error-text" id="activation_date_error"></span>
+                                </div>
+                            </div>
                         @endif
                         @if ($type != 'Sengon')
                             <div class="form-group row">

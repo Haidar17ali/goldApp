@@ -41,6 +41,8 @@
                         @endif
                         <th scope="col">Pembuat</th>
                         <th scope="col">Pengedit</th>
+                        <th scope="col">Penyetuju</th>
+                        <th scope="col">Disetujui Tgl</th>
                         <th scope="col">Aksi</th>
                     </tr>
                 </thead>
@@ -56,29 +58,53 @@
                                     <td>{{ $po->supplier_type }}</td>
                                 @endif
                                 <td><span
-                                        class="badge {{ ($po->status == 'Aktif' ? 'badge-success' : $po->status == 'Pending') ? 'badge-warning' : 'badge-danger' }}">{{ $po->status }}</span>
+                                        class="badge {{ $po->status == 'Aktif' ? 'badge-success' : ($po->status == 'Pending' ? 'badge-warning' : 'badge-danger') }}">{{ $po->status }}</span>
                                 </td>
                                 @if ($type != 'Sengon')
                                     <td>{{ $po->ppn }}</td>
                                     <td>{{ $po->dp }}</td>
-                                    <td>{{ $po->order_by != null ? $po->order_by->fullname : '' }}
+                                    <td>{{ $po->order_by != null ? $po->order_by->fullname : '' }}</td>
                                 @endif
-                                <td>{{ $po->createdBy != null ? $po->createdBy->username : '' }}
-                                <td>{{ $po->edit_by != null ? $po->edit_by->username : '' }}
-
+                                <td>{{ $po->createdBy != null ? $po->createdBy->username : '' }}</td>
+                                <td>{{ $po->edit_by != null ? $po->edit_by->username : '' }}</td>
+                                <td>{{ $po->approvedBy != null ? $po->approvedBy->username : 'PO Belum Disetujui!' }}
+                                <td>{{ $po->approved_at != null ? date('d-m-Y', strtotime($po->approved_at)) : '' }}
                                 </td>
                                 <td>
-                                    <a href="{{ route('purchase-order.ubah', ['type' => $type, 'id' => $po->id]) }}"
-                                        class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
-                                    <form action="{{ route('purchase-order.hapus', $po->id) }}" class="d-inline"
-                                        id="delete{{ $po->id }}" method="post">
-                                        @csrf
-                                        @method('DELETE')
-                                        <a href="#" data-id="{{ $po->id }}"
-                                            class="badge badge-pill badge-delete badge-danger d-inline">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </form>
+
+                                    @if (
+                                        $po->approved_by != null &&
+                                            $po->status != 'Tidak Disetujui' &&
+                                            $po->status != 'Aktif' &&
+                                            $po->status != 'Gagal' &&
+                                            $po->status != 'Non-Aktif')
+                                        @if (date('d-m-Y', strtotime($po->activation_date)) <= date('d-m-Y', strtotime(now()->toDateString())))
+                                            <a href="{{ route('utility.activation-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Aktif']) }}"
+                                                class="badge badge-success">Aktifkan</a>
+                                            <a href="{{ route('utility.activation-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Gagal']) }}"
+                                                class="badge badge-danger">Gagal</a>
+                                        @else
+                                            <span class="text-muted">Belum bisa diaktifkan</span>
+                                        @endif
+                                    @endif
+                                    @if ($po->approved_by == null)
+                                        <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Aktif']) }}"
+                                            class="badge badge-success"><i class="fas fa-check"></i></a>
+                                        <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Tidak Disetujui']) }}"
+                                            class="badge badge-danger"><i class="fas fa-times"></i></a>
+                                        ||
+                                        <a href="{{ route('purchase-order.ubah', ['type' => $type, 'id' => $po->id]) }}"
+                                            class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
+                                        <form action="{{ route('purchase-order.hapus', $po->id) }}" class="d-inline"
+                                            id="delete{{ $po->id }}" method="post">
+                                            @csrf
+                                            @method('DELETE')
+                                            <a href="#" data-id="{{ $po->id }}"
+                                                class="badge badge-pill badge-delete badge-danger d-inline">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -141,6 +167,24 @@
             } else if (status == "importSuccess") {
                 Toastify({
                     text: "Data karyawan berhasil diimport!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#17a2b8",
+                    }
+                }).showToast();
+            } else if (status == "Aktif") {
+                Toastify({
+                    text: "Purchase Order sudah Di setujui!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#17a2b8",
+                    }
+                }).showToast();
+            } else if (status == "Non-Aktif") {
+                Toastify({
+                    text: "Purchase Order gagal Di setujui!",
                     className: "info",
                     close: true,
                     style: {
