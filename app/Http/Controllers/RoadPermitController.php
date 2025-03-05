@@ -56,8 +56,6 @@ class RoadPermitController extends Controller
             if (!empty($detailErrors)) {
                 return response()->json(['errors' => $detailErrors], 422);
             }
-        }else{
-            return redirect()->back()->with('status', 'detailsNotFound');
         }
     
         // Simpan data utama
@@ -81,17 +79,19 @@ class RoadPermitController extends Controller
         ];
     
         $permit = RoadPermit::create($data);
-    
-        // Simpan detail data jika ada
-        foreach ($details as $detail) {
-            RoadPermitDetail::create([
-                'road_permit_id' => $permit->id,
-                'load' => $detail['load'],
-                'amount' => $detail['amount'],
-                'unit' => $detail['unit'],
-                'size' => $detail['size'] ?? null,
-                'cubication' => $detail['cubication'] ?? null,
-            ]);
+
+        if(count($details)){
+            // Simpan detail data jika ada
+            foreach ($details as $detail) {
+                RoadPermitDetail::create([
+                    'road_permit_id' => $permit->id,
+                    'load' => $detail['load'],
+                    'amount' => $detail['amount'],
+                    'unit' => $detail['unit'],
+                    'size' => $detail['size'] ?? null,
+                    'cubication' => $detail['cubication'] ?? null,
+                ]);
+            }
         }
     
         session()->flash('status', 'saved');
@@ -148,8 +148,6 @@ class RoadPermitController extends Controller
             if (!empty($detailErrors)) {
                 return response()->json(['errors' => $detailErrors], 422);
             }
-        }else{
-            return redirect()->back()->with('status', 'detailsNotFound');
         }
     
         // Simpan data utama
@@ -169,20 +167,22 @@ class RoadPermitController extends Controller
             $road_permit->save();
     
         // Simpan detail data jika ada
-        foreach ($details as $detail) {
-            RoadPermitDetail::updateOrCreate(
-                [
-                    'id' => $detail['id'] ?? null, // Cari berdasarkan id jika ada
-                    'road_permit_id' => $road_permit->id, // Pastikan road_permit_id sesuai
-                ],
-                [
-                    'load' => $detail['load'],
-                    'amount' => $detail['amount'],
-                    'unit' => $detail['unit'],
-                    'size' => $detail['size'] ?? null,
-                    'cubication' => $detail['cubication'] ?? null,
-                ]
-            );
+        if(count($details)){
+            foreach ($details as $detail) {
+                RoadPermitDetail::updateOrCreate(
+                    [
+                        'id' => $detail['id'] ?? null, // Cari berdasarkan id jika ada
+                        'road_permit_id' => $road_permit->id, // Pastikan road_permit_id sesuai
+                    ],
+                    [
+                        'load' => $detail['load'],
+                        'amount' => $detail['amount'],
+                        'unit' => $detail['unit'],
+                        'size' => $detail['size'] ?? null,
+                        'cubication' => $detail['cubication'] ?? null,
+                    ]
+                );
+            }
         }
     
         session()->flash('status', 'edited');

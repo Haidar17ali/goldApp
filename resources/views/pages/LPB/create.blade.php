@@ -66,7 +66,7 @@
                         </div>
                         <div class="form-group row">
                             <label for="road_permit_id" class="col-sm-2 col-form-label">Surat Jalan</label>
-                            <div class="col-sm-10">
+                            <div class="col-sm-7">
                                 <select class="form-control" name="road_permit_id" id="road_permit_id">
                                     <option>Silahkan Pilih Surat Jalan</option>
                                     @if (count($road_permits))
@@ -76,6 +76,13 @@
                                             </option>
                                         @endforeach
                                     @endif
+                                </select>
+                            </div>
+                            <label for="status_sj" class="col-sm-1 col-form-label">Status SJ</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" name="status_sj" id="status_sj">
+                                    <option>Pakai</option>
+                                    <option>Selesai</option>
                                 </select>
                             </div>
                         </div>
@@ -301,7 +308,7 @@
                         },
                     ];
                     let datas = [];
-                    for (let i = 8; i <= 65; i++) {
+                    for (let i = 8; i <= 70; i++) {
                         datas.push({
                             diameter: i
                         });
@@ -340,8 +347,16 @@
                         let data = {
                             id: idAccount,
                             model: 'RoadPermit',
+                            relation: ["details"],
                         };
                         let jsonData = loadWithData(url, data);
+
+                        // if (jsonData.details.length >= 0) {
+                        //     $.each(jsonData.details, function(key, value) {
+                        //         $('#cargo').append('<option value="' + value.id + '">' + value
+                        //             .load + "||" + value.amount + ' Batang</option>');
+                        //     });
+                        // }
 
                         if (jsonData != null) {
                             $("#nopol").val(jsonData.nopol);

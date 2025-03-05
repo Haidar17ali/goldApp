@@ -32,12 +32,9 @@ class LogImport implements ToModel, WithHeadingRow, WithBatchInserts, SkipsOnFai
     public function model(array $row)
     {
         // inisialisasi
-        $id_produksi = $row['id_produksi'];
-        $barcode = $row['barcode'];
         $quality = $row['kualitas'];
         $length = $row['panjang'];
         $diameter = $row['diameter'];
-        $quantity = $row['jumlah'];
         $type = $this->type;
         
         $code = 0;
@@ -45,27 +42,23 @@ class LogImport implements ToModel, WithHeadingRow, WithBatchInserts, SkipsOnFai
             $code = 'SGN.'. substr($quality, 0,2).'.'.$length.'.'.$diameter;
         }elseif($type == 'Merbau'){
             $code = 'MBU.'. substr($quality, 0,2).'.'.$length.'.'.$diameter;
-        }  
-        
-        $db_code = Log::where('code', $code)->where('type', $type)->first();
-        
-        if($db_code){
-            $db_code->quantity += $quantity;
-            $db_code->save();
-        }else{
+            $id_produksi = $row['id_produksi'];
+            $barcode = $row['barcode'];
             $data = [
                 'id_produksi' => $id_produksi,
                 'barcode' => $barcode,
-                'code' => $code,
-                'type' => $type,
-                'quality' => $quality,
-                'length' => $length,
-                'diameter' => $diameter,
-                'quantity' => $quantity,
             ];
-            
-            Log::create($data);
-        }
+        }  
+
+        $data = [
+            'code' => $code,
+            'type' => $type,
+            'quality' => $quality,
+            'length' => $length,
+            'diameter' => $diameter,
+        ];
+        
+        Log::create($data);
         
     }
 

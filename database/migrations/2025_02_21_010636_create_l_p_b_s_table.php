@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('l_p_b_s', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('code')->unique();
             $table->bigInteger('po_id');
             $table->bigInteger('road_permit_id');
             $table->bigInteger('no_kitir');

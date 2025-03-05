@@ -83,7 +83,7 @@ class UtilityController extends Controller
         $response = $modelClass::findOrFail($request->id);
 
         if($request->relation){
-            $response = $modelClass::with('npwp')->findOrFail($request->id);
+            $response = $modelClass::with($request->relation)->findOrFail($request->id);
         }
         
         return response()->json($response);

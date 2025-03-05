@@ -11,15 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('logs', function (Blueprint $table) {
+        Schema::create('stocks', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->text('id_produksi')->nullable();
-            $table->text('barcode')->nullable();
-            $table->text('code');
-            $table->enum('type', ['Sengon', 'Merbau']);
-            $table->enum('quality', ['Super', 'Afkir']);
-            $table->float('length');
-            $table->float('diameter');
+            $table->bigInteger('log_id');
+            $table->bigInteger('qty');
             $table->timestamps();
         });
     }
@@ -29,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('logs');
+        Schema::dropIfExists('stocks');
     }
 };

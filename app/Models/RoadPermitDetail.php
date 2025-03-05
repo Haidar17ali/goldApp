@@ -13,5 +13,10 @@ class RoadPermitDetail extends Model
         'unit',
         'size',
         'cubication',
+        'status',
     ];
+
+    public function parent(){
+        return $this->belongsTo(RoadPermit::class, 'road_permit_id');
+    }
 }

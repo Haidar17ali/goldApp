@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class LPB extends Model
 {
     protected $fillable = [
+        'code',
         'po_id',
         'road_permit_id',
         'no_kitir',

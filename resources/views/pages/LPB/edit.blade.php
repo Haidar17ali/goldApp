@@ -266,7 +266,7 @@
                         },
                     ];
                     let datas = [];
-                    for (let i = 8; i <= 65; i++) {
+                    for (let i = 8; i <= 70; i++) {
                         datas.push({
                             diameter: i
                         });
@@ -349,7 +349,7 @@
 
                                     }, 10);
                                 }
-                                localStorage.setItem('setLpb', JSON.stringify(data));
+                                localStorage.setItem('editLpb', JSON.stringify(data));
                             }
                         },
                     });

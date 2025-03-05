@@ -10,6 +10,9 @@ use App\Models\npwp;
 use App\Models\PO;
 use App\Models\PODetails;
 use App\Models\RoadPermit;
+use App\Models\RoadPermitDetail;
+use App\Models\Stock;
+use App\Models\StockTransaction;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -60,9 +63,9 @@ class LPBController extends Controller
         if(count($details)){        
             $detailErrors = [];
             foreach ($details as $index => $detail) {
-                $detail['afkir'] = (int)$detail['afkir'];
-                $detail['130'] = (int)$detail['130'];
-                $detail['260'] = (int)$detail['260'];
+                isset($detail['afkir']) ? $detail['afkir'] = (int)$detail['afkir'] : null;
+                isset($detail['130']) ? $detail['130'] = (int)$detail['130'] : null;
+                isset($detail['260']) ? $detail['260'] = (int)$detail['260'] : null;
                 $validator = Validator::make($detail, [
                     'afkir' => 'numeric',
                     '130' => 'numeric',
@@ -80,9 +83,11 @@ class LPBController extends Controller
         }else{
             return redirect()->back()->with('status', 'detailsNotFound');
         }
+        $lpbCode = generateCode('LPB', 'l_p_b_s', 'lpb_date');
     
         // Simpan data utama
         $data = [
+            'code' => $lpbCode,
             'lpb_date' => date('Y-m-d'),
             'po_id' => $request->po_id,
             'no_kitir' => $request->no_kitir,
@@ -123,10 +128,24 @@ class LPBController extends Controller
                         $productCode = 'SGN.Af.130.' . $detail['diameter'];
                     }
 
+                    // set data stock dan stock transaction
                     $log = Log::where('code', $productCode)->first();
-                    if($log){
-                        $log->quantity += $qty;
-                        $log->save();
+                    // Update Stock dan Stock Transactions
+                    if ($log) {
+                        // Cek apakah stock sudah ada untuk log_id ini
+                        $stock = Stock::where('log_id', $log->id)->first();
+
+                        if ($stock) {
+                            // Jika stock sudah ada, tambahkan qty
+                            $stock->qty += $qty;
+                            $stock->save();
+                        } else {
+                            // Jika stock belum ada, buat stock baru
+                            Stock::create([
+                                'log_id' => $log->id,
+                                'qty' => $qty,
+                            ]);
+                        }
                     }
         
                     // Simpan ke database
@@ -142,13 +161,28 @@ class LPBController extends Controller
                 }
             }
         }
+        
+        // Tambahkan transaksi stock
+        StockTransaction::create([
+            'lpb_id' => $lpb->id,
+            'type' => 'Masuk', // Tipe masuk karena LPB menambah stock
+        ]);
+
+        $getRP = RoadPermit::where('id', $request->road_permit_id)->first();
+        if($request->status_sj == "Selesai"){
+            if($getRP){
+                $getRP->status = $request->status_sj;
+                $getRP->save();
+            }
+        }
+
     
         session()->flash('status', 'saved');
         return response()->json(['message' => 'Surat jalan berhasil disimpan'], 200);        
     }
 
     public function edit($id){
-        $lpb = LPB::with(['details'])->findOrFail($id);
+        $lpb = LPB::with(['details', 'roadPermit'])->findOrFail($id);
 
         // Buat array dengan diameter dari 8 sampai 65
         $diameters = range(8, 65);
@@ -189,7 +223,8 @@ class LPBController extends Controller
         // Ubah array ke format JSON untuk dikirim ke frontend
         $initialData = json_encode(array_values($data));
 
-        $road_permits = RoadPermit::where('type_item', 'Sengon')->where('status', 'Sudah dibongkar')->get();
+        $road_permits = RoadPermit::where('type_item', 'Sengon')->where('status', 'Sudah dibongkar')->orWhere('id', $lpb->road_permit_id) // Pastikan surat jalan yang sudah dipilih tetap muncul
+        ->get();
         $purchase_orders = PO::where('po_type', 'Sengon')->where('status','Aktif')->get();
         $npwps = npwp::all();
         $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
@@ -217,17 +252,17 @@ class LPBController extends Controller
         ]);
 
         // Ambil data details lama sebelum dihapus
-        $oldDetails = LPBDetail::where('lpb_id', $lpb->id)->get();
+        // $oldDetails = LPBDetail::where('lpb_id', $lpb->id)->get();
         // Hapus data di log berdasarkan details lama
-        foreach ($lpb->details as $oldDetail) {
-            $log = Log::where('code', $oldDetail->product_code)->first();
-            if ($log) {
-                $log->quantity -= $oldDetail->qty; // Kurangi jumlah stok sebelumnya
-                $log->save();
-            }
-        }
+        // foreach ($lpb->details as $oldDetail) {
+        //     $log = Log::where('code', $oldDetail->product_code)->first();
+        //     if ($log) {
+        //         $log->quantity -= $oldDetail->qty; // Kurangi jumlah stok sebelumnya
+        //         $log->save();
+        //     }
+        // }
         // Hapus semua LPBDetail lama agar tidak terjadi duplikasi
-        LPBDetail::where('lpb_id', $lpb->id)->delete();
+        // LPBDetail::where('lpb_id', $lpb->id)->delete();
 
         // ambil data stringify yang dikirim fe dan decode menjadi json
         $details = json_decode($request->details[0], true);
@@ -235,7 +270,7 @@ class LPBController extends Controller
         $filteredData = array_filter($details, function ($detail) {
             return isset($detail['afkir']) || isset($detail[130]) || isset($detail[260]);
         });
-        dd($filteredData);
+        $details = $filteredData;
 
         // Validasi road permit details jika ada
         if(count($details)){
@@ -263,8 +298,7 @@ class LPBController extends Controller
             return redirect()->back()->with('status', 'detailsNotFound');
         }
     
-        // Simpan data utama
-        
+        // Simpan data utama        
         $lpb->po_id = $request->po_id;
         $lpb->no_kitir = $request->no_kitir;
         $lpb->grader_id = $request->grader_id || 1;
@@ -275,7 +309,10 @@ class LPBController extends Controller
         $lpb->nopol = $request->nopol;
         $lpb->conversion = $request->conversion;
         $lpb->created_by = Auth::user()->id;
-        $lpb->save();
+        // $lpb->save();
+
+        // Ambil detail LPB lama
+        $oldDetails = LPBDetail::where('lpb_id', $lpb->id)->get();
     
         // Simpan detail data jika ada
         foreach ($details as $key => $detail) {
@@ -303,8 +340,21 @@ class LPBController extends Controller
 
                     $log = Log::where('code', $productCode)->first();
                     if($log){
-                        $log->quantity += $qty;
-                        $log->save();
+                        // Hitung selisih qty
+                        $oldQty = $oldDetails->where('product_code', $productCode)->sum('qty');
+                        $qtyDiff = $qty - $oldQty;
+                        
+                        // Update Stock quantity
+                        $stock = Stock::where('log_id', $log->id)->first();
+                        if ($stock) {
+                            $stock->qty += $qtyDiff;
+                            $stock->save();
+                        } else {
+                            Stock::create([
+                                'log_id' => $log->id,
+                                'qty' => $qty,
+                            ]);
+                        }
                     }
         
                     // Simpan ke database
@@ -320,6 +370,19 @@ class LPBController extends Controller
                 }
             }
         }
+
+        // Dapatkan array ID dari koleksi $oldDetails
+        $oldDetailIds = $oldDetails->pluck('id')->toArray();
+        // Hapus detail LPB yang lama || Hapus semua detail LPB berdasarkan ID
+        LPBDetail::whereIn('id', $oldDetailIds)->delete();
+        // Hapus transaksi stock yang lama untuk LPB ini
+        StockTransaction::where('lpb_id', $lpb->id)->delete();
+
+        // Tambahkan transaksi stock
+        StockTransaction::create([
+            'lpb_id' => $lpb->id,
+            'type' => 'Masuk', // Tipe masuk karena LPB menambah stock
+        ]);
     
         session()->flash('status', 'edited');
         return response()->json(['message' => 'Surat jalan berhasil disimpan'], 200);
@@ -327,9 +390,38 @@ class LPBController extends Controller
 
     public function destroy($id){
         $lpb = LPB::with(['details'])->findOrFail($id);
+        // Temukan LPB berdasarkan ID
+        $lpb = LPB::find($id);
+
+        if (!$lpb) {
+            return response()->json(['message' => 'LPB not found'], 404);
+        }
+
+        // Ambil detail LPB
+        $lpbDetails = LPBDetail::where('lpb_id', $lpb->id)->get();
+
+        // Kurangi stok dan hapus transaksi stok
+        foreach ($lpbDetails as $detail) {
+            $log = Log::where('code', $detail->product_code)->first();
+            if ($log) {
+                $stock = Stock::where('log_id', $log->id)->first();
+                if ($stock) {
+                    $stock->qty -= $detail->qty;
+                    $stock->save();
+                }
+
+                // Hapus transaksi stok
+            }
+        }
+        
+        // hapus stock transaksi
+        StockTransaction::where('lpb_id', $lpb->id)->delete();
+        // Hapus detail LPB
         $lpb->details()->delete();
+
+        // Hapus LPB
         $lpb->delete();
-        return redirect()->back()->with('status', 'deleted');
+            return redirect()->back()->with('status', 'deleted');
     }
 
 }

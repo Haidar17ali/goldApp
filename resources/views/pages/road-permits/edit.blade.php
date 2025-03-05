@@ -350,6 +350,7 @@
                         if (!errorContainer) {
                             console.error("Elemen #error-datas tidak ditemukan di DOM.");
                         } else {
+                            console.log(error);
                             Object.entries(error.errors).forEach(([field, msgs]) => {
                                 let errorText = `${field}: ${msgs.join("| ")}<br>`;
                                 $("#error-datas").append(errorText)
