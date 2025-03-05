@@ -394,6 +394,11 @@ return [
             'icon' => 'fas fa-shopping-cart',
             'url' => 'JM/lpb',        
         ],
+        [
+            'text' => 'Purchase Jurnal',
+            'icon' => 'fas fa-book',
+            'url' => 'JM/purchase-jurnal',        
+        ],
         // [
         //     'text' => 'pages',
         //     'url' => 'admin/pages',

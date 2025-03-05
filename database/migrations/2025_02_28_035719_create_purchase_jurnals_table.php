@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('purchase_jurnals', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->text('pu_code');
             $table->date('date');
             $table->bigInteger('created_by');
             $table->bigInteger('edited_by');

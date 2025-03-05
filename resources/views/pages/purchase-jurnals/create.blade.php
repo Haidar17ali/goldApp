@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Buat LPB ')
+@section('title', 'Buat Purchase-Jurnal ')
 
 @section('content_header')
-    <h1>Buat LPB</h1>
+    <h1>Buat Purchase-Jurnal</h1>
 @stop
 
 @section('content')
@@ -22,134 +22,58 @@
 
             <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
-            <div class="badge badge-primary float-right">Buat LPB</div>
+            <div class="badge badge-primary float-right">Buat Purchase-Jurnal</div>
         </div>
     </div>
-    <form action="{{ route('lpb.simpan') }}" method="POST" id="formRP">
-        @csrf
-        @method('post')
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="form-group row">
-                            <label for="no_kitir" class="col-sm-2 col-form-label">No Kitir</label>
-                            <div class="col-sm-4">
-                                <input type="numeric" class="form-control" id="no_kitir" name="no_kitir"
-                                    value="{{ old('no_kitir') }}">
-                                <span class="text-danger error-text" id="no_kitir_error"></span>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="grader_id" class="col-sm-2 col-form-label">Grader</label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="grader_id" id="grader_id">
-                                    <option>Silahkan Pilih Grader</option>
-                                    @if (count($suppliers))
-                                        @foreach ($suppliers as $supplier)
-                                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </div>
-                            <label for="tally_id" class="col-sm-2 col-form-label">Tally</label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="tally_id" id="tally_id">
-                                    <option>Silahkan Pilih Tally</option>
-                                    @if (count($npwps))
-                                        @foreach ($npwps as $npwp)
-                                            <option value="{{ $npwp->id }}">{{ $npwp->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="road_permit_id" class="col-sm-2 col-form-label">Surat Jalan</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="road_permit_id" id="road_permit_id">
-                                    <option>Silahkan Pilih Surat Jalan</option>
-                                    @if (count($road_permits))
-                                        @foreach ($road_permits as $road_permit)
-                                            <option value="{{ $road_permit->id }}">
-                                                {{ $road_permit->from . ' | ' . $road_permit->nopol . ' | ' . $road_permit->vehicle }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="supplier_id" class="col-sm-2 col-form-label">Supplier</label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="supplier_id" id="supplier_id">
-                                    <option>Silahkan Pilih Supplier</option>
-                                    @if (count($suppliers))
-                                        @foreach ($suppliers as $supplier)
-                                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </div>
-                            <label for="npwp" class="col-sm-2 col-form-label">NPWP</label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="npwp" disabled id="npwp">
-                                    <option>Silahkan Pilih NPWP</option>
-                                    @if (count($npwps))
-                                        @foreach ($npwps as $npwp)
-                                            <option value="{{ $npwp->id }}">{{ $npwp->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                                <input type="hidden" id="npwp_id" name="npwp_id">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="nopol" class="col-sm-2 col-form-label">Nopol</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="nopol" name="nopol"
-                                    value="{{ old('nopol') }}">
-                                <span class="text-danger error-text" id="nopol_error"></span>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="po_id" class="col-sm-2 col-form-label">Purchase Order</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="po_id" id="po_id">
-                                    <option>Silahkan Pilih Purchase Order</option>
-                                    @if (count($purchase_orders))
-                                        @foreach ($purchase_orders as $purchase_order)
-                                            <option value="{{ $purchase_order->id }}">
-                                                {{ $purchase_order->po_code }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="conversion" class="col-sm-2 col-form-label">Total Konversi</label>
-                            <div class="col-sm-4">
-                                <input type="numeric" class="form-control" id="conversion" name="conversion"
-                                    value="{{ old('conversion') }}">
-                                <span class="text-danger error-text" id="conversion_error"></span>
-                            </div>
-                        </div>
-                        <h3>Data Barang</h3>
-                        <hr>
-                        <span class="text-danger error-text" id="details_error"></span>
-                        <div id="handsontable-container"></div>
-                        <input type="hidden" name="details[]" id="details">
 
-                        <div class="float-right mt-3">
-                            <a href="{{ route('lpb.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
-                            <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Kode LPB</th>
+                        <th>Supplier</th>
+                        <th>Nopol</th>
+                        <th>Afkir</th>
+                        <th>130</th>
+                        <th>260</th>
+                        <th>Total Pembayaran</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (count($lpbs))
+                        @foreach ($lpbs as $lpb)
+                            <tr>
+                                <td>{{ $lpb->code }}</td>
+                                <td>{{ $lpb->supplier != null ? $lpb->supplier->name : '' }}</td>
+                                <td>{{ $lpb->nopol }}</td>
+                                <td>{{ $lpb->details != null ? $lpb->details->where('quality', 'Afkir')->where('length', '130')->sum('qty') : 0 }}
+                                </td>
+                                <td>{{ $lpb->details != null ? $lpb->details->where('quality', 'Super')->where('length', '130')->sum('qty') : 0 }}
+                                </td>
+                                <td>{{ $lpb->details != null ? $lpb->details->where('quality', 'Super')->where('length', '260')->sum('qty') : 0 }}
+                                </td>
+                                <td>Rp {{ money_format(nominalKubikasi($lpb->details)) }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary mr-1" data-id="{{ $lpb->id }}"
+                                        data-supplier="{{ $lpb->supplier != null ? $lpb->supplier->name : 'Supplier Tidak Ada' }}"
+                                        data-code="{{ $lpb->code }}" data-kitir="{{ $lpb->no_kitir }}"
+                                        data-nopol="{{ $lpb->nopol }}" data-details="{{ $lpb->details }}"
+                                        data-vehicle="{{ $lpb->roadPermit != null ? $lpb->roadPermit->vehicle : 'Kendaraan Tidak Ada' }}"
+                                        data-toggle="modal" data-target="#detailModal" id="detailLpb"><i
+                                            class="fas fa-eye"></i></button>
+                                    <a href="{{ route('lpb.ubah', $lpb->id) }}" class="btn btn-sm btn-success mr-1"><i
+                                            class="fas fa-edit"></i></a>
+                                    <button class="btn btn-sm btn-secondary"><i class="fas fa-check"></i></button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endif
+                </tbody>
+            </table>
         </div>
-    </form>
+    </div>
 
     <div id="loading" style="display: none;">
         <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
@@ -157,6 +81,55 @@
             <p>Loading...</p>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel">Detail LPB</h5>
+
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>Kitir: <span id="modalKitir"></span></p>
+                            <p>Kode LPB: <span id="modalKode"></span></p>
+                            <p>Nama Supplier: <span id="modalSupplier"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>Nopol: <span id="modalNopol"></span></p>
+                            <p>Kendaraan: <span id="modalVehicle"></span></p>
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Produk Kode</th>
+                                <th>Kualitas</th>
+                                <th>Panjang</th>
+                                <th>Diameter</th>
+                                <th>Jumlah</th>
+                                <th>Kubikasi</th>
+                                <th>Harga/Kubikasi</th>
+                                <th>Harga</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalDetail">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @stop
 
 @section('css')
@@ -200,63 +173,6 @@
             justify-content: center;
             align-items: center;
         }
-
-        /* toggle */
-
-        /* Style untuk switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
-        /* Hide default checkbox */
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        /* Style untuk slider */
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.4s;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: 0.4s;
-        }
-
-        input:checked+.slider {
-            background-color: #2196F3;
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(26px);
-        }
-
-        /* Rounded sliders */
-        .slider.round {
-            border-radius: 34px;
-        }
-
-        .slider.round:before {
-            border-radius: 50%;
-        }
     </style>
 @stop
 
@@ -267,7 +183,45 @@
     <script src="{{ asset('assets/js/myHelper.js') }}"></script>
 
     <script>
+        localStorage.removeItem('editLpb');
         $(document).ready(function() {
+                    // detail lpb
+                    $("#detailLpb").on('click', function() {
+                        let id = $(this).data('id');
+                        let kitir = $(this).data('kitir');
+                        let code = $(this).data('code');
+                        let supplier = $(this).data('supplier');
+                        let nopol = $(this).data('nopol');
+                        let vehicle = $(this).data('vehicle');
+                        let details = $(this).data('details');
+
+                        // ganti text
+                        $('#modalKitir').text(kitir);
+                        $('#modalKode').text(code);
+                        $('#modalSupplier').text(supplier);
+                        $('#modalNopol').text(nopol);
+                        $('#modalVehicle').text(vehicle);
+
+                        var html = '';
+                        $.each(details, function(index, detail) {
+                            html += '<tr>';
+                            html += '<td>' + detail.product_code + '</td>';
+                            html += '<td>' + detail.quality + '</td>';
+                            html += '<td>' + detail.length + '</td>';
+                            html += '<td>' + detail.diameter + '</td>';
+                            html += '<td>' + (detail.qty) + '</td>';
+                            html += '<td>' + kubikasi(detail.diameter, detail.length, detail.qty) +
+                                '</td>';
+                            html += '<td>Rp' + money_format(detail.price, 0, ',', '.') + '</td>';
+                            html += '<td>Rp' + money_format(kubikasi(detail.diameter, detail.length, detail
+                                    .qty) *
+                                detail.price, 0, ',', '.') + '</td>';
+                            html += '</tr>';
+                        });
+                        $('#modalDetail').html(html);
+                    })
+
+
                     $('#supplier_id').select2({
                         theme: "bootstrap4",
                     });

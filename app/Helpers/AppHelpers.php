@@ -18,7 +18,8 @@ function nominalKubikasi($details){
     $total = 0;
     if (count($details)) {
         foreach($details as $detail){
-            $total += kubikasi($detail->diameter, $detail->length, $detail->quantity)*$detail->price;
+            $total += kubikasi($detail->diameter, $detail->length, $detail->qty)*$detail->price;
+            // dd($total);
         }
     }
     return $total;

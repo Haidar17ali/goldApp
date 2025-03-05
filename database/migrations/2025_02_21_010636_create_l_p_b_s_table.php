@@ -29,7 +29,7 @@ return new class extends Migration
             $table->date('approved_at')->nullable();
             // $table->date('payment_date')->nullable();
             $table->bigInteger('conversion')->nullable(); //untuk menghitung total potongan * harga potongan
-            $table->enum('status', ['Menunggu Pembayaran','Pengajuan Pembayaran', 'Terbayar', 'Pending', 'Tolak']); //jika status sukses maka bisa dibayarkan jika pending masih belum
+            $table->enum('status', ['Menunggu Pembayaran','Pengajuan Pembayaran', 'Terbayar', 'Pending', 'Tolak', 'Terpakai']); //jika status sukses maka bisa dibayarkan jika pending masih belum
             $table->text('address')->nullable(); //Alamat Untuk Sppt
             $table->timestamps();
         });

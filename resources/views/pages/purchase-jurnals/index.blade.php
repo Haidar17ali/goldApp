@@ -19,8 +19,8 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('lpb.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                LPB</a>
+            <a href="{{ route('purchase-jurnal.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
+                Purchase Jurnal</a>
         </div>
         <div class="card-body row">
             <table class="table table-striped">

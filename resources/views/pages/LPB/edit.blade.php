@@ -147,7 +147,7 @@
                         <input type="hidden" name="details[]" id="details">
 
                         <div class="float-right mt-3">
-                            <a href="{{ route('lpb.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            <a href="{{ $redirectTo }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>
@@ -455,7 +455,7 @@
                                             });
                                         } else {
                                             localStorage.removeItem('editLpb');
-                                            window.location.href = "{{ route('lpb.index') }}";
+                                            window.location.href = "{{ $redirectTo }}";
                                         }
                                     })
                                     .catch(error => {

@@ -22,6 +22,7 @@ class LPBController extends Controller
 {
     public function index(){
         $lpbs = LPB::with(['roadPermit', 'details', 'supplier', 'createdBy', 'editedBy', 'ApprovalBy'])->paginate(20);
+        session(['lpb_edit_redirect' => route('lpb.index')]); // Simpan halaman asal di session
         return view('pages.LPB.index', compact('lpbs'));
     }
 
@@ -63,13 +64,13 @@ class LPBController extends Controller
         if(count($details)){        
             $detailErrors = [];
             foreach ($details as $index => $detail) {
-                isset($detail['afkir']) ? $detail['afkir'] = (int)$detail['afkir'] : null;
-                isset($detail['130']) ? $detail['130'] = (int)$detail['130'] : null;
-                isset($detail['260']) ? $detail['260'] = (int)$detail['260'] : null;
+                isset($detail['afkir']) ? $detail['afkir'] = (int)$detail['afkir'] : 0;
+                isset($detail['130']) ? $detail['130'] = (int)$detail['130'] : 0;
+                isset($detail['260']) ? $detail['260'] = (int)$detail['260'] : 0;
                 $validator = Validator::make($detail, [
-                    'afkir' => 'numeric',
-                    '130' => 'numeric',
-                    '260' => 'numeric',
+                    'afkir' => 'nullable|numeric',
+                    '130' => 'nullable|numeric',
+                    '260' => 'nullable|numeric',
                 ]);
         
                 if ($validator->fails()) {
@@ -113,12 +114,6 @@ class LPBController extends Controller
                     $quality = ($dataKey == 'afkir') ? 'Afkir' : 'Super';
                     $qty = (int)$detail[$dataKey];
         
-                    // Ambil data harga dari PO Detail berdasarkan diameter
-                    $poDetail = PODetails::where('po_id', $request->po_id)
-                        ->where('diameter_start', '<=', $detail['diameter'])
-                        ->where('diameter_to', '>=', $detail['diameter'])
-                        ->first();
-        
                     // Tentukan kode produk
                     if ($dataKey == '130') {
                         $productCode = 'SGN.Su.130.' . $detail['diameter'];
@@ -127,6 +122,14 @@ class LPBController extends Controller
                     } else {
                         $productCode = 'SGN.Af.130.' . $detail['diameter'];
                     }
+
+                    // Ambil data harga dari PO Detail berdasarkan diameter
+                    $poDetail = PODetails::where('po_id', $request->po_id)
+                    ->where('diameter_start', '<=', $detail['diameter'])
+                    ->where('diameter_to', '>=', $detail['diameter'])
+                    ->where('quality', $quality)
+                    ->where('length', $length)
+                    ->first();
 
                     // set data stock dan stock transaction
                     $log = Log::where('code', $productCode)->first();
@@ -182,6 +185,7 @@ class LPBController extends Controller
     }
 
     public function edit($id){
+        $redirectTo = session('lpb_edit_redirect', route('lpb.index')); // Ambil halaman asal dari session, default ke index lpb
         $lpb = LPB::with(['details', 'roadPermit'])->findOrFail($id);
 
         // Buat array dengan diameter dari 8 sampai 65
@@ -231,7 +235,7 @@ class LPBController extends Controller
         $graders = Employee::where('position_id', 'Grader')->get();
         $tallies = Employee::where('position_id', 'Tally')->get();
 
-        return view('pages.LPB.edit', compact(['road_permits', 'suppliers', 'graders', 'tallies', 'purchase_orders', 'npwps', 'lpb', 'initialData']));
+        return view('pages.LPB.edit', compact(['road_permits', 'suppliers', 'graders', 'tallies', 'purchase_orders', 'npwps', 'lpb', 'initialData', 'redirectTo']));
     }
 
     public function update(Request $request, $id){
@@ -250,19 +254,6 @@ class LPBController extends Controller
             'nopol' => 'required|string',
             'po_id' => 'required|exists:p_o_s,id',
         ]);
-
-        // Ambil data details lama sebelum dihapus
-        // $oldDetails = LPBDetail::where('lpb_id', $lpb->id)->get();
-        // Hapus data di log berdasarkan details lama
-        // foreach ($lpb->details as $oldDetail) {
-        //     $log = Log::where('code', $oldDetail->product_code)->first();
-        //     if ($log) {
-        //         $log->quantity -= $oldDetail->qty; // Kurangi jumlah stok sebelumnya
-        //         $log->save();
-        //     }
-        // }
-        // Hapus semua LPBDetail lama agar tidak terjadi duplikasi
-        // LPBDetail::where('lpb_id', $lpb->id)->delete();
 
         // ambil data stringify yang dikirim fe dan decode menjadi json
         $details = json_decode($request->details[0], true);
@@ -323,12 +314,6 @@ class LPBController extends Controller
                     $quality = ($dataKey == 'afkir') ? 'Afkir' : 'Super';
                     $qty = (int)$detail[$dataKey];
         
-                    // Ambil data harga dari PO Detail berdasarkan diameter
-                    $poDetail = PODetails::where('po_id', $request->po_id)
-                        ->where('diameter_start', '<=', $detail['diameter'])
-                        ->where('diameter_to', '>=', $detail['diameter'])
-                        ->first();
-        
                     // Tentukan kode produk
                     if ($dataKey == '130') {
                         $productCode = 'SGN.Su.130.' . $detail['diameter'];
@@ -337,6 +322,13 @@ class LPBController extends Controller
                     } else {
                         $productCode = 'SGN.Af.130.' . $detail['diameter'];
                     }
+
+                    // Ambil data harga dari PO Detail berdasarkan diameter
+                    $poDetail = PODetails::where('po_id', $request->po_id)
+                    ->where('diameter_start', '<=', $detail['diameter'])
+                    ->where('diameter_to', '>=', $detail['diameter'])
+                    ->where('quality', $quality)
+                    ->first();
 
                     $log = Log::where('code', $productCode)->first();
                     if($log){

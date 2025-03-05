@@ -7,6 +7,7 @@ use App\Http\Controllers\NPWPController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\PositionController;
+use App\Http\Controllers\PurchaseJurnalController;
 use App\Http\Controllers\RoadPermitController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SupplierController;
@@ -117,6 +118,14 @@ Route::prefix('JM')
         Route::patch('/lpb/{id}/ubah/', [LPBController::class, 'update'])->name('lpb.update');
         Route::delete('/lpb/{id}/hapus', [LPBController::class, 'destroy'])->name('lpb.hapus');
 
+        // purchase-jurnal
+        Route::get('/purchase-jurnal', [PurchaseJurnalController::class, 'index'])->name('purchase-jurnal.index');
+        Route::get('/purchase-jurnal/buat', [PurchaseJurnalController::class, 'create'])->name('purchase-jurnal.buat');
+        Route::post('/purchase-jurnal/buat', [PurchaseJurnalController::class, 'store'])->name('purchase-jurnal.simpan');
+        Route::get('/purchase-jurnal/{id}/ubah/', [PurchaseJurnalController::class, 'edit'])->name('purchase-jurnal.ubah');
+        Route::patch('/purchase-jurnal/{id}/ubah/', [PurchaseJurnalController::class, 'update'])->name('purchase-jurnal.update');
+        Route::delete('/purchase-jurnal/{id}/hapus', [PurchaseJurnalController::class, 'destroy'])->name('purchase-jurnal.hapus');
+
         // utility
             // ajax
         Route::get('no-rek-id/ajax', [UtilityController::class, 'getNumberAccount'])->name('utility.ajax-no-rek');
@@ -127,4 +136,5 @@ Route::prefix('JM')
         Route::get('/aktivasi-po/{modelType}/{id}/{status}', [UtilityController::class, 'activation'])->name('utility.activation-po');
             // LPB
         Route::get('/persetujuan-LPB/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-lpb');
+        Route::get('/get-lpb-detail/{id}/detail', [UtilityController::class, 'getById'])->name('utility.lpb-ajax-detail');
     });
