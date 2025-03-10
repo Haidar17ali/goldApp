@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('purchase_jurnals', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->text('pu_code');
+            $table->text('pj_code');
             $table->date('date');
             $table->bigInteger('created_by');
-            $table->bigInteger('edited_by');
+            $table->bigInteger('edited_by')->nullable();
             $table->enum('status', ['Proses', 'Selesai']);
             $table->timestamps();
         });

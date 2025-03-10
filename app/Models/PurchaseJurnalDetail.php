@@ -8,8 +8,8 @@ class PurchaseJurnalDetail extends Model
 {
     protected $fillable = [
         'id',
-        'pengajuan_id',
-        'type',
+        'pj_id',
+        'lpb_id',
         'status',
     ];
 }

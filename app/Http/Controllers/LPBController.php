@@ -128,7 +128,7 @@ class LPBController extends Controller
                     ->where('diameter_start', '<=', $detail['diameter'])
                     ->where('diameter_to', '>=', $detail['diameter'])
                     ->where('quality', $quality)
-                    ->where('length', $length)
+                    ->where('length', "$length")
                     ->first();
 
                     // set data stock dan stock transaction
@@ -328,6 +328,7 @@ class LPBController extends Controller
                     ->where('diameter_start', '<=', $detail['diameter'])
                     ->where('diameter_to', '>=', $detail['diameter'])
                     ->where('quality', $quality)
+                    ->where('length', "$length")
                     ->first();
 
                     $log = Log::where('code', $productCode)->first();

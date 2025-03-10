@@ -399,6 +399,11 @@ return [
             'icon' => 'fas fa-book',
             'url' => 'JM/purchase-jurnal',        
         ],
+        [
+            'text' => 'DP',
+            'icon' => 'fas fa-money-bill-wave-alt',
+            'url' => 'JM/down-payment',        
+        ],
         // [
         //     'text' => 'pages',
         //     'url' => 'admin/pages',

@@ -29,5 +29,32 @@ class Supplier extends Model
         return $this->belongsTo(npwp::class, 'npwp_id');
     }
 
+    public function dp(){
+        return $this->hasMany(Down_payment::class);
+    }
+
+    // Menghitung Total DP Masuk
+    public function totalDpMasuk()
+    {
+        return $this->dp()
+            ->where('type', 'In')
+            ->where('status', 'Sukses') // Sesuaikan dengan status yang menandakan transaksi berhasil
+            ->sum('nominal');
+    }
+
+    // Menghitung Total DP Keluar
+    public function totalDpKeluar()
+    {
+        return $this->dp()
+            ->where('type', 'Out')
+            ->where('status', 'Sukses') // Sesuaikan dengan status yang menandakan transaksi berhasil
+            ->sum('nominal');
+    }
+
+    // Menghitung Sisa DP
+    public function sisaDp()
+    {
+        return $this->totalDpMasuk() - $this->totalDpKeluar();
+    }
 
 }

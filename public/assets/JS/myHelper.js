@@ -2,15 +2,43 @@ function kubikasi(diameter,length,qty){
     return parseFloat(diameter*diameter*length*0.7854/1000000*qty).toFixed(4);
 }
 
+function totalKubikasi(details){
+    let total = 0;
+    if (details.length > 0) {
+        details.forEach(detail => {
+            total += kubikasi(detail.diameter, detail.length, detail.qty); 
+        });
+    }
+    return total;
+}
+
+function nominalKubikasi(details){
+    let total = 0;
+    if (details.length > 0) {
+        details.forEach(detail => {
+            total += kubikasi(detail.diameter, detail.length, detail.qty) * detail.price; 
+        });
+    }
+    return money_format(total,0, ',', '.');
+}
+
 function loadWithData(url, data){
+
+    if ($('#loading').length) {  
+        $('#loading').fadeIn(); // Munculkan efek loading
+    }
+
     var results;
     $.ajax({
         url: url,
         async: false,
         data: data,
         dataType: "json",
-        success: function(datas){
+        success: function(datas){            
             results = datas;
+        },
+        complete: function() {
+            $('#loading').hide(); // Sembunyikan loading setelah request selesai
         }
     });
     return results;

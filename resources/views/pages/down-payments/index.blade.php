@@ -1,14 +1,24 @@
 @extends('adminlte::page')
 
-@section('title', 'Purchase Jurnal')
+@section('title', 'DP')
 
 @section('content_header')
-    <h1>Purchase Jurnal</h1>
+    <h1>DP</h1>
 @stop
 
 @section('content')
     <div class="card">
         <div class="card-header">
+            @if (session('import_errors'))
+                <div class="alert alert-danger">
+                    <h4>Kesalahan File Excel:</h4>
+                    <ul>
+                        @foreach (session('import_errors') as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <ul>
@@ -18,63 +28,52 @@
                     </ul>
                 </div>
             @endif
-            <!-- Button trigger modal -->
-            <a href="{{ route('purchase-jurnal.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Purchase Jurnal</a>
+            <a href="{{ route('down-payment.buat') }}" class="btn btn-primary float-right" type="submit"><i
+                    class="fas fa-plus"></i>
+                DP</a>
         </div>
         <div class="card-body row">
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Tanggal Jurnal</th>
-                        <th scope="col">Kode</th>
-                        <th scope="col">Total Rupiah</th>
-                        <th scope="col">Total Terbayar</th>
-                        <th scope="col">Total Gagal</th>
+                        <th scope="col">Tanggal</th>
+                        <th scope="col">Supplier</th>
+                        <th scope="col">Nominal</th>
+                        <th scope="col">Tipe</th>
                         <th scope="col">Status</th>
-                        @if (Auth::id() == 1)
-                            <th scope="col">Pembuat</th>
-                            <th scope="col">Pengedit</th>
-                        @endif
                         <th scope="col">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (count($purchase_jurnals))
-                        @foreach ($purchase_jurnals as $purchase_jurnal)
+                    @if (count($down_payments))
+                        @foreach ($down_payments as $down_payment)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ date('d-m-Y', strtotime($purchase_jurnal->date)) }}</td>
-                                <td>{{ $purchase_jurnal->pj_code }}</td>
-                                <td>{{ hitungTotalPembayaran($purchase_jurnal->details) }}</td>
-                                <td>{{ hitungTotalPembayaran($purchase_jurnal->details->where('status', 'Gagal')) }}</td>
-                                <td>{{ count($purchase_jurnal->details->where('status', 'Gagal')) }}</td>
-                                <td>
-                                    <span
-                                        class="badge {{ $purchase_jurnal->status == 'Selesai' ? 'badge-success' : 'badge-warning' }}">{{ $purchase_jurnal->status }}
-                                    </span>
+                                <th scope="row">{{ date('d-m-Y', strtotime($down_payment->date)) }}</th>
+                                <td>{{ $down_payment->supplier != null ? $down_payment->supplier->name : 'supplier tidak ditemukan' }}
                                 </td>
+                                <td>Rp.{{ money_format($down_payment->nominal) }}</td>
+                                <td style="color:{{ $down_payment->type == 'In' ? 'green' : 'red' }}"><i
+                                        class="fas fa-arrow-{{ $down_payment->type == 'In' ? 'up' : 'down' }}"></i>{{ $down_payment->type }}
                                 </td>
-                                @if (Auth::id() == 1)
-                                    <td>{{ $purchase_jurnal->createdBy != null ? $purchase_jurnal->createdBy->username : '' }}
-                                    </td>
-                                    <td>{{ $purchase_jurnal->edit_by != null ? $purchase_jurnal->edit_by->username : '' }}
-                                    </td>
-                                @endif
+                                <td><span
+                                        class="badge badge-{{ $down_payment->status == 'Pending' ? 'warning' : ($down_payment->status == 'Gagal' ? 'danger' : 'success') }}">{{ $down_payment->status }}</span>
+                                </td>
                                 <td>
-                                    @if ($purchase_jurnal->approved_by == null)
-                                        <a href="{{ route('utility.approve-lpb', ['modelType' => 'LPB', 'id' => $purchase_jurnal->id, 'status' => 'Pending']) }}"
-                                            class="badge badge-sm badge-success"><i class="fas fa-check"></i></a>
-                                        <a href="{{ route('lpb.ubah', $purchase_jurnal->id) }}"
-                                            class="badge badge-sm badge-danger"><i class="fas fa-times"></i></a>
-                                        <a href="{{ route('lpb.ubah', $purchase_jurnal->id) }}"
+                                    @if ($down_payment->status == 'Pending')
+                                        <a href="{{ route('utility.activation-dp', ['modelType' => 'Down_payment', 'id' => $down_payment->id, 'status' => 'Sukses']) }}"
+                                            class="badge badge-success"><i class="fas fa-check"></i></a>
+                                        <a href="{{ route('utility.activation-dp', ['modelType' => 'down_payment', 'id' => $down_payment->id, 'status' => 'Gagal']) }}"
+                                            class="badge badge-danger"><i class="fas fa-times"></i></a>
+                                        ||
+                                        <a href="{{ route('down-payment.ubah', $down_payment->id) }}"
                                             class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
-                                        <form action="{{ route('lpb.hapus', $purchase_jurnal->id) }}" class="d-inline"
-                                            id="delete{{ $purchase_jurnal->id }}" method="post">
+                                        <form action="{{ route('down-payment.hapus', $down_payment->id) }}"
+                                            class="d-inline" id="delete{{ $down_payment->id }}" method="post">
                                             @csrf
                                             @method('DELETE')
-                                            <a href="#" data-id="{{ $purchase_jurnal->id }}"
+                                            <a href="#" data-id="{{ $down_payment->id }}"
                                                 class="badge badge-pill badge-delete badge-danger d-inline">
                                                 <i class="fas fa-trash"></i>
                                             </a>
@@ -85,14 +84,13 @@
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="14" class="text-center"><b>Data tidak ditemukan!</b></td>
+                            <td colspan="7" class="text-center"><b>Data down-payment tidak ditemukan!</b></td>
                         </tr>
                     @endif
                 </tbody>
             </table>
         </div>
     </div>
-
 
 @stop
 
@@ -104,13 +102,6 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
     <script>
-        localStorage.removeItem('collapseState');
-        localStorage.removeItem('selectedLPBData');
-        localStorage.removeItem('selectedLPBs');
-        $(document).ready(function() {
-            bsCustomFileInput.init()
-        })
-
         // toast
         @section('plugins.Toast', true)
             var status = "{{ session('status') }}";

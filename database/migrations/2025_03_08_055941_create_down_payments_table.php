@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchase_jurnal_details', function (Blueprint $table) {
+        Schema::create('down_payments', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('pj_id');
-            $table->bigInteger('lpb_id');
-            $table->enum('status', ['Pending','Terbayar', 'Gagal']);
+            $table->bigInteger('supplier_id');
+            $table->bigInteger('pu_id')->nullable();
+            $table->bigInteger('nominal');
+            $table->date('date');
+            $table->enum('type', ['In', 'Out']);
+            $table->enum('status', ['Pending', 'Gagal', 'Sukses', 'Selesai']);
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('purchase_jurnal_details');
+        Schema::dropIfExists('down_payments');
     }
 };

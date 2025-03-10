@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\LPB;
 use App\Models\PO;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -25,16 +26,35 @@ function nominalKubikasi($details){
     return $total;
 }
 
-    function generateCode($prefix, $table, $dateColumn)
+function hitungTotalPembayaran($details)
     {
-        $tanggal = Carbon::now()->format('Ymd'); // Format YYYYMMDD
+        $totalPembayaran = 0;
 
-        // Hitung jumlah record pada tanggal hari ini
-        $count = DB::table($table)->whereDate($dateColumn, Carbon::today())->count();
+        foreach ($details as $detail) {
+            $lpb = LPB::with('details')->find($detail->lpb_id);
 
-        // Buat nomor urut dengan format 001, 002, dst.
-        $noUrut = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+            if ($lpb) {
+                $totalLpb = 0;
+                foreach ($lpb->details as $detail) {
+                    $totalLpb += kubikasi($detail->diameter, $detail->length, $detail->qty) * $detail->price;
+                }
+                $totalPembayaran += $totalLpb;
+            }
+        }
 
-        // Gabungkan menjadi format {PREFIX}{YYYYMMDD}{XXX}
-        return strtoupper($prefix) . $tanggal . $noUrut;
+        return "Rp.".money_format($totalPembayaran);
     }
+
+function generateCode($prefix, $table, $dateColumn)
+{
+    $tanggal = Carbon::now()->format('Ymd'); // Format YYYYMMDD
+
+    // Hitung jumlah record pada tanggal hari ini
+    $count = DB::table($table)->whereDate($dateColumn, Carbon::today())->count();
+
+    // Buat nomor urut dengan format 001, 002, dst.
+    $noUrut = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+
+    // Gabungkan menjadi format {PREFIX}{YYYYMMDD}{XXX}
+    return strtoupper($prefix) . $tanggal . $noUrut;
+}

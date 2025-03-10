@@ -27,6 +27,11 @@
     </div>
 
     <div class="card">
+        <div class="card-header row">
+            <div class="col-md-3 offset-9 float-right">
+                <input type="text" id="searchBox" class="form-control mb-3 float-right" placeholder="Cari LPB...">
+            </div>
+        </div>
         <div class="card-body">
             <table class="table table-sm table-bordered">
                 <thead>
@@ -41,7 +46,7 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="lpbTable">
                     @if (count($lpbs))
                         @foreach ($lpbs as $lpb)
                             <tr>
@@ -72,6 +77,29 @@
                     @endif
                 </tbody>
             </table>
+
+            {{-- data lpb yang telah erpilih --}}
+            <div class="container mt-4">
+                <h4>Daftar Supplier Terpilih</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Sisa Uang Muka</th>
+                            <th>Total Kubikasi</th>
+                            <th>Total yang Harus Dibayar</th>
+                            <th>Uang Muka yang akan dibayar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="selectedSupplierTable">
+                        <!-- Data supplier akan muncul di sini -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="float-right">
+                <a href="{{ route('purchase-jurnal.index') }}" class="btn btn-danger">Batal</a>
+                <button class="btn btn-primary" id="kirimPembayaranBtn">Simpan</button>
+            </div>
         </div>
     </div>
 
@@ -130,6 +158,12 @@
         </div>
     </div>
 
+    <div id="loading" style="display: none;">
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <i class="fa fa-spinner fa-spin fa-3x"></i> <!-- Font Awesome spinner -->
+            <p>Loading...</p>
+        </div>
+    </div>
 @stop
 
 @section('css')
@@ -183,340 +217,414 @@
     <script src="{{ asset('assets/js/myHelper.js') }}"></script>
 
     <script>
-        localStorage.removeItem('editLpb');
         $(document).ready(function() {
-                    // detail lpb
-                    $("#detailLpb").on('click', function() {
-                        let id = $(this).data('id');
-                        let kitir = $(this).data('kitir');
-                        let code = $(this).data('code');
-                        let supplier = $(this).data('supplier');
-                        let nopol = $(this).data('nopol');
-                        let vehicle = $(this).data('vehicle');
-                        let details = $(this).data('details');
+            // detail lpb
+            $("#detailLpb").on('click', function() {
+                let id = $(this).data('id');
+                let kitir = $(this).data('kitir');
+                let code = $(this).data('code');
+                let supplier = $(this).data('supplier');
+                let nopol = $(this).data('nopol');
+                let vehicle = $(this).data('vehicle');
+                let details = $(this).data('details');
 
-                        // ganti text
-                        $('#modalKitir').text(kitir);
-                        $('#modalKode').text(code);
-                        $('#modalSupplier').text(supplier);
-                        $('#modalNopol').text(nopol);
-                        $('#modalVehicle').text(vehicle);
+                // ganti text
+                $('#modalKitir').text(kitir);
+                $('#modalKode').text(code);
+                $('#modalSupplier').text(supplier);
+                $('#modalNopol').text(nopol);
+                $('#modalVehicle').text(vehicle);
 
-                        var html = '';
-                        $.each(details, function(index, detail) {
-                            html += '<tr>';
-                            html += '<td>' + detail.product_code + '</td>';
-                            html += '<td>' + detail.quality + '</td>';
-                            html += '<td>' + detail.length + '</td>';
-                            html += '<td>' + detail.diameter + '</td>';
-                            html += '<td>' + (detail.qty) + '</td>';
-                            html += '<td>' + kubikasi(detail.diameter, detail.length, detail.qty) +
-                                '</td>';
-                            html += '<td>Rp' + money_format(detail.price, 0, ',', '.') + '</td>';
-                            html += '<td>Rp' + money_format(kubikasi(detail.diameter, detail.length, detail
-                                    .qty) *
-                                detail.price, 0, ',', '.') + '</td>';
-                            html += '</tr>';
-                        });
-                        $('#modalDetail').html(html);
-                    })
+                var html = '';
+                $.each(details, function(index, detail) {
+                    html += '<tr>';
+                    html += '<td>' + detail.product_code + '</td>';
+                    html += '<td>' + detail.quality + '</td>';
+                    html += '<td>' + detail.length + '</td>';
+                    html += '<td>' + detail.diameter + '</td>';
+                    html += '<td>' + (detail.qty) + '</td>';
+                    html += '<td>' + kubikasi(detail.diameter, detail.length, detail.qty) +
+                        '</td>';
+                    html += '<td>Rp' + money_format(detail.price, 0, ',', '.') + '</td>';
+                    html += '<td>Rp' + money_format(kubikasi(detail.diameter, detail.length, detail
+                            .qty) *
+                        detail.price, 0, ',', '.') + '</td>';
+                    html += '</tr>';
+                });
+                $('#modalDetail').html(html);
+            });
 
+            // ajax select data
+            let selectedLPBs = new Set(JSON.parse(localStorage.getItem('selectedLPBs')) || []);
+            let selectedLPBData = JSON.parse(localStorage.getItem('selectedLPBData')) || [];
+            let debounceTimer;
 
-                    $('#supplier_id').select2({
-                        theme: "bootstrap4",
-                    });
-                    // handsontable
-                    let columnType = [{
-                            data: 'diameter',
-                            type: 'numeric'
-                        },
-                        {
-                            data: 'afkir',
-                            type: 'numeric'
-                        },
-                        {
-                            data: '130',
-                        },
-                        {
-                            data: '260',
-                            type: 'numeric'
-                        },
-                        {
-                            data: 'kubikasi_afkir',
-                        },
-                        {
-                            data: 'kubikasi_130',
-                        },
-                        {
-                            data: 'kubikasi_260',
-                        },
-                        {
-                            data: 'total',
-                        },
-                    ];
-                    let datas = [];
-                    for (let i = 8; i <= 65; i++) {
-                        datas.push({
-                            diameter: i
-                        });
+            async function loadLpbs(search = '') {
+                try {
+                    let data = {
+                        search: search,
+                        from: 'LPB',
                     }
+                    let datas = await loadWithData("{{ route('search') }}", data);
 
-                    $("#supplier_id").on('select2:select', function() {
-                        let idAccount = $(this).val();
-                        let url = "{{ route('utility.npwpId') }}"
-                        let data = {
-                            id: idAccount,
-                            model: 'Supplier',
-                            relation: ['npwp'],
-                        }
-                        let jsonData = loadWithData(url, data);
+                    let tableContent = '';
+                    datas.forEach(lpb => {
+                        let isChecked = selectedLPBs.has(lpb.id.toString());
+                        // untuk edit data yang di filter
+                        let editUrl = "{{ route('lpb.ubah', ':id') }}";
+                        editUrl = editUrl.replace(':id', lpb.id)
 
-                        if (jsonData != null) {
-                            $('#npwp').empty().append('<option value="">-- Pilih NPWP --</option>');
-
-                            if (jsonData.npwp_id) {
-                                $('#npwp').append('<option value="' + jsonData.npwp.id + '" selected>' + jsonData
-                                    .npwp.name + '</option>');
-                                $('#npwp_id').val(jsonData.npwp.id); // Set nilai ke input hidden
-                            } else {
-                                $('#npwp_id').val('');
-                            }
-
-                            $('#npwp').trigger('change'); // Refresh Select2
-                        } else {
-                            $('#npwp').empty().append('<option value="">-- Pilih NPWP --</option>');
-                        }
-                    });
-
-                    $("#road_permit_id").on('change', function() {
-                        let idAccount = $(this).val();
-                        let url = "{{ route('utility.suratJalanId') }}"
-                        let data = {
-                            id: idAccount,
-                            model: 'RoadPermit',
+                        let totals = {
+                            totalAfkir: 0,
+                            total130: 0,
+                            total260: 0
                         };
-                        let jsonData = loadWithData(url, data);
 
-                        if (jsonData != null) {
-                            $("#nopol").val(jsonData.nopol);
-                            $('#npwp_id').trigger('change'); // Refresh Select2
-                        } else {
-                            $("#nopol").val("");
-                        }
-
-                    });
-
-                    const container = document.getElementById('handsontable-container');
-                    let isUpdating = false; // Flag untuk mencegah rekursi
-                    const hot = new Handsontable(container, {
-                        minSpareRows: 1,
-                        data: datas,
-                        columns: columnType,
-                        rowHeaders: true,
-                        colHeaders: ['Diameter', 'Afkir', '130', '260', 'Kubikasi Afkir', 'Kubikasi 130',
-                            'Kubikasi 260', 'Total'
-                        ],
-                        contextMenu: true,
-                        autoColumnSize: true,
-                        autoRowSize: true,
-                        // manualRowResize: true,
-                        // manualColumnResize: true,
-                        persistentState: true,
-                        licenseKey: 'non-commercial-and-evaluation',
-                        stretchH: 'all',
-                        afterChange: function(changes, source) {
-
-                            if (source === 'edit' || source === 'paste') {
-                                const data = hot.getData();
-                                if (!isUpdating) {
-                                    isUpdating = true; // Aktifkan flag sebelum update
-
-                                    setTimeout(() => {
-                                        hot.batch(() => {
-                                            changes.forEach(([row, prop, oldVal,
-                                                newVal
-                                            ]) => {
-                                                const diameter = hot
-                                                    .getDataAtCell(row,
-                                                        0) || 0;
-                                                // kuantiti
-                                                const qafkir = hot
-                                                    .getDataAtCell(row,
-                                                        1) || 0;
-                                                const q130 = hot.getDataAtCell(
-                                                    row,
-                                                    2) || 0;
-                                                const q260 = hot.getDataAtCell(
-                                                    row,
-                                                    3) || 0;
-
-
-
-                                                hot.setDataAtCell(row, 4,
-                                                    kubikasi(
-                                                        diameter, 130,
-                                                        qafkir));
-                                                hot.setDataAtCell(row, 5,
-                                                    kubikasi(
-                                                        diameter, 130,
-                                                        q130));
-                                                hot.setDataAtCell(row, 6,
-                                                    kubikasi(
-                                                        diameter, 260,
-                                                        q260));
-
-                                                // set total kubikasi
-                                                // kubikasi
-                                                const kAfkir = hot
-                                                    .getDataAtCell(row,
-                                                        4) || 0;
-                                                const k130 = hot.getDataAtCell(
-                                                    row,
-                                                    5) || 0;
-                                                const k260 = hot.getDataAtCell(
-                                                    row,
-                                                    6) || 0;
-
-
-                                                let totalKubikasi = parseFloat(
-                                                        kAfkir) +
-                                                    parseFloat(k130) +
-                                                    parseFloat(k260);
-
-
-                                                totalKubikasi = totalKubikasi
-                                                    .toFixed(
-                                                        4
-                                                    ); // Batasi 4 angka di belakang koma
-
-                                                hot.setDataAtCell(row, 7,
-                                                    totalKubikasi);
-                                                // end set Total kubikasi
-                                            });
-                                        });
-                                        isUpdating = false; // Reset flag setelah update selesai
-
-                                    }, 10);
-                                }
-                                localStorage.setItem('setLpb', JSON.stringify(data));
-                            }
-                        },
-                    });
-
-                    // Isi data dari localStorage saat halaman dimuat
-                    function getLocalStorage() {
-                        let columnHeadersType = ['diameter', 'afkir', '130', '260', 'kubikasi_afkir',
-                            'kubikasi_130',
-                            'kubikasi_260', 'total'
-                        ];
-
-                        const savedData = localStorage.getItem('setLpb');
-
-
-                        if (savedData != null) {
-                            try {
-                                const parsedData = JSON.parse(savedData);
-
-                                const columnHeaders = columnHeadersType; // Sesuaikan dengan jumlah kolom
-                                const formattedData = parsedData.map(row => {
-                                    let obj = {};
-                                    row.forEach((value, index) => {
-                                        obj[columnHeaders[index]] =
-                                            value; // Konversi array ke objek dengan key yang benar
-                                    });
-                                    return obj;
-                                });
-
-                                hot.loadData(formattedData); // Memuat data ke Handsontable
-                            } catch (error) {
-                                console.error("Gagal memuat data dari localStorage:", error);
-                            }
-                        }
-                    };
-
-
-                    $('#formRP').on('submit', function(e) {
-                            e.preventDefault();
-                            document.getElementById('loading').style.display = 'flex';
-
-                            let data = hot.getSourceData();
-                            data = data.slice(0, -1);
-
-                            if (data.length == 0) {
-                                @section('plugins.Toast', true)
-                                    Toastify({
-                                        text: "Muatan tidak boleh kosong!",
-                                        className: "danger",
-                                        close: true,
-                                        style: {
-                                            background: "red",
-                                        }
-                                    }).showToast();
-                                } //punya if
-
-
-                                let permits = document.getElementById('details').value =
-                                    JSON.stringify(data);
-
-                                const form = e.target;
-                                const formData = new FormData(form);
-
-
-
-                                fetch(form.action, {
-                                        method: form.method,
-                                        body: formData,
-                                        headers: {
-                                            'Accept': 'application/json'
-                                        },
-                                    })
-                                    .then(response => {
-                                        if (!response.ok) {
-                                            return response.json().then(err => {
-                                                throw err; // Lempar error agar bisa ditangkap di catch()
-                                            });
-                                        }
-                                        return response.json();
-                                        response.json()
-                                    })
-                                    .then(data => {
-
-                                        if (data.errors) {
-                                            $('.error-text').text('');
-                                            $.each(data.errors, function(key, value) {
-                                                if (key.startsWith('details')) {
-                                                    $('#details_error').text(
-                                                        'Terdapat kesalahan pada data muatan.');
-                                                } else {
-                                                    $('#' + key + '_error').text(value[0]);
-                                                }
-                                            });
-                                        } else {
-                                            localStorage.removeItem('setLpb');
-                                            window.location.href = "{{ route('lpb.index') }}";
-                                        }
-                                    })
-                                    .catch(error => {
-                                        let errorContainer = document.getElementById("error-datas");
-
-                                        // Pastikan elemen ada di DOM
-                                        if (!errorContainer) {
-                                            console.error("Elemen #error-datas tidak ditemukan di DOM.");
-                                        } else {
-                                            Object.entries(error.errors).forEach(([field, msgs]) => {
-                                                let errorText = `${field}: ${msgs.join("| ")}<br>`;
-                                                $("#error-datas").append(errorText)
-                                            });
-                                        }
-                                    })
-                                    .finally(() => {
-                                        document.getElementById('loading').style.display = 'none';
-                                    });
-
-
+                        if (lpb.details) { // Pastikan details ada
+                            totals = lpb.details.reduce((acc, detail) => {
+                                if (detail.quality == 'Afkir') acc.totalAfkir +=
+                                    parseInt(detail.qty) || 0;
+                                if (detail.length == '130' && detail.quality ==
+                                    'Super') acc.total130 +=
+                                    parseInt(detail.qty) || 0;
+                                if (detail.length == '260' && detail.quality ==
+                                    'Super') acc.total260 +=
+                                    parseInt(detail.qty) || 0;
+                                return acc;
+                            }, {
+                                totalAfkir: 0,
+                                total130: 0,
+                                total260: 0
                             });
+                        }
 
-                        getLocalStorage();
+                        tableContent += `
+                    <tr>
+                        <td>${lpb.code}</td>
+                        <td>${lpb.supplier != null ? lpb.supplier.name : "Supplier Tidakditemukan"}</td>
+                        <td>${lpb.nopol}</td>
+                        <td>${totals.totalAfkir}</td>
+                        <td>${totals.total130}</td>
+                        <td>${totals.total260}</td>
+                        <td>${nominalKubikasi(lpb.details)}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm"><i class="fas fa-eye"></i></button>
+                            <a href="${editUrl}" class="btn btn-success btn-sm"><i class="fas fa-edit"></i></a>
+                            <button class="btn ${isChecked ? 'btn-success' : 'btn-secondary'} btn-sm select-btn" data-id="${lpb.id}" 
+                                data-lpb='${JSON.stringify(lpb)}'>
+                                <i class="fas ${isChecked ? 'fa-check' : 'fa-square'}"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
                     });
+                    $('#lpbTable').html(tableContent);
+
+                    $('#loading').hide(); // 🔹 Sembunyikan loading setelah pencarian selesai
+                } catch (error) {
+                    console.error("Gagal memuat data:", error);
+                }
+            }
+
+            function updateSelectedLPBTable() {
+                let tableBody = $("#selectedLPBTable tbody");
+                tableBody.empty(); // Bersihkan isi tabel sebelum menambahkan ulang
+
+                if (selectedLPBData.length === 0) {
+                    tableBody.append('<tr><td colspan="3" class="text-center">Tidak ada LPB terpilih</td></tr>');
+                    return;
+                }
+
+                selectedLPBData.forEach(lpb => {
+                    let row = `
+                                <tr>
+                                    <td>${lpb.id}</td>
+                                    <td>${lpb.total_pembayaran}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm remove-lpb-btn" data-id="${lpb.id}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>`;
+                    tableBody.append(row);
+                });
+                restoreCollapseState(); // Pastikan collapse tetap terbuka
+            }
+
+            function updateDPSupplier(suppliers) {
+                if (suppliers.size === 0) {
+                    $('#dpSupplier').html("<p>Tidak ada supplier untuk DP</p>");
+                    return;
+                }
+
+                let supplierHTML = `<h4>Masukkan DP untuk Supplier</h4>`;
+                suppliers.forEach((supplier, name) => {
+                    supplierHTML += `
+                                    <div class="form-group">
+                                        <label>${name}</label>
+                                        <input type="number" class="form-control dp-input" data-supplier="${id}" placeholder="Masukkan DP untuk ${id}">
+                                    </div>
+                                `;
+                });
+
+                $('#dpSupplier').html(supplierHTML);
+            }
+
+            function updateLPBTableUI() {
+                $('.select-btn').each(function() {
+                    let lpbId = $(this).data('id').toString();
+                    let isSelected = selectedLPBs.has(lpbId);
+
+                    // Ubah warna tombol
+                    $(this).toggleClass('btn-success', isSelected);
+                    $(this).toggleClass('btn-secondary', !isSelected);
+
+                    // Ubah ikon dalam tombol
+                    $(this).find('i').toggleClass('fa-check', isSelected);
+                    $(this).find('i').toggleClass('fa-square', !isSelected);
+                });
+            }
+
+            function calculateTotalPerLPB(lpb) {
+                let totalPembayaran = 0;
+                let totalKubikasi = 0;
+
+                if (lpb.details) {
+                    lpb.details.forEach(detail => {
+
+                        let myKubikasi = kubikasi(detail.diameter, detail.length, detail.qty);
+                        let totalDetail = myKubikasi * detail.price; // Kubikasi × Harga
+                        totalPembayaran += totalDetail;
+                        totalKubikasi += parseFloat(myKubikasi);
+                    });
+                }
+
+                // 🔹 Kembalikan sebagai objek agar bisa digunakan di tempat lain
+                return {
+                    totalPembayaran,
+                    totalKubikasi
+                };
+            }
+
+            function updateSelectedSupplierTable() {
+                let supplierMap = {};
+
+                if (selectedLPBData.length !== 0) {
+                    selectedLPBData.forEach(lpb => {
+                        let {
+                            totalPembayaran,
+                            totalKubikasi
+                        } = calculateTotalPerLPB(lpb);
+                        let supplierName = lpb.supplier.name;
+                        let supplierId = lpb.supplier.id; // Ambil ID supplier
+                        let supplierSisaDp = lpb.supplier.sisaDp;
+
+                        if (!supplierMap[supplierName]) {
+                            supplierMap[supplierName] = {
+                                supplier: supplierName,
+                                id: supplierId, // Tambahkan ID supplier
+                                totalKubikasi: 0,
+                                totalBayar: 0,
+                                dp: 0,
+                                sisaDp: supplierSisaDp,
+                                lpbs: []
+                            };
+                        }
+
+                        supplierMap[supplierName].totalKubikasi += totalKubikasi;
+                        supplierMap[supplierName].totalBayar += totalPembayaran;
+                        supplierMap[supplierName].lpbs.push({
+                            ...lpb,
+                            totalPembayaran,
+                            totalKubikasi
+                        });
+                    });
+                }
+
+                let tableContent = '';
+                Object.entries(supplierMap).forEach(([supplierName, supplier], index) => {
+                    let supplierId = `supplier-${index}`;
+
+                    tableContent += `
+                                    <tr>
+                                        <td>
+                                            <button class="btn btn-link supplier-btn" type="button" data-toggle="collapse" data-target="#${supplierId}">
+                                                ${supplier.supplier}
+                                            </button>
+                                        </td>
+                                        <td>Rp.${money_format(supplier.sisaDp, 0, ',', '.')}</td>
+                                        <td>${supplier.totalKubikasi.toFixed(4)}</td>
+                                        <td>Rp.${supplier.totalBayar.toLocaleString()}</td>
+                                        <td><input type="number" class="form-control dp-input" data-supplier="${supplier.id}" value="${supplier.dp}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="5">
+                                            <div id="${supplierId}" class="collapse">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Kode LPB</th>
+                                                            <th>No Polisi</th>
+                                                            <th>Total Kubikasi</th>
+                                                            <th>Total Pembayaran</th>
+                                                            <th>Aksi</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        ${supplier.lpbs.map(lpb => `
+                                                                                                                                                                                                            <tr>
+                                                                                                                                                                                                                <td>${lpb.code}</td>
+                                                                                                                                                                                                                <td>${lpb.nopol}</td>
+                                                                                                                                                                                                                <td>${lpb.totalKubikasi.toFixed(4)}</td>
+                                                                                                                                                                                                                <td>${lpb.totalPembayaran.toLocaleString()}</td>
+                                                                                                                                                                                                                <td><button class="btn btn-danger btn-sm remove-lpb-btn" data-id="${lpb.id}"><i class="fas fa-trash"></i></button></td>
+                                                                                                                                                                                                            </tr>
+                                                                                                                                                                                                        `).join('')}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                });
+
+                $('#selectedSupplierTable').html(tableContent);
+                restoreCollapseState();
+            }
+
+            function restoreSelectedLPBs() {
+                selectedLPBs = new Set(JSON.parse(localStorage.getItem('selectedLPBs')) || []);
+                selectedLPBData = JSON.parse(localStorage.getItem('selectedLPBData')) || [];
+
+                // 🔹 Perbarui tampilan daftar yang sudah terpilih
+                updateSelectedLPBTable();
+                updateLPBTableUI();
+                updateSelectedSupplierTable();
+            }
+
+            function restoreCollapseState() {
+                let collapseState = JSON.parse(localStorage.getItem('collapseState')) || {};
+
+                $(".collapse").each(function() {
+                    let collapseId = $(this).attr('id');
+                    if (collapseState[collapseId]) {
+                        $(this).addClass("show");
+                    } else {
+                        $(this).removeClass("show");
+                    }
+                });
+            }
+
+            // tampilan bootstrap collapse
+            $(document).on('shown.bs.collapse hidden.bs.collapse', '.collapse', function(e) {
+                let collapseId = $(this).attr('id');
+                let isOpen = $(this).hasClass('show');
+
+                let collapseState = JSON.parse(localStorage.getItem('collapseState')) || {};
+                collapseState[collapseId] = isOpen;
+                localStorage.setItem('collapseState', JSON.stringify(collapseState));
+            });
+
+            loadLpbs();
+            restoreSelectedLPBs(); // 🔹 Memulihkan data LPB yang dipilih
+            updateLPBTableUI();
+            updateSelectedLPBTable();
+
+            $('#searchBox').on('input', function() {
+
+                clearTimeout(debounceTimer); // Hapus timer sebelumnya
+                $('#loading').show(); // 🔹 Tampilkan loading sebelum pencarian
+
+                debounceTimer = setTimeout(() => {
+                    loadLpbs($(this).val())
+
+                    $('#loading').hide(); // 🔹 Tampilkan loading sebelum pencarian
+                }, 500); // Tunggu 300ms setelah pengguna berhenti mengetik
+
+            });
+
+
+            $(document).on('click', '.select-btn', function() {
+                let lpbId = $(this).data('id').toString();
+                let lpb = JSON.parse($(this).attr('data-lpb'));
+
+                let existingLPB = selectedLPBData.find(item => item.id.toString() === lpbId);
+
+                if (existingLPB) {
+                    selectedLPBs.delete(lpbId);
+                    selectedLPBData = selectedLPBData.filter(item => item.id.toString() !== lpbId);
+                } else {
+                    selectedLPBs.add(lpbId);
+                    selectedLPBData.push(lpb);
+                }
+
+                localStorage.setItem('selectedLPBs', JSON.stringify(Array.from(selectedLPBs)));
+                localStorage.setItem('selectedLPBData', JSON.stringify(selectedLPBData));
+
+                updateLPBTableUI();
+                updateSelectedLPBTable();
+                updateSelectedSupplierTable();
+            });
+
+            $(document).on('click', '.remove-lpb-btn', function() {
+                let lpbId = $(this).data('id').toString();
+
+                // Hapus LPB dari daftar terpilih
+                selectedLPBs.delete(lpbId);
+                selectedLPBData = selectedLPBData.filter(item => item.id.toString() !== lpbId);
+
+                // Simpan kembali ke localStorage
+                localStorage.setItem('selectedLPBs', JSON.stringify(Array.from(selectedLPBs)));
+                localStorage.setItem('selectedLPBData', JSON.stringify(selectedLPBData));
+
+                // Update tampilan
+                updateLPBTableUI();
+                updateSelectedLPBTable();
+                updateSelectedSupplierTable();
+            });
+
+            $(document).on('input', '.dp-input', function() {
+                let supplierName = $(this).data('supplier');
+                let dpAmount = $(this).val();
+            });
+
+            function sendDataToLaravel(selectedLPBData, dpData) {
+                $.ajax({
+                    url: "{{ route('purchase-jurnal.simpan') }}",
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        lpbs: selectedLPBData,
+                        dp: dpData
+                    },
+                    success: function(response) {
+                        window.location.href = "{{ route('purchase-jurnal.index') }}";
+                    },
+                    error: function(error) {
+                        console.error("Gagal mengirim data:", error);
+                        alert("Terjadi kesalahan saat menyimpan pembayaran");
+                    }
+                });
+            }
+
+            function collectDpData() {
+                let dpData = {};
+                $('.dp-input').each(function() {
+                    let supplierName = $(this).data('supplier');
+                    let idSupp = $(this).data('supplier');
+                    let dpAmount = $(this).val();
+
+                    dpData[supplierName] = dpAmount;
+                });
+                return dpData;
+            }
+
+            $(document).on('click', '#kirimPembayaranBtn', function() {
+                let dpData = collectDpData();
+
+                sendDataToLaravel(selectedLPBData, dpData);
+            });
+        });
     </script>
 @stop

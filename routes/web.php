@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DownPaymentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\LPBController;
@@ -126,6 +127,14 @@ Route::prefix('JM')
         Route::patch('/purchase-jurnal/{id}/ubah/', [PurchaseJurnalController::class, 'update'])->name('purchase-jurnal.update');
         Route::delete('/purchase-jurnal/{id}/hapus', [PurchaseJurnalController::class, 'destroy'])->name('purchase-jurnal.hapus');
 
+        // DP
+        Route::get('/down-payment', [DownPaymentController::class, 'index'])->name('down-payment.index');
+        Route::get('/down-payment/buat', [DownPaymentController::class, 'create'])->name('down-payment.buat');
+        Route::post('/down-payment/buat', [DownPaymentController::class, 'store'])->name('down-payment.simpan');
+        Route::get('/down-payment/{id}/ubah', [DownPaymentController::class, 'edit'])->name('down-payment.ubah');
+        Route::patch('/down-payment/{id}/ubah', [DownPaymentController::class, 'update'])->name('down-payment.update');
+        Route::delete('/down-payment/{id}/hapus', [DownPaymentController::class, 'destroy'])->name('down-payment.hapus');
+
         // utility
             // ajax
         Route::get('no-rek-id/ajax', [UtilityController::class, 'getNumberAccount'])->name('utility.ajax-no-rek');
@@ -134,7 +143,14 @@ Route::prefix('JM')
             // po
         Route::get('/persetujuan-po/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-po');
         Route::get('/aktivasi-po/{modelType}/{id}/{status}', [UtilityController::class, 'activation'])->name('utility.activation-po');
+
+            // dp
+        Route::get('/aktivasi-dp/{modelType}/{id}/{status}', [UtilityController::class, 'activation'])->name('utility.activation-dp');
+
             // LPB
         Route::get('/persetujuan-LPB/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-lpb');
         Route::get('/get-lpb-detail/{id}/detail', [UtilityController::class, 'getById'])->name('utility.lpb-ajax-detail');
+
+        // search data
+        Route::get('data/search',[UtilityController::class, 'search'])->name('search');
     });

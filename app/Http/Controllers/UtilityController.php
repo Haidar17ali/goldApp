@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bank;
+use App\Models\LPB;
 use App\Models\PO;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -87,5 +88,49 @@ class UtilityController extends Controller
         }
         
         return response()->json($response);
+    }
+
+    public function search(Request $request){
+        // $query = LPB::query();
+
+        // if ($request->has('search')) {
+        //     $search = $request->search;
+        //     if($request->from == "LPB"){
+        //         $query->where('code', 'like', '%' . $search . '%')
+        //             ->orWhere('nopol', 'like', '%' . $search . '%')
+        //             ->orWhere('no_kitir', 'like', '%' . $search . '%')->orWhereHas('supplier', function ($q) use ($search) {
+        //                 $q->where('name', 'like', "%$search%");
+        //             })
+        //             ->where('status', 'Pending')
+        //             ->where('approved_by', '!=', null);
+        //     }
+        // }
+
+        // return response()->json($query->with(['supplier', 'details', 'roadPermit'])->get());
+        $search = $request->input('search');
+        $from = $request->input('from');
+
+        if ($from === 'LPB') {
+            $lpbs = Lpb::with(['supplier', 'details'])
+            ->where('status', 'Pending') // Pindahkan kondisi status di awal
+            ->where('approved_by', '!=', null)
+            ->where(function ($query) use ($search) {
+                $query->where('code', 'like', '%' . $search . '%')
+                    ->orWhere('nopol', 'like', '%' . $search . '%')
+                    ->orWhere('no_kitir', 'like', '%' . $search . '%')
+                    ->orWhereHas('supplier', function ($q) use ($search) {
+                        $q->where('name', 'like', "%$search%");
+                    });
+            })
+            ->get();
+
+            $lpbs->each(function ($lpb) {
+                if ($lpb->supplier) {
+                    $lpb->supplier->sisaDp = $lpb->supplier->sisaDp();
+                }
+            });
+
+            return response()->json($lpbs);
+        }
     }
 }
