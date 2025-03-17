@@ -22,4 +22,9 @@ class PurchaseJurnal extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function lpbs()
+    {
+        return $this->belongsToMany(Lpb::class, 'purchase_jurnal_lpbs', 'pj_detail_id', 'lpb_id');
+    }
+
 }

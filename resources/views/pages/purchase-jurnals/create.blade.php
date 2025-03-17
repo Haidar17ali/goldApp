@@ -47,34 +47,6 @@
                     </tr>
                 </thead>
                 <tbody id="lpbTable">
-                    @if (count($lpbs))
-                        @foreach ($lpbs as $lpb)
-                            <tr>
-                                <td>{{ $lpb->code }}</td>
-                                <td>{{ $lpb->supplier != null ? $lpb->supplier->name : '' }}</td>
-                                <td>{{ $lpb->nopol }}</td>
-                                <td>{{ $lpb->details != null ? $lpb->details->where('quality', 'Afkir')->where('length', '130')->sum('qty') : 0 }}
-                                </td>
-                                <td>{{ $lpb->details != null ? $lpb->details->where('quality', 'Super')->where('length', '130')->sum('qty') : 0 }}
-                                </td>
-                                <td>{{ $lpb->details != null ? $lpb->details->where('quality', 'Super')->where('length', '260')->sum('qty') : 0 }}
-                                </td>
-                                <td>Rp {{ money_format(nominalKubikasi($lpb->details)) }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary mr-1" data-id="{{ $lpb->id }}"
-                                        data-supplier="{{ $lpb->supplier != null ? $lpb->supplier->name : 'Supplier Tidak Ada' }}"
-                                        data-code="{{ $lpb->code }}" data-kitir="{{ $lpb->no_kitir }}"
-                                        data-nopol="{{ $lpb->nopol }}" data-details="{{ $lpb->details }}"
-                                        data-vehicle="{{ $lpb->roadPermit != null ? $lpb->roadPermit->vehicle : 'Kendaraan Tidak Ada' }}"
-                                        data-toggle="modal" data-target="#detailModal" id="detailLpb"><i
-                                            class="fas fa-eye"></i></button>
-                                    <a href="{{ route('lpb.ubah', $lpb->id) }}" class="btn btn-sm btn-success mr-1"><i
-                                            class="fas fa-edit"></i></a>
-                                    <button class="btn btn-sm btn-secondary"><i class="fas fa-check"></i></button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    @endif
                 </tbody>
             </table>
 
@@ -85,14 +57,35 @@
                     <thead>
                         <tr>
                             <th>Supplier</th>
-                            <th>Sisa Uang Muka</th>
+                            <th>Sisa DP</th>
                             <th>Total Kubikasi</th>
-                            <th>Total yang Harus Dibayar</th>
-                            <th>Uang Muka yang akan dibayar</th>
+                            <th>Total LPB</th>
+                            <th>Total PPh 22</th>
+                            <th>DP</th>
+                            <th>Total Akhir</th>
                         </tr>
                     </thead>
                     <tbody id="selectedSupplierTable">
                         <!-- Data supplier akan muncul di sini -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="4" style="text-align:right;">Grand Total Akhir:</th>
+                            <th id="grand-total-akhir">Rp.0</th>
+                        </tr>
+                    </tfoot>
+                </table>
+                <h5>DP Menunggu Pembayaran</h5>
+                <table class="table table-bordered" id="dp-menunggu-table">
+                    <thead>
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Tanggal DP</th>
+                            <th>Jumlah DP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic Content via JS -->
                     </tbody>
                 </table>
             </div>
@@ -218,6 +211,12 @@
 
     <script>
         $(document).ready(function() {
+            // ajax select data
+            let selectedLPBs = new Set(JSON.parse(localStorage.getItem('selectedLPBs')) || []);
+            let selectedLPBData = JSON.parse(localStorage.getItem('selectedLPBData')) || [];
+            let debounceTimer;
+            let supplierMap = {}; // Global
+
             // detail lpb
             $("#detailLpb").on('click', function() {
                 let id = $(this).data('id');
@@ -253,11 +252,6 @@
                 });
                 $('#modalDetail').html(html);
             });
-
-            // ajax select data
-            let selectedLPBs = new Set(JSON.parse(localStorage.getItem('selectedLPBs')) || []);
-            let selectedLPBData = JSON.parse(localStorage.getItem('selectedLPBData')) || [];
-            let debounceTimer;
 
             async function loadLpbs(search = '') {
                 try {
@@ -326,6 +320,49 @@
                 }
             }
 
+            async function loadDpMenungguPembayaran() {
+                let data = {
+                    type: 'Menunggu Pembayaran',
+                    model: 'Down_payment',
+                    relation: [
+                        'supplier'
+                    ]
+                }
+                let down_payments = await loadWithData("{{ route('utility.dp-type') }}", data);
+
+                let tbody = $('#dp-menunggu-table tbody');
+                tbody.empty(); // Bersihkan isi tabel
+
+                let totalDpMenunggu = 0;
+
+                if (down_payments != null) {
+
+                    down_payments.forEach(dp => {
+                        totalDpMenunggu += dp.jumlah;
+
+                        let row = `
+                        <tr>
+                            <td>${dp.supplier != null ? dp.supplier.name : ""}</td>
+                            <td>${dp.date}</td>
+                            <td>Rp.${money_format(dp.nominal, 0, ',', '.')}</td>
+                        </tr>
+                    `;
+                        tbody.append(row);
+                    });
+                } else {
+                    tbody.append(
+                        `<tr><td colspan="4" class="text-center">Tidak ada DP yang menunggu pembayaran</td></tr>`
+                    );
+                }
+
+                // Tampilkan total DP menunggu di bagian lain atau akumulasi
+                $('#total-dp-menunggu').text(
+                    `Rp.${money_format(totalDpMenunggu.toLocaleString(), 0, ',', '.')}`);
+
+                // Akumulasi ke Grand Total
+                updateGrandTotalAkhir(totalDpMenunggu); // tambahkan parameter
+            }
+
             function updateSelectedLPBTable() {
                 let tableBody = $("#selectedLPBTable tbody");
                 tableBody.empty(); // Bersihkan isi tabel sebelum menambahkan ulang
@@ -388,43 +425,46 @@
             function calculateTotalPerLPB(lpb) {
                 let totalPembayaran = 0;
                 let totalKubikasi = 0;
+                let pph22 = 0;
 
                 if (lpb.details) {
                     lpb.details.forEach(detail => {
-
                         let myKubikasi = kubikasi(detail.diameter, detail.length, detail.qty);
-                        let totalDetail = myKubikasi * detail.price; // Kubikasi × Harga
+                        let totalDetail = myKubikasi * detail.price;
                         totalPembayaran += totalDetail;
                         totalKubikasi += parseFloat(myKubikasi);
                     });
+                    pph22 = totalPembayaran * 0.0025; // Hitung PPh 22 (2.5%)
                 }
 
-                // 🔹 Kembalikan sebagai objek agar bisa digunakan di tempat lain
                 return {
                     totalPembayaran,
-                    totalKubikasi
+                    totalKubikasi,
+                    pph22,
+                    totalSetelahPph: totalPembayaran - pph22
                 };
             }
 
             function updateSelectedSupplierTable() {
-                let supplierMap = {};
-
+                supplierMap = {}
                 if (selectedLPBData.length !== 0) {
                     selectedLPBData.forEach(lpb => {
                         let {
                             totalPembayaran,
-                            totalKubikasi
+                            totalKubikasi,
+                            pph22
                         } = calculateTotalPerLPB(lpb);
                         let supplierName = lpb.supplier.name;
-                        let supplierId = lpb.supplier.id; // Ambil ID supplier
+                        let supplierId = lpb.supplier.id;
                         let supplierSisaDp = lpb.supplier.sisaDp;
 
                         if (!supplierMap[supplierName]) {
                             supplierMap[supplierName] = {
                                 supplier: supplierName,
-                                id: supplierId, // Tambahkan ID supplier
+                                id: supplierId,
                                 totalKubikasi: 0,
                                 totalBayar: 0,
+                                totalPph22: 0, // Akumulasi PPh 22
                                 dp: 0,
                                 sisaDp: supplierSisaDp,
                                 lpbs: []
@@ -433,61 +473,75 @@
 
                         supplierMap[supplierName].totalKubikasi += totalKubikasi;
                         supplierMap[supplierName].totalBayar += totalPembayaran;
+                        supplierMap[supplierName].totalPph22 += pph22; // Akumulasi PPh 22
                         supplierMap[supplierName].lpbs.push({
                             ...lpb,
                             totalPembayaran,
-                            totalKubikasi
+                            totalKubikasi,
+                            pph22, // Tambahkan PPh 22 ke LPB
+                            totalSetelahPph: totalPembayaran - pph22
                         });
                     });
                 }
-
                 let tableContent = '';
                 Object.entries(supplierMap).forEach(([supplierName, supplier], index) => {
                     let supplierId = `supplier-${index}`;
+                    let totalAkhir = supplier.totalBayar - supplier.totalPph22 - supplier.dp;
 
                     tableContent += `
-                                    <tr>
-                                        <td>
-                                            <button class="btn btn-link supplier-btn" type="button" data-toggle="collapse" data-target="#${supplierId}">
-                                                ${supplier.supplier}
-                                            </button>
-                                        </td>
-                                        <td>Rp.${money_format(supplier.sisaDp, 0, ',', '.')}</td>
-                                        <td>${supplier.totalKubikasi.toFixed(4)}</td>
-                                        <td>Rp.${supplier.totalBayar.toLocaleString()}</td>
-                                        <td><input type="number" class="form-control dp-input" data-supplier="${supplier.id}" value="${supplier.dp}"></td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="5">
-                                            <div id="${supplierId}" class="collapse">
-                                                <table class="table table-sm">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Kode LPB</th>
-                                                            <th>No Polisi</th>
-                                                            <th>Total Kubikasi</th>
-                                                            <th>Total Pembayaran</th>
-                                                            <th>Aksi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        ${supplier.lpbs.map(lpb => `
-                                                                                                                                                                                                            <tr>
-                                                                                                                                                                                                                <td>${lpb.code}</td>
-                                                                                                                                                                                                                <td>${lpb.nopol}</td>
-                                                                                                                                                                                                                <td>${lpb.totalKubikasi.toFixed(4)}</td>
-                                                                                                                                                                                                                <td>${lpb.totalPembayaran.toLocaleString()}</td>
-                                                                                                                                                                                                                <td><button class="btn btn-danger btn-sm remove-lpb-btn" data-id="${lpb.id}"><i class="fas fa-trash"></i></button></td>
-                                                                                                                                                                                                            </tr>
-                                                                                                                                                                                                        `).join('')}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `;
+                                        <tr>
+                                            <td>
+                                                <button class="btn btn-link supplier-btn" type="button" data-toggle="collapse" data-target="#${supplierId}">
+                                                    ${supplier.supplier}
+                                                </button>
+                                            </td>
+                                            <td>Rp.${money_format(supplier.sisaDp, 0, ',', '.')}</td>
+                                            <td>${supplier.totalKubikasi.toFixed(4)}</td>
+                                            <td>Rp.${supplier.totalBayar.toLocaleString()}</td>
+                                            <td>Rp.${money_format(supplier.totalPph22.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                            <td>
+                                                <input type="number" class="form-control dp-input" data-supplier="${supplier.id}" value="${supplier.dp}">
+                                            </td>
+                                            <td>
+                                                <span class="total-akhir" data-supplier="${supplier.id}">
+                                                    Rp.${money_format(totalAkhir.toFixed(0).toLocaleString(), 0, ',', '.')}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="7">
+                                                <div id="${supplierId}" class="collapse">
+                                                    <table class="table table-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Kode LPB</th>
+                                                                <th>No Polisi</th>
+                                                                <th>Total Kubikasi</th>
+                                                                <th>Total Pembayaran</th>
+                                                                <th>PPh 22</th>
+                                                                <th>Total Setelah PPh 22</th>
+                                                                <th>Aksi</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            ${supplier.lpbs.map(lpb => `
+                                                                                                                                                                                                                                                                                                                                                                                                                                        <tr>
+                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${lpb.code}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${lpb.nopol}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${lpb.totalKubikasi.toFixed(4)}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.totalPembayaran.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.pph22.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.totalSetelahPph.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                            <td><button class="btn btn-danger btn-sm remove-lpb-btn" data-id="${lpb.id}"><i class="fas fa-trash"></i></button></td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                        </tr>
+                                                                                                                                                                                                                                                                                                                                                                                                                                    `).join('')}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
                 });
-
                 $('#selectedSupplierTable').html(tableContent);
                 restoreCollapseState();
             }
@@ -515,6 +569,67 @@
                 });
             }
 
+            function updateGrandTotalAkhir() {
+                let grandTotal = 0;
+
+                // Loop semua supplier untuk totalAkhir
+                for (let supplierId in supplierMap) {
+                    let supplier = supplierMap[supplierId];
+                    let totalBayar = supplier.totalBayar || 0;
+                    let totalPph22 = supplier.totalPph22 || 0;
+                    let dp = supplier.dp || 0;
+
+                    let totalAkhir = totalBayar - totalPph22 - dp;
+                    totalAkhir = Math.max(totalAkhir, 0); // pastikan tidak minus
+
+                    grandTotal += totalAkhir;
+                }
+
+                // Update tampilan Grand Total Akhir
+                $('#grand-total-akhir').text(
+                    `Rp.${money_format(grandTotal.toFixed(0).toLocaleString(), 0, ',', '.')}`);
+            }
+
+            function updateSupplierMapFromSelectedLPB() {
+                supplierMap = {}; // Reset supplierMap
+                if (selectedLPBData.length !== 0) {
+                    selectedLPBData.forEach(lpb => {
+                        let {
+                            totalPembayaran,
+                            totalKubikasi,
+                            pph22
+                        } = calculateTotalPerLPB(lpb);
+                        let supplierName = lpb.supplier.name;
+                        let supplierId = lpb.supplier.id;
+                        let supplierSisaDp = lpb.supplier.sisaDp;
+
+                        if (!supplierMap[supplierName]) {
+                            supplierMap[supplierName] = {
+                                supplier: supplierName,
+                                id: supplierId,
+                                totalKubikasi: 0,
+                                totalBayar: 0,
+                                totalPph22: 0,
+                                dp: 0,
+                                sisaDp: supplierSisaDp,
+                                lpbs: []
+                            };
+                        }
+
+                        supplierMap[supplierName].totalKubikasi += totalKubikasi;
+                        supplierMap[supplierName].totalBayar += totalPembayaran;
+                        supplierMap[supplierName].totalPph22 += pph22;
+                        supplierMap[supplierName].lpbs.push({
+                            ...lpb,
+                            totalPembayaran,
+                            totalKubikasi,
+                            pph22,
+                            totalSetelahPph: totalPembayaran - pph22
+                        });
+                    });
+                }
+            }
+
             // tampilan bootstrap collapse
             $(document).on('shown.bs.collapse hidden.bs.collapse', '.collapse', function(e) {
                 let collapseId = $(this).attr('id');
@@ -529,6 +644,49 @@
             restoreSelectedLPBs(); // 🔹 Memulihkan data LPB yang dipilih
             updateLPBTableUI();
             updateSelectedLPBTable();
+            updateGrandTotalAkhir();
+            loadDpMenungguPembayaran();
+
+            $(document).on('input', '.dp-input', function() {
+                let supplierId = $(this).data('supplier'); // Ambil id supplier
+                let inputField = $(this); // Ambil field input DP
+                let dpAmount = parseFloat($(this).val()) || 0; // DP yang diinput, jika kosong jadi 0
+
+                // Cari data supplier yang sesuai
+                let supplier = null;
+
+                Object.values(supplierMap).forEach(sup => {
+                    if (sup.id == supplierId) {
+                        supplier = sup;
+                    }
+                });
+
+                if (supplier) {
+                    let maxDp = supplier.totalBayar - supplier
+                        .totalPph22; // DP maksimum = Total Bayar - PPh22
+
+                    // Cek apakah DP melebihi maksimum
+                    if (dpAmount > maxDp) {
+
+                        dpAmount = maxDp; // Set DP ke maksimal
+                        inputField.val(maxDp.toFixed(0)); // Update nilai input field
+                    }
+
+                    let totalAkhir = supplier.totalBayar - supplier.totalPph22 - dpAmount;
+
+                    // Pastikan Total Akhir minimal 0
+                    totalAkhir = Math.max(totalAkhir, 0);
+
+                    // Update tampilan Total Akhir
+                    $(`.total-akhir[data-supplier="${supplierId}"]`).text(
+                        `Rp.${money_format(totalAkhir.toFixed(0).toLocaleString(), 0, ',', '.')}`);
+
+                    // Update nilai DP di supplierMap (agar nyambung jika dikirim)
+                    supplier.dp = dpAmount;
+                    supplier.totalAkhir = totalAkhir;
+                    updateGrandTotalAkhir();
+                }
+            });
 
             $('#searchBox').on('input', function() {
 
@@ -564,6 +722,8 @@
                 updateLPBTableUI();
                 updateSelectedLPBTable();
                 updateSelectedSupplierTable();
+                updateSupplierMapFromSelectedLPB(); // Tambahkan pemanggilan fungsi ini
+                updateGrandTotalAkhir()
             });
 
             $(document).on('click', '.remove-lpb-btn', function() {
@@ -581,11 +741,8 @@
                 updateLPBTableUI();
                 updateSelectedLPBTable();
                 updateSelectedSupplierTable();
-            });
-
-            $(document).on('input', '.dp-input', function() {
-                let supplierName = $(this).data('supplier');
-                let dpAmount = $(this).val();
+                updateSupplierMapFromSelectedLPB(); // Tambahkan pemanggilan fungsi ini
+                updateGrandTotalAkhir()
             });
 
             function sendDataToLaravel(selectedLPBData, dpData) {
@@ -610,12 +767,8 @@
 
             function collectDpData() {
                 let dpData = {};
-                $('.dp-input').each(function() {
-                    let supplierName = $(this).data('supplier');
-                    let idSupp = $(this).data('supplier');
-                    let dpAmount = $(this).val();
-
-                    dpData[supplierName] = dpAmount;
+                Object.values(supplierMap).forEach(supplier => {
+                    dpData[supplier.id] = supplier.dp; // pakai id sebagai key, dp sebagai value
                 });
                 return dpData;
             }

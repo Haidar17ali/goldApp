@@ -29,9 +29,9 @@ function nominalKubikasi($details){
 function hitungTotalPembayaran($details)
     {
         $totalPembayaran = 0;
-
+        
         foreach ($details as $detail) {
-            $lpb = LPB::with('details')->find($detail->lpb_id);
+            $lpb = LPB::with('details')->find($detail->id);
 
             if ($lpb) {
                 $totalLpb = 0;

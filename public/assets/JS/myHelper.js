@@ -26,7 +26,7 @@ function loadWithData(url, data){
 
     if ($('#loading').length) {  
         $('#loading').fadeIn(); // Munculkan efek loading
-    }
+    }    
 
     var results;
     $.ajax({
@@ -34,11 +34,11 @@ function loadWithData(url, data){
         async: false,
         data: data,
         dataType: "json",
-        success: function(datas){            
+        success: function(datas){                        
             results = datas;
         },
-        complete: function() {
-            $('#loading').hide(); // Sembunyikan loading setelah request selesai
+        complete: function() {            
+            $('#loading').fadeOut(); // Sembunyikan loading setelah request selesai
         }
     });
     return results;

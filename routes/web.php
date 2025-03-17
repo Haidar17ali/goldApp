@@ -146,6 +146,7 @@ Route::prefix('JM')
 
             // dp
         Route::get('/aktivasi-dp/{modelType}/{id}/{status}', [UtilityController::class, 'activation'])->name('utility.activation-dp');
+        Route::get('/dp-menunggu-pembayaran/', [UtilityController::class, 'getByType'])->name('utility.dp-type'); //get dp for payment
 
             // LPB
         Route::get('/persetujuan-LPB/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-lpb');

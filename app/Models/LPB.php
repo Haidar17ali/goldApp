@@ -61,4 +61,13 @@ class LPB extends Model
     public function npwp(){
         return $this->belongsTo(npwp::class, 'npwp_id');
     }
+
+    // public function lpbs()
+    // {
+    //     return $this->hasMany(PurchaseJurnalLpb::class, 'lpb_id', 'id');
+    // }
+
+    public function DP(){
+        return $this->hasOne(Down_payment::class, 'supplier_id', 'supplier_id')->where('type', 'Out');
+    }
 }

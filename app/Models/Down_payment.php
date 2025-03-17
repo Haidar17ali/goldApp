@@ -8,7 +8,7 @@ class Down_payment extends Model
 {
     protected $fillable = [
         'supplier_id',
-        'pu_id',
+        'pj_id',
         'nominal',
         'date',
         'type',

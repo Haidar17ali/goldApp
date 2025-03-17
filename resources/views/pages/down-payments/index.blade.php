@@ -62,7 +62,7 @@
                                 </td>
                                 <td>
                                     @if ($down_payment->status == 'Pending')
-                                        <a href="{{ route('utility.activation-dp', ['modelType' => 'Down_payment', 'id' => $down_payment->id, 'status' => 'Sukses']) }}"
+                                        <a href="{{ route('utility.activation-dp', ['modelType' => 'Down_payment', 'id' => $down_payment->id, 'status' => 'Menunggu Pembayaran']) }}"
                                             class="badge badge-success"><i class="fas fa-check"></i></a>
                                         <a href="{{ route('utility.activation-dp', ['modelType' => 'down_payment', 'id' => $down_payment->id, 'status' => 'Gagal']) }}"
                                             class="badge badge-danger"><i class="fas fa-times"></i></a>

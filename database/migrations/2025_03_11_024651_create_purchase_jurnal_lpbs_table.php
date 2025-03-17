@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchase_jurnal_details', function (Blueprint $table) {
+        Schema::create('purchase_jurnal_lpbs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('pj_id');
-            $table->enum('status', ['Pending','Terbayar', 'Gagal']);
+            $table->bigInteger('pj_detail_id');
+            $table->bigInteger('lpb_id');
+            $table->bigInteger('pajak');
+            $table->enum('status', ['Pending', 'Terbayar', 'Gagal']);
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('purchase_jurnal_details');
+        Schema::dropIfExists('purchase_jurnal_lpbs');
     }
 };

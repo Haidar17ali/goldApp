@@ -47,9 +47,9 @@
                                 <th scope="row">{{ $loop->iteration }}</th>
                                 <td>{{ date('d-m-Y', strtotime($purchase_jurnal->date)) }}</td>
                                 <td>{{ $purchase_jurnal->pj_code }}</td>
-                                <td>{{ hitungTotalPembayaran($purchase_jurnal->details) }}</td>
-                                <td>{{ hitungTotalPembayaran($purchase_jurnal->details->where('status', 'Gagal')) }}</td>
-                                <td>{{ count($purchase_jurnal->details->where('status', 'Gagal')) }}</td>
+                                <td>{{ hitungTotalPembayaran($purchase_jurnal->allLpbs) }}</td>
+                                <td>{{ hitungTotalPembayaran($purchase_jurnal->failedLpbs) }}</td>
+                                <td>{{ count($purchase_jurnal->failedLpbs) }}</td>
                                 <td>
                                     <span
                                         class="badge {{ $purchase_jurnal->status == 'Selesai' ? 'badge-success' : 'badge-warning' }}">{{ $purchase_jurnal->status }}
@@ -68,10 +68,10 @@
                                             class="badge badge-sm badge-success"><i class="fas fa-check"></i></a>
                                         <a href="{{ route('lpb.ubah', $purchase_jurnal->id) }}"
                                             class="badge badge-sm badge-danger"><i class="fas fa-times"></i></a>
-                                        <a href="{{ route('lpb.ubah', $purchase_jurnal->id) }}"
+                                        <a href="{{ route('purchase-jurnal.ubah', $purchase_jurnal->id) }}"
                                             class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
-                                        <form action="{{ route('lpb.hapus', $purchase_jurnal->id) }}" class="d-inline"
-                                            id="delete{{ $purchase_jurnal->id }}" method="post">
+                                        <form action="{{ route('purchase-jurnal.hapus', $purchase_jurnal->id) }}"
+                                            class="d-inline" id="delete{{ $purchase_jurnal->id }}" method="post">
                                             @csrf
                                             @method('DELETE')
                                             <a href="#" data-id="{{ $purchase_jurnal->id }}"

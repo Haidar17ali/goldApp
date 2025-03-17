@@ -12,4 +12,9 @@ class PurchaseJurnalDetail extends Model
         'lpb_id',
         'status',
     ];
+
+    public function lpbs()
+    {
+        return $this->belongsToMany(Lpb::class, 'purchase_jurnal_lpbs', 'pj_detail_id', 'lpb_id')->withPivot('status');
+    }
 }
