@@ -49,6 +49,7 @@ class PurchaseJurnalController extends Controller
             $lpbs = $request->input('lpbs'); // Array data LPB yang mau diproses
             $dp = $request->input('dp'); // Array data DP
             $pj_code = "PJ" . date('YmdHis') . '.' . count($lpbs); // Buat kode unik
+            $dpWaitLists = Down_payment::where('status', 'Menunggu Pembayaran')->get();
     
             // 2. Buat Purchase Jurnal (Header)
             $pj = PurchaseJurnal::create([
@@ -57,6 +58,14 @@ class PurchaseJurnalController extends Controller
                 'created_by' => Auth::id(),
                 'status' => 'Proses'
             ]);
+
+            // rubah status purchase jurnal menjadi sukses dan beri purchase jurnal id biar tau dp ini di bayarkan sama siapa
+            if(count($dpWaitLists)){
+                foreach($dpWaitLists as $dpList){
+                    $dpList->pj_id = $pj->id;
+                    $dpList->save();
+                }
+            }
             
             // 3. Buat Detail Purchase Jurnal
             $pjDetail = PurchaseJurnalDetail::create([
@@ -140,9 +149,18 @@ class PurchaseJurnalController extends Controller
             $lpbs = $request->input('lpbs'); // Array data LPB yang mau diproses
             $dp = $request->input('dp'); // Array data DP
             $deletedLpbs = $request->input('deleted_lpbs', []); // Array LPB yang mau dihapus
+            $dpWaitLists = Down_payment::where('status', 'Menunggu Pembayaran')->get();
 
             // 2. Ambil Purchase Jurnal yang mau diupdate
             $pj = PurchaseJurnal::findOrFail($id);
+
+            // rubah status purchase jurnal menjadi sukses dan beri purchase jurnal id biar tau dp ini di bayarkan sama siapa
+            if(count($dpWaitLists)){
+                foreach($dpWaitLists as $dpList){
+                    $dpList->pj_id = $pj->id;
+                    $dpList->save();
+                }
+            }
 
             // 3. Update Purchase Jurnal (Header)
             $pj->update([
@@ -154,14 +172,25 @@ class PurchaseJurnalController extends Controller
             $pjDetail = PurchaseJurnalDetail::where('pj_id', $pj->id)->firstOrFail();
 
             // 5. Sync LPB yang dipilih
-            $pjDetail->lpbs()->syncWithPivotValues(array_column($lpbs, 'id'), [
-                'status' => 'Pending', // Atau sesuaikan status yang diinginkan
-                'updated_at' => now()
-            ]);
+            // $pjDetail->lpbs()->syncWithPivotValues(array_column($lpbs, 'id'), [
+            //     'status' => 'Pending', // Atau sesuaikan status yang diinginkan
+            //     'updated_at' => now()
+            // ]);
 
             // 6. Loop setiap LPB yang dipilih untuk update status global LPB
+            // 4. Loop setiap LPB yang dipilih
             foreach ($lpbs as $lpb) {
-                $lpbData = Lpb::findOrFail($lpb['id']);
+                $lpbData = Lpb::with(['details'])->findOrFail($lpb['id']); // Ambil data LPB berdasarkan ID
+                $pajak = nominalKubikasi($lpbData->details) * 0.0025;
+                // 5. Simpan relasi LPB ke Detail lewat pivot
+                $pjDetail->lpbs()->syncWithPivotValues(array_column($lpbs, 'id'), [
+                    'pajak' => round($pajak), // Status awal LPB dalam jurnal ini
+                    'status' => 'Pending', // Status awal LPB dalam jurnal ini
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+    
+                // 6. Update status global LPB jadi "Menunggu Pembayaran"
                 $lpbData->update(['status' => 'Menunggu Pembayaran']);
             }
             
@@ -217,7 +246,9 @@ class PurchaseJurnalController extends Controller
         DB::beginTransaction();
 
         try {
-            $purchaseJurnal = PurchaseJurnal::findOrFail($id);
+            $purchaseJurnal = PurchaseJurnal::with([
+                'details.lpbs.details' // untuk ambil detail kayu
+            ])->findOrFail($id);
 
             // 1. Ambil semua LPB yang terkait dengan Purchase Jurnal
             $lpbs = $purchaseJurnal->details->flatMap(function ($detail) {
@@ -227,6 +258,22 @@ class PurchaseJurnalController extends Controller
             // 2. Ubah status LPB menjadi "Pending"
             foreach ($lpbs as $lpb) {
                 $lpb->update(['status' => 'Pending']);
+            }
+
+            if(count($purchaseJurnal->details)){
+                foreach($purchaseJurnal->details as $detail){
+                    PurchaseJurnalLpb::where('pj_detail_id', $detail->id)->delete();
+                    $detail->delete();
+                }
+            }
+            
+            // ambil data dp yang mempunyai id pj ini
+            $getDownPayments = Down_payment::where('pj_id', $id)->get();
+            if(count($getDownPayments)){
+                foreach($getDownPayments as $downPayment){
+                    $downPayment->pj_id = null;
+                    $downPayment->save();
+                }
             }
 
             // 3. Hapus Purchase Jurnal

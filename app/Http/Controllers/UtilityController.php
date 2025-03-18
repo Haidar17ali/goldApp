@@ -94,14 +94,26 @@ class UtilityController extends Controller
 
     public function getByType(Request $request) {
         $modelClass = 'App\Models\\' . ucfirst($request->model);
+        $isEdit = $request->isEdit;
+        $pjId = $request->pj_id;
         if (!class_exists($modelClass)) {
             return redirect()->back()->with('error', 'Model tidak ditemukan');
         }
+        
+        if ($request->model ==  'Down_payment'){
+            $response = $modelClass::where('status', $request->type)->where('pj_id', null)->get();
+            
+            if($request->relation){
+                $response = $modelClass::with($request->relation)->where('status', $request->type)->where('pj_id', null)->get();
+            }
 
-        $response = $modelClass::where('status', $request->type)->get();
-
-        if($request->relation){
-            $response = $modelClass::with($request->relation)->where('status', $request->type)->get();
+            if($isEdit){
+                $response = $modelClass::where('status', $request->type)->where('pj_id', null)->orwhere('pj_id', $pjId)->get();
+    
+                if($request->relation){
+                    $response = $modelClass::with($request->relation)->where('status', $request->type)->where('pj_id', null)->orwhere('pj_id', $pjId)->get();
+                }
+            }
         }
         
         return response()->json($response);

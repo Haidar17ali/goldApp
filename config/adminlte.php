@@ -323,7 +323,7 @@ return [
         
         
         [
-            'text' => 'Master',
+            'text' => 'Master Data',
             'icon' => 'fas fa-database',
             'submenu' => [
                 [
@@ -346,125 +346,85 @@ return [
                     'text' => 'Stok',
                     'icon' => 'fas fa-warehouse',
                     'submenu' => [
-                      [
-                        'text' => 'Sengon',
-                        'url' => 'JM/log/Sengon',
-                      ],
-                      [
-                        'text' => 'Merbau',
-                        'url' => 'JM/log/Merbau',
-                      ]  
+                        [
+                            'text' => 'Sengon',
+                            'url' => 'JM/log/Sengon',
+                        ],
+                        [
+                            'text' => 'Merbau',
+                            'url' => 'JM/log/Merbau',
+                        ]
                     ],
                 ]
             ],
         ],
         [
-            'text' => 'Surat Jalan',
+            'text' => 'Transaksi & Operasional',
+            'icon' => 'fas fa-exchange-alt',
             'submenu' => [
                 [
-                'text' => 'Barang Masuk',
-                'url' => 'JM/surat-jalan/In',
-                ],
-                [
-                'text' => 'Barang Masuk',
-                'url' => 'JM/Out/surat-jalan/Out',
-                ]  
-            ],
-        ],
-        [
-            'text' => 'PO',
-            'icon' => 'fas fa-money-bill-wave-alt',
-            'submenu' => [
-              [
-                'text' => 'Barang Pembantu',
-                'url' => 'JM/purchase-order/Bahan-Pembantu',
-              ],
-              [
-                'text' => 'SPK',
-                'url' => 'JM/purchase-order/SPK',
-              ],  
-              [
-                'text' => 'Sengon',
-                'url' => 'JM/purchase-order/Sengon',
-              ],  
-            ],
-        ],
-        [
-            'text' => 'LPB',
-            'icon' => 'fas fa-shopping-cart',
-            'url' => 'JM/lpb',        
-        ],
-        [
-            'text' => 'Purchase Jurnal',
-            'icon' => 'fas fa-book',
-            'url' => 'JM/purchase-jurnal',        
-        ],
-        [
-            'text' => 'DP',
-            'icon' => 'fas fa-money-bill-wave-alt',
-            'url' => 'JM/down-payment',        
-        ],
-        // [
-        //     'text' => 'pages',
-        //     'url' => 'admin/pages',
-        //     'icon' => 'far fa-fw fa-file',
-        //     'label' => 4,
-        //     'label_color' => 'success',
-        // ],
-        ['header' => 'account_settings'],
-        [
-            'text' => 'profile',
-            'url' => 'admin/settings',
-            'icon' => 'fas fa-fw fa-user',
-        ],
-        [
-            'text' => 'change_password',
-            'url' => 'admin/settings',
-            'icon' => 'fas fa-fw fa-lock',
-        ],
-        [
-            'text' => 'multilevel',
-            'icon' => 'fas fa-fw fa-share',
-            'submenu' => [
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                ],
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
+                    'text' => 'Surat Jalan',
+                    'icon' => 'fas fa-truck',
                     'submenu' => [
                         [
-                            'text' => 'level_two',
-                            'url' => '#',
+                            'text' => 'Barang Masuk',
+                            'url' => 'JM/surat-jalan/In',
                         ],
                         [
-                            'text' => 'level_two',
-                            'url' => '#',
-                            'submenu' => [
-                                [
-                                    'text' => 'level_three',
-                                    'url' => '#',
-                                ],
-                                [
-                                    'text' => 'level_three',
-                                    'url' => '#',
-                                ],
-                            ],
+                            'text' => 'Barang Keluar',
+                            'url' => 'JM/Out/surat-jalan/Out',
+                        ]
+                    ],
+                ],
+                [
+                    'text' => 'LPB (Laporan Penerimaan Barang)',
+                    'icon' => 'fas fa-shopping-cart',
+                    'url' => 'JM/lpb',
+                ],
+                [
+                    'text' => 'PO (Purchase Order)',
+                    'icon' => 'fas fa-money-bill-wave-alt',
+                    'submenu' => [
+                        [
+                            'text' => 'Barang Pembantu',
+                            'url' => 'JM/purchase-order/Bahan-Pembantu',
+                        ],
+                        [
+                            'text' => 'SPK',
+                            'url' => 'JM/purchase-order/SPK',
+                        ],
+                        [
+                            'text' => 'Sengon',
+                            'url' => 'JM/purchase-order/Sengon',
                         ],
                     ],
                 ],
                 [
-                    'text' => 'level_one',
-                    'url' => '#',
+                    'text' => 'Purchase Jurnal',
+                    'icon' => 'fas fa-book',
+                    'url' => 'JM/purchase-jurnal',
+                ],
+                [
+                    'text' => 'DP (Down Payment)',
+                    'icon' => 'fas fa-money-bill-wave-alt',
+                    'url' => 'JM/down-payment',
                 ],
             ],
         ],
-        
+        ['header' => 'Pengaturan Akun'],
+        [
+            'text' => 'Profil',
+            'icon' => 'fas fa-user',
+            'url' => 'admin/settings',
+        ],
+        [
+            'text' => 'Ganti Password',
+            'icon' => 'fas fa-lock',
+            'url' => 'admin/settings',
+        ],
         [
             'text' => 'Pengelolaan Pengguna',
             'icon' => 'fas fa-users',
-            'url' => '#',
             'submenu' => [
                 [
                     'text' => 'Role',
@@ -476,26 +436,26 @@ return [
                 ],
                 [
                     'text' => 'Pengguna',
-                    'url' => '#',
+                    'url' => 'JM/user-management',
                 ],
             ],
         ],
-        ['header' => 'labels'],
-        [
-            'text' => 'important',
-            'icon_color' => 'red',
-            'url' => '#',
-        ],
-        [
-            'text' => 'warning',
-            'icon_color' => 'yellow',
-            'url' => '#',
-        ],
-        [
-            'text' => 'information',
-            'icon_color' => 'cyan',
-            'url' => '#',
-        ],
+        // ['header' => 'labels'],
+        // [
+        //     'text' => 'important',
+        //     'icon_color' => 'red',
+        //     'url' => '#',
+        // ],
+        // [
+        //     'text' => 'warning',
+        //     'icon_color' => 'yellow',
+        //     'url' => '#',
+        // ],
+        // [
+        //     'text' => 'information',
+        //     'icon_color' => 'cyan',
+        //     'url' => '#',
+        // ],
     ],
 
     /*

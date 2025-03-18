@@ -57,11 +57,11 @@
                     <thead>
                         <tr>
                             <th>Supplier</th>
-                            <th>Sisa DP</th>
+                            <th>Sisa Uang Muka</th>
                             <th>Total Kubikasi</th>
                             <th>Total LPB</th>
                             <th>Total PPh 22</th>
-                            <th>DP</th>
+                            <th>Uang Muka</th>
                             <th>Total Akhir</th>
                         </tr>
                     </thead>
@@ -70,24 +70,33 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="4" style="text-align:right;">Grand Total Akhir:</th>
+                            <th colspan="6" style="text-align:right;">Grand Total Akhir:</th>
                             <th id="grand-total-akhir">Rp.0</th>
                         </tr>
                     </tfoot>
                 </table>
-                <h5>DP Menunggu Pembayaran</h5>
+                <h5>Uang Muka Menunggu Pembayaran</h5>
                 <table class="table table-bordered" id="dp-menunggu-table">
                     <thead>
                         <tr>
                             <th>Supplier</th>
                             <th>Tanggal DP</th>
-                            <th>Jumlah DP</th>
+                            <th>Jumlah Uang Muka</th>
                         </tr>
                     </thead>
                     <tbody>
                         <!-- Dynamic Content via JS -->
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2" style="text-align:right;">Grand Total Uang Muka:</th>
+                            <th id="grand-total-dp">Rp.0</th>
+                        </tr>
+                    </tfoot>
                 </table>
+                <h6 class="text-end">
+                    <strong>Total Keseluruhan: <span id="total-keseluruhan">Rp.0</span></strong>
+                </h6>
             </div>
             <div class="float-right">
                 <a href="{{ route('purchase-jurnal.index') }}" class="btn btn-danger">Batal</a>
@@ -217,6 +226,13 @@
             let debounceTimer;
             let supplierMap = {}; // Global
 
+            loadLpbs();
+            restoreSelectedLPBs(); // 🔹 Memulihkan data LPB yang dipilih
+            updateLPBTableUI();
+            updateSelectedLPBTable();
+            updateGrandTotalAkhir();
+            loadDpMenungguPembayaran();
+
             // detail lpb
             $("#detailLpb").on('click', function() {
                 let id = $(this).data('id');
@@ -324,6 +340,7 @@
                 let data = {
                     type: 'Menunggu Pembayaran',
                     model: 'Down_payment',
+                    from: 'DP',
                     relation: [
                         'supplier'
                     ]
@@ -336,9 +353,9 @@
                 let totalDpMenunggu = 0;
 
                 if (down_payments != null) {
-
                     down_payments.forEach(dp => {
-                        totalDpMenunggu += dp.jumlah;
+                        totalDpMenunggu += dp.nominal;
+                        window.totalDpMenungguPembayaran = totalDpMenunggu
 
                         let row = `
                         <tr>
@@ -356,11 +373,12 @@
                 }
 
                 // Tampilkan total DP menunggu di bagian lain atau akumulasi
-                $('#total-dp-menunggu').text(
-                    `Rp.${money_format(totalDpMenunggu.toLocaleString(), 0, ',', '.')}`);
+                $('#grand-total-dp').text(
+                    `Rp.${money_format(totalDpMenunggu.toFixed(0).toLocaleString(), 0, ',', '.')}`
+                );
 
                 // Akumulasi ke Grand Total
-                updateGrandTotalAkhir(totalDpMenunggu); // tambahkan parameter
+                updateGrandTotalAkhir(); // tambahkan parameter
             }
 
             function updateSelectedLPBTable() {
@@ -525,16 +543,16 @@
                                                         </thead>
                                                         <tbody>
                                                             ${supplier.lpbs.map(lpb => `
-                                                                                                                                                                                                                                                                                                                                                                                                                                        <tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${lpb.code}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${lpb.nopol}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>${lpb.totalKubikasi.toFixed(4)}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.totalPembayaran.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.pph22.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.totalSetelahPph.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                            <td><button class="btn btn-danger btn-sm remove-lpb-btn" data-id="${lpb.id}"><i class="fas fa-trash"></i></button></td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                        </tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                    `).join('')}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <tr>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${lpb.code}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${lpb.nopol}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>${lpb.totalKubikasi.toFixed(4)}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>Rp.${money_format(lpb.totalPembayaran.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>Rp.${money_format(lpb.pph22.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td>Rp.${money_format(lpb.totalSetelahPph.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <td><button class="btn btn-danger btn-sm remove-lpb-btn" data-id="${lpb.id}"><i class="fas fa-trash"></i></button></td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </tr>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            `).join('')}
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -570,7 +588,7 @@
             }
 
             function updateGrandTotalAkhir() {
-                let grandTotal = 0;
+                let grandTotalLPB = 0;
 
                 // Loop semua supplier untuk totalAkhir
                 for (let supplierId in supplierMap) {
@@ -580,14 +598,28 @@
                     let dp = supplier.dp || 0;
 
                     let totalAkhir = totalBayar - totalPph22 - dp;
-                    totalAkhir = Math.max(totalAkhir, 0); // pastikan tidak minus
+                    totalAkhir = Math.max(totalAkhir, 0); // Pastikan tidak minus
 
-                    grandTotal += totalAkhir;
+                    grandTotalLPB += totalAkhir;
                 }
 
-                // Update tampilan Grand Total Akhir
+                // 🔹 Ambil Total DP Menunggu Pembayaran
+                let totalDpMenunggu = window.totalDpMenungguPembayaran || 0;
+
+
+
+                // 🔹 Hitung Total Keseluruhan (LPB + DP Menunggu)
+                let totalKeseluruhan = grandTotalLPB + totalDpMenunggu;
+
+                // 🔹 Update tampilan Grand Total Akhir LPB
                 $('#grand-total-akhir').text(
-                    `Rp.${money_format(grandTotal.toFixed(0).toLocaleString(), 0, ',', '.')}`);
+                    `Rp.${money_format(grandTotalLPB.toFixed(0).toLocaleString(), 0, ',', '.')}`
+                );
+
+                // 🔹 Update tampilan Total Keseluruhan
+                $('#total-keseluruhan').text(
+                    `Rp.${money_format(totalKeseluruhan.toFixed(0).toLocaleString(), 0, ',', '.')}`
+                );
             }
 
             function updateSupplierMapFromSelectedLPB() {
@@ -639,13 +671,6 @@
                 collapseState[collapseId] = isOpen;
                 localStorage.setItem('collapseState', JSON.stringify(collapseState));
             });
-
-            loadLpbs();
-            restoreSelectedLPBs(); // 🔹 Memulihkan data LPB yang dipilih
-            updateLPBTableUI();
-            updateSelectedLPBTable();
-            updateGrandTotalAkhir();
-            loadDpMenungguPembayaran();
 
             $(document).on('input', '.dp-input', function() {
                 let supplierId = $(this).data('supplier'); // Ambil id supplier
