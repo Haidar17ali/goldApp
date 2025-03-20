@@ -583,6 +583,21 @@ return [
                 ],
             ],
         ],
+        'PrintJs' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => '//printjs-4de6.kxcdn.com/print.min.css',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => '//printjs-4de6.kxcdn.com/print.min.js',
+                ],
+            ],
+        ],
     ],
 
     /*

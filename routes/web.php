@@ -154,4 +154,7 @@ Route::prefix('JM')
 
         // search data
         Route::get('data/search',[UtilityController::class, 'search'])->name('search');
+
+        // print data
+        Route::get('cetak/surat-jalan', [UtilityController::class, 'getByID'])->name('utility.cetak-surat-jalan');
     });

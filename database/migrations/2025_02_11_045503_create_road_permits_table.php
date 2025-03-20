@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('road_permits', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->text('code');
             $table->date('date');
             $table->time('in');
             $table->dateTime('out')->nullable();

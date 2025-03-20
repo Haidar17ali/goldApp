@@ -23,10 +23,12 @@ function nominalKubikasi(details){
 }
 
 function loadWithData(url, data){
+    
 
     if ($('#loading').length) {  
         $('#loading').fadeIn(); // Munculkan efek loading
-    }    
+    }  
+          
 
     var results;
     $.ajax({
@@ -34,7 +36,7 @@ function loadWithData(url, data){
         async: false,
         data: data,
         dataType: "json",
-        success: function(datas){                        
+        success: function(datas){                                    
             results = datas;
         },
         complete: function() {            

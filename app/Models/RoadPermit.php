@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class RoadPermit extends Model
 {
     protected $fillable = [
+        'code',
         'date',
         'in',
         'out',

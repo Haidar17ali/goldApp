@@ -60,6 +60,7 @@ class RoadPermitController extends Controller
     
         // Simpan data utama
         $data = [
+            'code' => generateCode('SJ', 'road_permits', 'code'),
             'date' => date('Y-m-d'),
             'in' => date('H:i:s', time()),
             'from' => $request->from,

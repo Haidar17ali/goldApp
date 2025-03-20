@@ -81,8 +81,10 @@
                                         <a href="{{ route('surat-jalan.keluar', $road_permit->id) }}"
                                             class="badge badge-warning"><i class="fas fa-hourglass-end"></i></a>
                                         {{-- edit data --}}
-                                        <a href="{{ route('surat-jalan.set-pembongkar', ['type' => $type, 'id' => $road_permit->id]) }}"
-                                            class="badge badge-primary"><i class="fas fa-male"></i></a>
+                                        <a href="#" data-id="{{ $road_permit->id }}"
+                                            class="badge badge-primary print"><i class="fas fa-print"></i>Print</a>
+                                        {{-- <a href="{{ route('surat-jalan.set-pembongkar', ['type' => $type, 'id' => $road_permit->id]) }}"
+                                            class="badge badge-primary"><i class="fas fa-male"></i></a> --}}
                                         <a href="{{ route('surat-jalan.ubah', ['type' => $type, 'id' => $road_permit->id]) }}"
                                             class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
                                     @endif
@@ -142,6 +144,9 @@
         </div>
     </div>
 
+    {{-- print js --}}
+    <div id="print-area"></div>
+
 @stop
 
 @section('css')
@@ -151,6 +156,7 @@
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
+    <script src="{{ asset('assets/JS/myHelper.js') }}"></script>
     <script>
         localStorage.removeItem('editRoadPermitDetails');
         $(document).ready(function() {
@@ -214,5 +220,77 @@
                     }
                 })
             });
+            @section('plugins.PrintJs', true)
+                $(".print").on('click', function(e) {
+                    e.preventDefault();
+                    let id = $(this).data('id');
+                    let data = {
+                        id: id,
+                        model: "RoadPermit"
+                    };
+
+                    let datas = loadWithData("{{ route('utility.cetak-surat-jalan') }}", data)
+
+                    // Template untuk print
+                    let printContent = `
+                                        <div style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px;">
+                                            CV. JATI MAKMUR
+                                        </div>
+
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px;">
+                                            <div><strong>Kode Surat Jalan:</strong> ${datas.code}</div>
+                                            <div><strong>Tanggal Kedatangan:</strong> ${datas.date}</div>
+                                        </div>
+
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px;">
+                                            <div>
+                                                <strong>Pengirim:</strong> ${datas.from}<br>
+                                                <strong>Tujuan:</strong> ${datas.destination}<br>
+                                                <strong>Nopol:</strong> ${datas.nopol}<br>
+                                                <strong>Kendaraan:</strong> ${datas.vehicle}
+                                            </div>
+                                            <div>
+                                                <strong>Jam Masuk:</strong> ${datas.in}<br>
+                                                <strong>Jam Keluar:</strong> 
+                                            </div>
+                                        </div>
+
+                                        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; border: 2px solid black;">
+                                            <thead>
+                                                <tr>
+                                                    <th style="border: 2px solid black; text-align:center; padding: 8px; background-color: #f2f2f2;">Afkir</th>
+                                                    <th style="border: 2px solid black; text-align:center; padding: 8px; background-color: #f2f2f2;">130</th>
+                                                    <th style="border: 2px solid black; text-align:center; padding: 8px; background-color: #f2f2f2;">260</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td style="border: 2px solid black; padding: 8px; text-align: center;">..... BTG</td>
+                                                    <td style="border: 2px solid black; padding: 8px; text-align: center;">..... BTG</td>
+                                                    <td style="border: 2px solid black; padding: 8px; text-align: center;">..... BTG</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    `;
+
+                    // Tampilkan di area cetak
+                    $("#print-area").html(printContent);
+
+                    // Jalankan Print.js
+                    printJS({
+                        printable: 'print-area',
+                        type: 'html',
+                        style: `
+                                    body { font-family: Arial, sans-serif; font-size: 14px; }
+                                    table { width: 100%; border-collapse: collapse; }
+                                    th, td { border: 1px solid black; padding: 8px; text-align: left; }
+                                    th { background-color: #f2f2f2; }
+                                    div { margin-bottom: 10px; }
+                                `,
+                        scanStyles: false
+                    });
+
+
+                });
     </script>
 @stop
