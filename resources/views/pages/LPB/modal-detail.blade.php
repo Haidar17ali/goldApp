@@ -37,6 +37,7 @@
                     </thead>
                     <tbody id="modalDetail">
                     </tbody>
+                    <tfoot id="infoDetail"></tfoot>
                 </table>
             </div>
             <div class="modal-footer">

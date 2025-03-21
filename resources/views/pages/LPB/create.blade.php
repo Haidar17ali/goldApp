@@ -142,6 +142,14 @@
                                 <span class="text-danger error-text" id="conversion_error"></span>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="conversion" class="col-sm-2 col-form-label">Perhutani</label>
+                            <div class="col-sm-4">
+                                <input type="numeric" class="form-control" id="conversion" name="conversion"
+                                    value="{{ old('conversion') }}">
+                                <span class="text-danger error-text" id="conversion_error"></span>
+                            </div>
+                        </div>
                         <h3>Data Barang</h3>
                         <hr>
                         <span class="text-danger error-text" id="details_error"></span>

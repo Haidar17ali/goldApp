@@ -22,6 +22,63 @@ function nominalKubikasi(details){
     return money_format(total,0, ',', '.');
 }
 
+function getDetailLpb(url, data){
+    let lpbDetail = loadWithData(url, data);
+
+
+
+    $("#modalKitir").text(lpbDetail.no_kitir);
+    $("#modalKode").text(lpbDetail.code);
+    $("#modalSupplier").text(lpbDetail.supplier != null ? lpbDetail.supplier.name : "");
+    $("#modalNopol").text(lpbDetail.nopol);
+    $("#modalVehicle").text(lpbDetail.road_permit != null ? lpbDetail.road_permit.vehicle :
+        "Kendaraan tidak ditemukan!");
+
+    // table
+    // Loop data.details dan masukkan ke dalam tabel
+    let tableContent = "";
+    let tFootContent = "";
+    let totalLPB = 0;
+    lpbDetail.details.forEach((detail, index) => {
+        totalLPB += kubikasi(detail.diameter, detail.length, detail.qty) * detail.price
+        tableContent += `
+            <tr>
+                <td>${detail.product_code}</td>
+                <td>${detail.quality}</td>
+                <td>${detail.length}</td>
+                <td>${detail.diameter}</td>
+                <td>${detail.qty}</td>
+                <td>${kubikasi(detail.diameter,detail.length,detail.qty)}</td>
+                <td>${money_format(detail.price,0,',','.')}</td>
+                <td>${money_format(kubikasi(detail.diameter,detail.length,detail.qty)*detail.price,0,',','.')}</td>
+            </tr>
+        `;
+    });
+
+    tableContent += `
+            <tr>
+                <td colspan="7" class="text-right">Total LPB:</td>
+                <td>${money_format(totalLPB,0,',','.')}</td>
+            </tr>
+            <tr>
+                <td colspan="7" class="text-right">PPH 22:</td>
+                <td>${money_format(totalLPB*0.0025,0,',','.')}</td>
+            </tr>
+            <tr>
+                <td colspan="7" class="text-right">Pot Konversi:</td>
+                <td>${money_format(lpbDetail.conversion*3000,0,',','.')}</td>
+            </tr>
+            <tr>
+                <td colspan="7" class="text-right">Total Yg Transfer:</td>
+                <td>${money_format(totalLPB-(totalLPB*0.0025)-lpbDetail.conversion*3000,0,',','.')}</td>
+            </tr>
+        `;
+
+    // Masukkan ke dalam <tbody>
+    $("#modalDetail").html(tableContent);
+    $("#infoDetail").html(tFootContent);
+}
+
 function loadWithData(url, data){
     
 

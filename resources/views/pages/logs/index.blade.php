@@ -41,8 +41,10 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">ID Produksi</th>
-                        <th scope="col">Barcode</th>
+                        @if ($type == 'Merbau')
+                            <th scope="col">ID Produksi</th>
+                            <th scope="col">Barcode</th>
+                        @endif
                         <th scope="col">Code</th>
                         <th scope="col">Kualitas</th>
                         <th scope="col">Panjang</th>
@@ -57,14 +59,17 @@
                         @foreach ($logs as $log)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $log->id_produksi }}</td>
-                                <td>{{ $log->barcode }}</td>
+                                @if ($type == 'Merbau')
+                                    <td>{{ $log->id_produksi }}</td>
+                                    <td>{{ $log->barcode }}</td>
+                                @endif
                                 <td>{{ $log->code }}</td>
                                 <td>{{ $log->quality }}</td>
                                 <td>{{ $log->length }}</td>
                                 <td>{{ $log->diameter }}</td>
-                                <td>{{ $log->quantity }}</td>
-                                <td>{{ kubikasi($log->diameter, $log->length, $log->quantity) }}</td>
+                                <td>{{ $log->stock != null ? $log->stock->qty : 0 }}</td>
+                                <td>{{ kubikasi($log->diameter, $log->length, $log->stock != null ? $log->stock->qty : 0) }}
+                                </td>
                                 <td>
                                     <a href="{{ route('log.ubah', ['type' => $type, 'id' => $log->id]) }}"
                                         class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
@@ -86,7 +91,19 @@
                         </tr>
                     @endif
                 </tbody>
+                <tfoot>
+                    @foreach ($infoAll as $index => $infoStock)
+                        <tr style="font-weight: bold;">
+                            <td colspan="5">Stock {{ $index }} :</td>
+                            <td>{{ $infoStock['total'] }} Btg</td>
+                            <td colspan="2">{{ $infoStock['kubikasi'] }} M3</td>
+                        </tr>
+                    @endforeach
+                </tfoot>
             </table>
+            @if ($logs->hasPages())
+                {{ $logs->links() }}
+            @endif
         </div>
     </div>
 

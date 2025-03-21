@@ -10,8 +10,38 @@ use Maatwebsite\Excel\Facades\Excel;
 class LogController extends Controller
 {
     public function index($type){
-        $logs = Log::where('type', $type)->paginate(20);
-        return view('pages.logs.index', compact(['logs', 'type']));
+        $logs = Log::where('type', $type)->with(['stock'])->paginate(20);
+        $allLogs = Log::with(['stock'])->get();
+
+        $infoAll = [
+                "Afkir" =>[
+                    "total" => 0,
+                    "kubikasi" => 0,
+                ],
+                "130" => [
+                    "total" => 0,
+                    "kubikasi" => 0,
+                ],
+                "260" => [
+                    "total" => 0,
+                    "kubikasi" => 0,
+                ]
+            ];
+            
+        foreach($allLogs as $log){
+            if($log->quality == "Afkir" && $log->length == "130"){
+                $infoAll["Afkir"]['total'] += $log->stock != null ? $log->stock->qty : 0;
+                $infoAll["Afkir"]['kubikasi'] += $log->stock != null ? kubikasi($log->diameter,$log->length,$log->stock->qty) : 0;
+            }else if($log->quality == "Super"&& $log->length == "130"){
+                $infoAll["130"]['total'] += $log->stock != null ? $log->stock->qty : 0;
+                $infoAll["130"]['kubikasi'] += $log->stock != null ? kubikasi($log->diameter,$log->length,$log->stock->qty) : 0;
+            }elseif($log->quality == "Super"&& $log->length == "260"){
+                $infoAll["260"]['total'] += $log->stock != null ? $log->stock->qty : 0;
+                $infoAll["260"]['kubikasi'] += $log->stock != null ? kubikasi($log->diameter,$log->length,$log->stock->qty) : 0;
+            }
+        }
+
+        return view('pages.logs.index', compact(['logs', 'type', "infoAll"]));
     }
 
     public function create($type){

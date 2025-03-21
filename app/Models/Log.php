@@ -16,4 +16,8 @@ class Log extends Model
         'diameter',
         'quantity',
     ];
+
+    public function stock(){
+        return $this->hasOne(Stock::class, 'log_id');
+    }
 }

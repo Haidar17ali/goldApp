@@ -150,7 +150,7 @@ Route::prefix('JM')
 
             // LPB
         Route::get('/persetujuan-LPB/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-lpb');
-        Route::get('/get-lpb-detail/{id}/detail', [UtilityController::class, 'getById'])->name('utility.lpb-ajax-detail');
+        Route::get('/get-lpb-detail/detail', [UtilityController::class, 'getById'])->name('utility.lpb-ajax-detail');
 
         // search data
         Route::get('data/search',[UtilityController::class, 'search'])->name('search');

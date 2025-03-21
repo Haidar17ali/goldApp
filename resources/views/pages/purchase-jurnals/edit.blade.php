@@ -112,60 +112,14 @@
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="detailModalLabel">Detail LPB</h5>
-
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p>Kitir: <span id="modalKitir"></span></p>
-                            <p>Kode LPB: <span id="modalKode"></span></p>
-                            <p>Nama Supplier: <span id="modalSupplier"></span></p>
-                        </div>
-                        <div class="col-md-6">
-                            <p>Nopol: <span id="modalNopol"></span></p>
-                            <p>Kendaraan: <span id="modalVehicle"></span></p>
-                        </div>
-                    </div>
-
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Produk Kode</th>
-                                <th>Kualitas</th>
-                                <th>Panjang</th>
-                                <th>Diameter</th>
-                                <th>Jumlah</th>
-                                <th>Kubikasi</th>
-                                <th>Harga/Kubikasi</th>
-                                <th>Harga</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modalDetail">
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="loading" style="display: none;">
         <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
             <i class="fa fa-spinner fa-spin fa-3x"></i> <!-- Font Awesome spinner -->
             <p>Loading...</p>
         </div>
     </div>
+    {{-- modal --}}
+    @include('pages.lpb.modal-detail')
 @stop
 
 @section('css')
@@ -234,41 +188,7 @@
             localStorage.setItem('editSelectedLPBs', JSON.stringify(selectedLpbs));
             localStorage.setItem('editSelectedLPBData', JSON.stringify(selectedLpbData));
 
-            // detail lpb
-            $("#detailLpb").on('click', function() {
-                let id = $(this).data('id');
-                let kitir = $(this).data('kitir');
-                let code = $(this).data('code');
-                let supplier = $(this).data('supplier');
-                let nopol = $(this).data('nopol');
-                let vehicle = $(this).data('vehicle');
-                let details = $(this).data('details');
 
-                // ganti text
-                $('#modalKitir').text(kitir);
-                $('#modalKode').text(code);
-                $('#modalSupplier').text(supplier);
-                $('#modalNopol').text(nopol);
-                $('#modalVehicle').text(vehicle);
-
-                var html = '';
-                $.each(details, function(index, detail) {
-                    html += '<tr>';
-                    html += '<td>' + detail.product_code + '</td>';
-                    html += '<td>' + detail.quality + '</td>';
-                    html += '<td>' + detail.length + '</td>';
-                    html += '<td>' + detail.diameter + '</td>';
-                    html += '<td>' + (detail.qty) + '</td>';
-                    html += '<td>' + kubikasi(detail.diameter, detail.length, detail.qty) +
-                        '</td>';
-                    html += '<td>Rp' + money_format(detail.price, 0, ',', '.') + '</td>';
-                    html += '<td>Rp' + money_format(kubikasi(detail.diameter, detail.length, detail
-                            .qty) *
-                        detail.price, 0, ',', '.') + '</td>';
-                    html += '</tr>';
-                });
-                $('#modalDetail').html(html);
-            });
 
             async function loadLpbs(search = '') {
                 try {
@@ -321,7 +241,7 @@
                         <td>${totals.total260}</td>
                         <td>${nominalKubikasi(lpb.details)}</td>
                         <td>
-                            <button class="btn btn-info btn-sm"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-info btn-sm btn-modal-detail" data-toggle="modal" data-id="${lpb.id}" data-target="#detailModal"><i class="fas fa-eye"></i></button>
                             <a href="${editUrl}" class="btn btn-success btn-sm"><i class="fas fa-edit"></i></a>
                             <button class="btn ${isChecked ? 'btn-success' : 'btn-secondary'} btn-sm select-btn" data-id="${lpb.id}" 
                                 data-lpb='${JSON.stringify(lpb)}'>
@@ -338,6 +258,22 @@
                     console.error("Gagal memuat data:", error);
                 }
             }
+
+            // get detail lpb
+            $(document).on('click', ".btn-modal-detail", function() {
+                let url = "{{ route('utility.lpb-ajax-detail') }}";
+                let data = {
+                    id: $(this).data('id'),
+                    model: "LPB",
+                    relation: [
+                        'details',
+                        'supplier',
+                        'roadPermit'
+                    ]
+                }
+                getDetailLpb(url, data);
+
+            });
 
             async function loadDpMenungguPembayaran() {
                 let data = {
@@ -552,16 +488,16 @@
                                                         </thead>
                                                         <tbody>
                                                             ${supplier.lpbs.map(lpb => `
-                                                                                                                                                                                                                                                                                                    <tr>
-                                                                                                                                                                                                                                                                                                        <td>${lpb.code}</td>
-                                                                                                                                                                                                                                                                                                        <td>${lpb.nopol}</td>
-                                                                                                                                                                                                                                                                                                        <td>${lpb.totalKubikasi.toFixed(4)}</td>
-                                                                                                                                                                                                                                                                                                        <td>Rp.${money_format(lpb.totalPembayaran.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
-                                                                                                                                                                                                                                                                                                        <td>Rp.${money_format(lpb.pph22.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
-                                                                                                                                                                                                                                                                                                        <td>Rp.${money_format(lpb.totalSetelahPph.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
-                                                                                                                                                                                                                                                                                                        <td><button class="btn btn-danger btn-sm remove-lpb-btn" data-id="${lpb.id}"><i class="fas fa-trash"></i></button></td>
-                                                                                                                                                                                                                                                                                                    </tr>
-                                                                                                                                                                                                                                                                                                `).join('')}
+                                                                                                                                                                                                                                                                                                                                        <tr>
+                                                                                                                                                                                                                                                                                                                                            <td>${lpb.code}</td>
+                                                                                                                                                                                                                                                                                                                                            <td>${lpb.nopol}</td>
+                                                                                                                                                                                                                                                                                                                                            <td>${lpb.totalKubikasi.toFixed(4)}</td>
+                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.totalPembayaran.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.pph22.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                            <td>Rp.${money_format(lpb.totalSetelahPph.toFixed(0).toLocaleString(), 0, ',', '.')}</td>
+                                                                                                                                                                                                                                                                                                                                            <td><button class="btn btn-danger btn-sm remove-lpb-btn" data-id="${lpb.id}"><i class="fas fa-trash"></i></button></td>
+                                                                                                                                                                                                                                                                                                                                        </tr>
+                                                                                                                                                                                                                                                                                                                                    `).join('')}
                                                         </tbody>
                                                     </table>
                                                 </div>

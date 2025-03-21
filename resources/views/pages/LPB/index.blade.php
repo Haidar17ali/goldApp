@@ -69,6 +69,9 @@
                                     <td>{{ $lpb->edit_by != null ? $lpb->edit_by->username : '' }}</td>
                                 @endif
                                 <td>
+                                    <button class="btn btn-info btn-sm btn-modal-detail" data-toggle="modal"
+                                        data-id="{{ $lpb->id }}" data-target="#detailModal"><i
+                                            class="fas fa-eye"></i></button>
                                     @if ($lpb->approved_by == null)
                                         <a href="{{ route('utility.approve-lpb', ['modelType' => 'LPB', 'id' => $lpb->id, 'status' => 'Pending']) }}"
                                             class="badge badge-sm badge-success"><i class="fas fa-check"></i></a>
@@ -99,7 +102,8 @@
         </div>
     </div>
 
-
+    {{-- modal --}}
+    @include('pages.lpb.modal-detail')
 @stop
 
 @section('css')
@@ -109,10 +113,26 @@
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
+    <script src="{{ asset('assets/JS/myHelper.js') }}"></script>
     <script>
         localStorage.removeItem('editLpb');
         $(document).ready(function() {
             bsCustomFileInput.init()
+            // get detail lpb
+            $(document).on('click', ".btn-modal-detail", function() {
+                let url = "{{ route('utility.lpb-ajax-detail') }}";
+                let data = {
+                    id: $(this).data('id'),
+                    model: "LPB",
+                    relation: [
+                        'details',
+                        'supplier',
+                        'roadPermit'
+                    ]
+                }
+                getDetailLpb(url, data);
+
+            });
         })
 
         // toast
