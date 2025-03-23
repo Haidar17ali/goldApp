@@ -60,7 +60,9 @@
                                 </td>
                                 <td>
                                     <span
-                                        class="badge {{ ($lpb->status == 'Sukses' ? 'badge-success' : $lpb->status == 'Pending') ? 'badge-warning' : 'badge-danger' }}">{{ $lpb->status }}</span>
+                                        class="badge {{ $lpb->status == 'Terbayar' ? 'badge-success' : ($lpb->status == 'Pending' ? 'badge-warning' : 'badge-danger') }}
+                                    ">{{ $lpb->status }}
+                                    </span>
                                 </td>
                                 <td>{{ $lpb->approvalBy != null ? $lpb->approvalBy->username : 'Menunggu Persetujuan' }}
                                 </td>
@@ -69,9 +71,13 @@
                                     <td>{{ $lpb->edit_by != null ? $lpb->edit_by->username : '' }}</td>
                                 @endif
                                 <td>
-                                    <button class="btn btn-info btn-sm btn-modal-detail" data-toggle="modal"
+                                    <a href="#" class="badge badge-info badge-sm btn-modal-detail" data-toggle="modal"
                                         data-id="{{ $lpb->id }}" data-target="#detailModal"><i
-                                            class="fas fa-eye"></i></button>
+                                            class="fas fa-eye"></i></a>
+                                    @if ($lpb->used == false)
+                                        <a href="{{ route('lpb.pakai', $lpb->id) }}"
+                                            class="badge badge-secondary badge-sm btn-modal-detail">Pakai</a>
+                                    @endif
                                     @if ($lpb->approved_by == null)
                                         <a href="{{ route('utility.approve-lpb', ['modelType' => 'LPB', 'id' => $lpb->id, 'status' => 'Pending']) }}"
                                             class="badge badge-sm badge-success"><i class="fas fa-check"></i></a>
@@ -130,6 +136,7 @@
                         'roadPermit'
                     ]
                 }
+                console.log("ok");
                 getDetailLpb(url, data);
 
             });
@@ -165,9 +172,9 @@
                         background: "#28A745",
                     }
                 }).showToast();
-            } else if (status == "importSuccess") {
+            } else if (status == "used") {
                 Toastify({
-                    text: "Data karyawan berhasil diimport!",
+                    text: "Data LPB Terpakai Dan Stock Berkurang!",
                     className: "info",
                     close: true,
                     style: {

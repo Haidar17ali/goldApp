@@ -31,9 +31,16 @@
             <a href="{{ route('down-payment.buat') }}" class="btn btn-primary float-right" type="submit"><i
                     class="fas fa-plus"></i>
                 DP</a>
+            <div class="float-left">
+                <input type="text" id="searchBox" data-model="down_payments" class="form-control mb-3 float-right"
+                    placeholder="Cari Data...">
+            </div>
         </div>
-        <div class="card-body row">
-            <table class="table table-striped">
+        <div class="card-body">
+            {{-- test seach --}}
+            <div class="search-results"></div>
+            <div class="search-pagination d-flex justify-content-end"></div>
+            {{-- <table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
@@ -88,7 +95,7 @@
                         </tr>
                     @endif
                 </tbody>
-            </table>
+            </table> --}}
         </div>
     </div>
 
@@ -160,5 +167,58 @@
                     }
                 })
             });
+    </script>
+    {{-- search --}}
+    <script>
+        $(document).ready(function() {
+            function fetchData(inputElement = "", page = 1, model) {
+                let search = "";
+
+                // Jika inputElement valid, gunakan model dari elemen tersebut
+                if (inputElement && $(inputElement).length > 0) {
+                    console.log("ok");
+
+                    model = $(inputElement).data('model');
+                    search = $(inputElement).val();
+                }
+
+
+                $.ajax({
+                    url: "{{ route('search') }}",
+                    method: "GET",
+                    data: {
+                        model: model,
+                        search: search,
+                        page: page
+                    },
+                    success: function(response) {
+                        console.log(response.pagination);
+
+                        $('.search-results').html(response.table);
+                        $('.search-pagination').html(response.pagination);
+                    }
+                });
+            }
+            fetchData("", 1, "down_payments");
+
+            $('#searchBox').on('keyup', function() {
+                fetchData(this, 1);
+            });
+
+            $(document).on('click', '.pagination a', function(e) {
+                e.preventDefault();
+                let page = $(this).attr('href').split('page=')[1];
+                let inputElement = $(this).closest('.search-pagination').siblings('.search-input');
+
+                // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
+                let model = inputElement.length ? $(inputElement).data('model') : null;
+
+                fetchData(inputElement, page, 'down_payments');
+            });
+
+            $('.search-input').each(function() {
+                fetchData(this, 1, 'down_payments');
+            });
+        });
     </script>
 @stop

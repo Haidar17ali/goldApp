@@ -38,7 +38,6 @@ class SupplierController extends Controller
         if($request->address == "null"){
             return redirect()->back()->with('status', 'required_address');
         }
-        dd("ok");
 
         if($request->phone != null){
             $request->validate([

@@ -39,8 +39,19 @@ function getDetailLpb(url, data){
     let tableContent = "";
     let tFootContent = "";
     let totalLPB = 0;
+    let totalAfkir = 0;
+    let total130 = 0;
+    let total260 = 0;
     lpbDetail.details.forEach((detail, index) => {
         totalLPB += kubikasi(detail.diameter, detail.length, detail.qty) * detail.price
+
+        if(detail.quality == 'Afkir' && detail.length == "130"){
+            totalAfkir += detail.qty;
+        }else if(detail.quality == 'Super' && detail.length == "130"){
+            total130 += detail.qty;
+        }else if(detail.quality == 'Super' && detail.length == "260"){
+            total260 += detail.qty;
+        }
         tableContent += `
             <tr>
                 <td>${detail.product_code}</td>
@@ -57,7 +68,13 @@ function getDetailLpb(url, data){
 
     tableContent += `
             <tr>
-                <td colspan="7" class="text-right">Total LPB:</td>
+                <td class="text-right">Total Afkir:</td>
+                <td>${money_format(totalAfkir,0,',','.')}</td>
+                <td class="text-right">Total 130:</td>
+                <td>${money_format(total130,0,',','.')}</td>
+                <td class="text-right">Total 260:</td>
+                <td>${money_format(total260,0,',','.')}</td>
+                <td class="text-right">Total LPB:</td>
                 <td>${money_format(totalLPB,0,',','.')}</td>
             </tr>
             <tr>

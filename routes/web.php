@@ -117,6 +117,7 @@ Route::prefix('JM')
         Route::post('/lpb/buat', [LPBController::class, 'store'])->name('lpb.simpan');
         Route::get('/lpb/{id}/ubah/', [LPBController::class, 'edit'])->name('lpb.ubah');
         Route::patch('/lpb/{id}/ubah/', [LPBController::class, 'update'])->name('lpb.update');
+        Route::get('/lpb/{id}/used/', [LPBController::class, 'used'])->name('lpb.pakai');
         Route::delete('/lpb/{id}/hapus', [LPBController::class, 'destroy'])->name('lpb.hapus');
 
         // purchase-jurnal

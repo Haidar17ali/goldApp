@@ -9,6 +9,8 @@ use App\Models\PO;
 use App\Models\PurchaseJurnal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\App;
 
 class UtilityController extends Controller
 {
@@ -21,7 +23,7 @@ class UtilityController extends Controller
         
         $model = $modelClass::findOrFail($id);
         
-        if ($model->status !== 'Pending') {
+        if ($model->status !== 'Pending' && $model->status !== 'Terbayar') {
             return redirect()->back()->with('error', 'Hanya data pending yang bisa disetujui');
         }
         
@@ -119,10 +121,68 @@ class UtilityController extends Controller
         return response()->json($response);
     }
 
+    private $allowedModels = [
+        'down_payments' => [
+            'model' => 'App\\Models\\Down_payment',
+            'columns' => [
+                'supplier_id',
+                'nominal',
+                'date',
+                'type',
+                'status'
+            ],
+            'relations' => [
+                'supplier' => ['name']
+            ]
+        ],
+    ];
+
     public function search(Request $request){
         $search = $request->input('search');
         $from = $request->input('from');
+        $modelKey = $request->input('model');
         $isEdit = $request->edit;
+        $page = $request->page ?? 1;
+
+         // Validasi model
+        if (!isset($this->allowedModels[$modelKey])) {
+            return response()->json(['error' => 'Model tidak diizinkan'], 403);
+        }
+
+        $modelInfo = $this->allowedModels[$modelKey];
+        $modelClass = $modelInfo['model'];
+        $columns = $modelInfo['columns'];
+        $relations = $modelInfo['relations'];
+        
+        // Caching untuk meningkatkan performa
+        $cacheKey = "search_{$modelKey}_{$search}_page_{$page}";
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search) {
+            $query = App::make($modelClass)::select($columns);
+            
+            // Join relasi jika ada
+            foreach ($relations as $relation => $fields) {
+                $query->orWhereHas($relation, function ($q) use ($fields, $search) {
+                    foreach ($fields as $field) {
+                        $q->orWhere($field, 'like', '%' . $search . '%');
+                    }
+                });
+            }
+            
+            // Filter berdasarkan kolom utama
+            if (!empty($search)) {
+                $query->where(function ($q) use ($columns, $search) {
+                    foreach ($columns as $column) {
+                        if ($column === 'date' || $column === 'datetime') {
+                            $q->orWhereRaw("DATE_FORMAT($column, '%d-%m-%Y') LIKE ?", ["%$search%"]);
+                        } else {
+                            $q->orWhere($column, 'like', "%$search%");
+                        }
+                    }
+                });
+            }
+
+            return $query->paginate(1);
+        });
 
         if ($from === 'LPB') {
             $lpbs = Lpb::with(['supplier', 'details'])
@@ -169,5 +229,11 @@ class UtilityController extends Controller
 
             return response()->json($lpbs);
         }
+
+        return response()->json([
+            'table' => view('pages.search.search', compact('data'))->render(),
+            'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+        ]);
+
     }
 }

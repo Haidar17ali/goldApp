@@ -143,11 +143,13 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="conversion" class="col-sm-2 col-form-label">Perhutani</label>
-                            <div class="col-sm-4">
-                                <input type="numeric" class="form-control" id="conversion" name="conversion"
-                                    value="{{ old('conversion') }}">
-                                <span class="text-danger error-text" id="conversion_error"></span>
+                            <label for="perhutani" class="col-sm-2 col-form-label">Perhutani</label>
+                            <div class="toggle-container col-md-3">
+                                <!-- Tombol Toggle -->
+                                <label class="switch">
+                                    <input type="checkbox" value="true" id="perhutani" name="perhutani">
+                                    <span class="slider round"></span>
+                                </label>
                             </div>
                         </div>
                         <h3>Data Barang</h3>

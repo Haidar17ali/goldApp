@@ -271,6 +271,29 @@
                                                 </tr>
                                             </tbody>
                                         </table>
+                                        <div style="margin-top: 20px; font-size: 12px;">
+                                            <strong>Keterangan:</strong><br>
+                                            1. Putih Untuk CV. Jati Makmur<br>
+                                            2. Merah Untuk Pengemudi<br>
+                                            3. Kuning Untuk Satpam
+                                        </div>
+
+                                        <div style="margin-top: 30px; font-size: 14px;">
+                                            <div style="display: flex; justify-content: space-around;">
+                                                <div>
+                                                    Satpam, <br><br><br><br>
+                                                    (............................)
+                                                </div>
+                                                <div>
+                                                    Pengemudi, <br><br><br><br>
+                                                    (............................)
+                                                </div>
+                                                <div>
+                                                    Pembongkar, <br><br><br><br>
+                                                    (............................)
+                                                </div>
+                                            </div>
+                                        </div>
                                     `;
 
                     // Tampilkan di area cetak

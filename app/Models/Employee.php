@@ -43,4 +43,8 @@ class Employee extends Model
     public function bank(){
         return $this->belongsTo(Bank::class, 'bank_id');
     }
+
+    public function position(){
+        return $this->belongsTo(Position::class, 'position_id');
+    }
 }

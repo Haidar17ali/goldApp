@@ -16,6 +16,7 @@ use App\Models\StockTransaction;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class LPBController extends Controller
@@ -40,6 +41,11 @@ class LPBController extends Controller
     public function store(Request $request){
         // Set time zone
         date_default_timezone_set('Asia/Jakarta');
+
+        $status = "Pending";
+        if($request->perhutani == true){
+            $status = "Terbayar";
+        }
         
         // Validasi road permit utama
         $validatedData = $request->validate([
@@ -99,7 +105,7 @@ class LPBController extends Controller
             'npwp_id' => $request->npwp_id,
             'nopol' => $request->nopol,
             'conversion' => $request->conversion,
-            'status' => 'Pending',
+            'status' => $status,
             'created_by' => Auth::user()->id,
         ];
     
@@ -403,7 +409,6 @@ class LPBController extends Controller
                     $stock->save();
                 }
 
-                // Hapus transaksi stok
             }
         }
         
@@ -415,6 +420,40 @@ class LPBController extends Controller
         // Hapus LPB
         $lpb->delete();
             return redirect()->back()->with('status', 'deleted');
+    }
+
+    public function used($id){
+        DB::beginTransaction();
+
+        try{
+            // Ambil detail LPB
+            $lpb = LPB::with(['details'])->findOrFail($id);
+            $lpbDetails = LPBDetail::where('lpb_id', $id)->get();
+    
+            // Kurangi stok dan hapus transaksi stok
+            if (count($lpb->details)) {
+                foreach ($lpb->details as $detail) {
+                    $log = Log::where('code', $detail->product_code)->first();
+                    if ($log) {
+                        $stock = Stock::where('log_id', $log->id)->first();
+                        if ($stock) {
+                            $stock->qty -= $detail->qty;
+                            $stock->save();
+                        }
+        
+                    }
+                }
+            }
+            $lpb->used = true;
+            $lpb->used_at = date('Y-m-d');
+            $lpb->save();
+
+            DB::commit();
+            return redirect()->back()->with('status', "used");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Gagal menghapus purchase jurnal', 'error' => $e->getMessage()], 500);
+        }
     }
 
 }
