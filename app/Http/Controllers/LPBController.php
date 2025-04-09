@@ -90,12 +90,12 @@ class LPBController extends Controller
         }else{
             return redirect()->back()->with('status', 'detailsNotFound');
         }
-        $lpbCode = generateCode('LPB', 'l_p_b_s', 'lpb_date');
+        $lpbCode = generateCode('LPB', 'l_p_b_s', 'date');
     
         // Simpan data utama
         $data = [
             'code' => $lpbCode,
-            'lpb_date' => date('Y-m-d'),
+            'date' => date('Y-m-d'),
             'po_id' => $request->po_id,
             'no_kitir' => $request->no_kitir,
             'grader_id' => $request->grader_id || 1,
@@ -261,6 +261,11 @@ class LPBController extends Controller
             'po_id' => 'required|exists:p_o_s,id',
         ]);
 
+        $status = "Pending";
+        if($request->perhutani == true){
+            $status = "Terbayar";
+        }
+
         // ambil data stringify yang dikirim fe dan decode menjadi json
         $details = json_decode($request->details[0], true);
 
@@ -304,9 +309,10 @@ class LPBController extends Controller
         $lpb->supplier_id = $request->supplier_id;
         $lpb->npwp_id = $request->npwp_id;
         $lpb->nopol = $request->nopol;
+        $lpb->status = $status;
         $lpb->conversion = $request->conversion;
         $lpb->created_by = Auth::user()->id;
-        // $lpb->save();
+        $lpb->save();
 
         // Ambil detail LPB lama
         $oldDetails = LPBDetail::where('lpb_id', $lpb->id)->get();

@@ -21,9 +21,16 @@
             <!-- Button trigger modal -->
             <a href="{{ route('purchase-order.buat', $type) }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
                 Purchase Order {{ $type }}</a>
+            <div class="float-left">
+                <input type="text" id="searchBox" data-model="purchase_orders" class="form-control mb-3 float-right"
+                    placeholder="Cari Data...">
+            </div>
         </div>
-        <div class="card-body row">
-            <table class="table table-striped">
+        <div class="card-body">
+            {{-- test seach --}}
+            <div class="search-results"></div>
+            <div class="search-pagination d-flex justify-content-end"></div>
+            {{-- <table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
@@ -72,12 +79,7 @@
                                 </td>
                                 <td>
 
-                                    @if (
-                                        $po->approved_by != null &&
-                                            $po->status != 'Tidak Disetujui' &&
-                                            $po->status != 'Aktif' &&
-                                            $po->status != 'Gagal' &&
-                                            $po->status != 'Non-Aktif')
+                                    @if ($po->approved_by != null && $po->status != 'Tidak Disetujui' && $po->status != 'Aktif' && $po->status != 'Gagal' && $po->status != 'Non-Aktif')
                                         @if (date('d-m-Y', strtotime($po->activation_date)) <= date('d-m-Y', strtotime(now()->toDateString())))
                                             <a href="{{ route('utility.activation-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Aktif']) }}"
                                                 class="badge badge-success">Aktifkan</a>
@@ -114,7 +116,7 @@
                         </tr>
                     @endif
                 </tbody>
-            </table>
+            </table> --}}
         </div>
     </div>
 
@@ -210,5 +212,74 @@
                     }
                 })
             });
+    </script>
+    <script>
+        $(document).ready(function() {
+            function fetchData(inputElement = "", page = 1, model) {
+                let search = "";
+
+                // Jika inputElement valid, gunakan model dari elemen tersebut
+                if (inputElement && $(inputElement).length > 0) {
+
+                    model = $(inputElement).data('model');
+                    search = $(inputElement).val();
+                }
+
+
+                $.ajax({
+                    url: "{{ route('search') }}",
+                    method: "GET",
+                    data: {
+                        model: model,
+                        search: search,
+                        type: "{{ $type }}",
+                        columns: [
+                            'id',
+                            'po_date',
+                            'po_type',
+                            'supplier_id',
+                            'created_by',
+                            'edited_by',
+                            'approved_by',
+                            'po_code',
+                            'status',
+                            'po_type',
+
+                        ],
+                        relations: [
+                            'supplier' ["name"],
+                            'approvedBy' ["username"],
+                        ],
+                        page: page
+                    },
+                    success: function(response) {
+                        console.log(response.pagination);
+
+                        $('.search-results').html(response.table);
+                        $('.search-pagination').html(response.pagination);
+                    }
+                });
+            }
+            fetchData("", 1, "purchase_orders");
+
+            $('#searchBox').on('keyup', function() {
+                fetchData(this, 1);
+            });
+
+            $(document).on('click', '.pagination a', function(e) {
+                e.preventDefault();
+                let page = $(this).attr('href').split('page=')[1];
+                let inputElement = $("#searchBox");
+
+                // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
+                let model = inputElement.length ? $(inputElement).data('model') : null;
+
+                fetchData(inputElement, page, 'purchase_orders');
+            });
+
+            $('#searchBox').each(function() {
+                fetchData(this, 1, 'purchase_orders');
+            });
+        });
     </script>
 @stop

@@ -135,6 +135,104 @@ class UtilityController extends Controller
                 'supplier' => ['name']
             ]
         ],
+        'purchase_orders' => [
+            'model' => 'App\\Models\\PO',
+            'columns' => [
+                'po_date',
+                'arrival_date',
+                'payment_date',
+                'po_code',
+                'po_type',
+                'supplier_id',
+                'supplier_type',
+                'ppn',
+                'dp',
+                'status',
+                'order_by',
+                'created_by',
+                'edited_by',
+                'edited_by',
+                'approved_by',
+                'approved_at',
+                'activation_date',
+            ],
+            'relations' => [
+                'supplier' => ['name'],
+                'createdBy' => ['username'],
+                'approvedBy' => ['username'],
+            ]
+        ],
+        'lpbs' => [
+            'model' => 'App\\Models\\LPB',
+            'columns' => [
+                'code',
+                'po_id',
+                'road_permit_id',
+                'no_kitir',
+                'nopol',
+                'lpb_date',
+                'supplier_id',
+                'npwp_id',
+                'grader_id',
+                'tally_id',
+                'used',
+                'used_at',
+                'perhutani',
+                'created_by',
+                'edited_by',
+                'approved_by',
+                'approved_at',
+                'conversion',
+                'status',
+                'address_id',
+            ],
+            'relations' => [
+                'supplier' => ['name'],
+                'createdBy' => ['username'],
+            ]
+        ],
+        'road_permits' => [
+            'model' => 'App\\Models\\RoadPermit',
+            'columns' => [
+                'code',
+                'date',
+                'in',
+                'out',
+                'description',
+                'handyman_id',
+                'from',
+                'destination',
+                'vehicle',
+                'nopol',
+                'driver',
+                'unpack_location',
+                'sill_number',
+                'container_number',
+                'type',
+                'type_item',
+                'created_by',
+                'edited_by',
+            ],
+            'relations' => [
+                'supplier' => ['name'],
+                'createdBy' => ['username'],
+                'handyman' => ['fullname'],
+            ]
+        ],
+        'purchase_jurnals' => [
+            'model' => 'App\\Models\\PurchaseJurnal',
+            'columns' => [
+                'id',
+                'pj_code',
+                'date',
+                'created_by',
+                'edited_by',
+                'status',
+            ],
+            'relations' => [
+                'createdBy' => ['username'],
+            ]
+        ],
     ];
 
     public function search(Request $request){
@@ -143,46 +241,6 @@ class UtilityController extends Controller
         $modelKey = $request->input('model');
         $isEdit = $request->edit;
         $page = $request->page ?? 1;
-
-         // Validasi model
-        if (!isset($this->allowedModels[$modelKey])) {
-            return response()->json(['error' => 'Model tidak diizinkan'], 403);
-        }
-
-        $modelInfo = $this->allowedModels[$modelKey];
-        $modelClass = $modelInfo['model'];
-        $columns = $modelInfo['columns'];
-        $relations = $modelInfo['relations'];
-        
-        // Caching untuk meningkatkan performa
-        $cacheKey = "search_{$modelKey}_{$search}_page_{$page}";
-        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search) {
-            $query = App::make($modelClass)::select($columns);
-            
-            // Join relasi jika ada
-            foreach ($relations as $relation => $fields) {
-                $query->orWhereHas($relation, function ($q) use ($fields, $search) {
-                    foreach ($fields as $field) {
-                        $q->orWhere($field, 'like', '%' . $search . '%');
-                    }
-                });
-            }
-            
-            // Filter berdasarkan kolom utama
-            if (!empty($search)) {
-                $query->where(function ($q) use ($columns, $search) {
-                    foreach ($columns as $column) {
-                        if ($column === 'date' || $column === 'datetime') {
-                            $q->orWhereRaw("DATE_FORMAT($column, '%d-%m-%Y') LIKE ?", ["%$search%"]);
-                        } else {
-                            $q->orWhere($column, 'like', "%$search%");
-                        }
-                    }
-                });
-            }
-
-            return $query->paginate(1);
-        });
 
         if ($from === 'LPB') {
             $lpbs = Lpb::with(['supplier', 'details'])
@@ -229,11 +287,105 @@ class UtilityController extends Controller
 
             return response()->json($lpbs);
         }
+        
+        // Validasi model
+        if (!isset($this->allowedModels[$modelKey])) {
+            return response()->json(['error' => 'Model tidak diizinkan'], 403);
+        }
+        
+        $modelInfo = $this->allowedModels[$modelKey];
+        $modelClass = $modelInfo['model'];
+        $columns = $request->input('columns', []); // Ambil dari frontend, default array kosong
+        $relations = $request->input('relations', []); // Relasi dari frontend jika ada
 
-        return response()->json([
-            'table' => view('pages.search.search', compact('data'))->render(),
-            'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
-        ]);
+        // Jika frontend tidak mengirimkan kolom, gunakan default dari backend
+        if (empty($columns)) {
+            $columns = $modelInfo['columns'];
+        }
+        if(count($relations) == 0){
+            $relations = $modelInfo['relations'];
+        }
+        
+        $withRelations = [];
+        if(count($relations)){
+            foreach($relations as $index => $dataRelation){
+                $withRelations[]= $index;
+            }
+        }
+        
+        // Caching untuk meningkatkan performa
+        $cacheKey = "search_{$modelKey}_{$search}_page_{$page}";
+
+        Cache::forget($cacheKey); // Hapus cache agar query tidak tersimpan
+
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations) {
+            return App::make($modelClass)::select($columns)->with($withRelations)
+            ->where(function($q) use($columns, $relations, $search){
+                foreach($columns as $column){
+                    if ($column === 'date' || $column === 'datetime') {
+                        $q->orWhereRaw("DATE_FORMAT($column, '%d-%m-%Y') LIKE ?", ["%$search%"]);
+                    } else {
+                        $q->orWhere($column, 'like', "%$search%");
+                    }
+                }
+                foreach($relations as $relation => $fields){
+                    $q->orWhereHas($relation, function($query) use ($fields,$search){
+                        foreach($fields as $field){
+                            $query->where($field, 'like', "%$search%");
+                        }
+                    });
+                }
+            })->paginate(10);
+        });
+
+        if($modelKey  == "down_payments"){
+            return response()->json([
+                'table' => view('pages.search.search', compact('data'))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }else if($modelKey == "purchase_orders"){
+            $type = $request->type;
+            return response()->json([
+                'table' => view('pages.search.search-po', compact(['data',"type"]))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }else if($modelKey == "lpbs"){
+            $type = $request->type;
+            return response()->json([
+                'table' => view('pages.search.search-lpb', compact(['data',"type"]))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }else if($modelKey == "road_permits"){
+            $type = $request->type;
+            return response()->json([
+                'table' => view('pages.search.search-RP', compact(['data',"type"]))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }else if($modelKey == "purchase_jurnals"){
+            $data->each(function ($purchaseJurnal) {
+                $purchaseJurnal->allLpbs = $purchaseJurnal->details->flatMap(function ($detail) {
+                    return $detail->lpbs;
+                });
+                
+                $failedLpbs = [];
+    
+                foreach ($purchaseJurnal->details as $detail) {
+                    foreach ($detail->lpbs as $lpb) {
+                        if ($lpb->pivot->status === 'Gagal') {
+                            $failedLpbs[] = $lpb;
+                        }
+                    }
+                }
+                $purchaseJurnal->failedLpbs = $failedLpbs;
+            });
+
+            return response()->json([
+                'table' => view('pages.search.search-PJ', compact(['data']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }
 
     }
+
+    
 }

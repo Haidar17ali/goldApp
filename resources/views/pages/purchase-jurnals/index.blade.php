@@ -21,75 +21,15 @@
             <!-- Button trigger modal -->
             <a href="{{ route('purchase-jurnal.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
                 Purchase Jurnal</a>
+            <div class="float-left">
+                <input type="text" id="searchBox" data-model="purchase_jurnals" class="form-control mb-3 float-right"
+                    placeholder="Cari Data...">
+            </div>
         </div>
-        <div class="card-body row">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Tanggal Jurnal</th>
-                        <th scope="col">Kode</th>
-                        <th scope="col">Total Rupiah</th>
-                        <th scope="col">Total Terbayar</th>
-                        <th scope="col">Total Gagal</th>
-                        <th scope="col">Status</th>
-                        @if (Auth::id() == 1)
-                            <th scope="col">Pembuat</th>
-                            <th scope="col">Pengedit</th>
-                        @endif
-                        <th scope="col">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (count($purchase_jurnals))
-                        @foreach ($purchase_jurnals as $purchase_jurnal)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ date('d-m-Y', strtotime($purchase_jurnal->date)) }}</td>
-                                <td>{{ $purchase_jurnal->pj_code }}</td>
-                                <td>{{ hitungTotalPembayaran($purchase_jurnal->allLpbs) }}</td>
-                                <td>{{ hitungTotalPembayaran($purchase_jurnal->failedLpbs) }}</td>
-                                <td>{{ count($purchase_jurnal->failedLpbs) }}</td>
-                                <td>
-                                    <span
-                                        class="badge {{ $purchase_jurnal->status == 'Selesai' ? 'badge-success' : 'badge-warning' }}">{{ $purchase_jurnal->status }}
-                                    </span>
-                                </td>
-                                </td>
-                                @if (Auth::id() == 1)
-                                    <td>{{ $purchase_jurnal->createdBy != null ? $purchase_jurnal->createdBy->username : '' }}
-                                    </td>
-                                    <td>{{ $purchase_jurnal->edit_by != null ? $purchase_jurnal->edit_by->username : '' }}
-                                    </td>
-                                @endif
-                                <td>
-                                    @if ($purchase_jurnal->approved_by == null)
-                                        <a href="{{ route('utility.approve-lpb', ['modelType' => 'LPB', 'id' => $purchase_jurnal->id, 'status' => 'Pending']) }}"
-                                            class="badge badge-sm badge-success"><i class="fas fa-check"></i></a>
-                                        <a href="{{ route('lpb.ubah', $purchase_jurnal->id) }}"
-                                            class="badge badge-sm badge-danger"><i class="fas fa-times"></i></a>
-                                        <a href="{{ route('purchase-jurnal.ubah', $purchase_jurnal->id) }}"
-                                            class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
-                                        <form action="{{ route('purchase-jurnal.hapus', $purchase_jurnal->id) }}"
-                                            class="d-inline" id="delete{{ $purchase_jurnal->id }}" method="post">
-                                            @csrf
-                                            @method('DELETE')
-                                            <a href="#" data-id="{{ $purchase_jurnal->id }}"
-                                                class="badge badge-pill badge-delete badge-danger d-inline">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
-                        <tr>
-                            <td colspan="14" class="text-center"><b>Data tidak ditemukan!</b></td>
-                        </tr>
-                    @endif
-                </tbody>
-            </table>
+        <div class="card-body">
+            {{-- test seach --}}
+            <div class="search-results"></div>
+            <div class="search-pagination d-flex justify-content-end"></div>
         </div>
     </div>
 
@@ -169,5 +109,69 @@
                     }
                 })
             });
+    </script>
+    <script>
+        $(document).ready(function() {
+            function fetchData(inputElement = "", page = 1, model) {
+                let search = "";
+
+                // Jika inputElement valid, gunakan model dari elemen tersebut
+                if (inputElement && $(inputElement).length > 0) {
+
+                    model = $(inputElement).data('model');
+                    search = $(inputElement).val();
+                }
+
+
+                $.ajax({
+                    url: "{{ route('search') }}",
+                    method: "GET",
+                    data: {
+                        model: model,
+                        search: search,
+                        relations: {
+                            'createdBy': ["username"],
+                            'details': ['pj_id'],
+                        },
+                        columns: [
+                            'id',
+                            'pj_code',
+                            'date',
+                            'created_by',
+                            'edited_by',
+                            'status',
+
+                        ],
+                        page: page
+                    },
+                    success: function(response) {
+
+                        $('.search-results').html(response.table);
+                        $('.search-pagination').html(response.pagination);
+                    }
+                });
+            }
+            fetchData("", 1, "purchase_jurnals");
+
+            $('#searchBox').on('keyup', function() {
+                fetchData(this, 1);
+            });
+
+            $(document).on('click', '.pagination a', function(e) {
+                e.preventDefault();
+                let inputElement = $('#searchBox');
+                let page = $(this).attr('href').split('page=')[1];
+
+
+                // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
+                let model = inputElement.length ? $(inputElement).data('model') : null;
+
+                fetchData(inputElement, page, 'purchase_jurnals');
+            });
+
+            $('#searchBox').each(function() {
+                fetchData(this, 1, 'purchase_jurnals');
+            });
+        });
     </script>
 @stop

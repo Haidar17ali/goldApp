@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PO extends Model
 {
     protected $fillable = [
-        'po_date',
+        'date',
         'arrival_date',
         'payment_date',
         'po_code',

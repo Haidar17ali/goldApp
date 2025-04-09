@@ -21,9 +21,16 @@
             <!-- Button trigger modal -->
             <a href="{{ route('lpb.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
                 LPB</a>
+            <div class="float-left">
+                <input type="text" id="searchBox" data-model="lpbs" class="form-control mb-3 float-right"
+                    placeholder="Cari Data...">
+            </div>
         </div>
-        <div class="card-body row">
-            <table class="table table-striped">
+        <div class="card-body">
+            {{-- test seach --}}
+            <div class="search-results"></div>
+            <div class="search-pagination d-flex justify-content-end"></div>
+            {{-- <table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
@@ -104,7 +111,7 @@
                         </tr>
                     @endif
                 </tbody>
-            </table>
+            </table> --}}
         </div>
     </div>
 
@@ -136,7 +143,6 @@
                         'roadPermit'
                     ]
                 }
-                console.log("ok");
                 getDetailLpb(url, data);
 
             });
@@ -200,5 +206,83 @@
                     }
                 })
             });
+    </script>
+    <script>
+        $(document).ready(function() {
+            function fetchData(inputElement = "", page = 1, model) {
+                let search = "";
+
+                // Jika inputElement valid, gunakan model dari elemen tersebut
+                if (inputElement && $(inputElement).length > 0) {
+
+                    model = $(inputElement).data('model');
+                    search = $(inputElement).val();
+                }
+
+
+                $.ajax({
+                    url: "{{ route('search') }}",
+                    method: "GET",
+                    data: {
+                        model: model,
+                        search: search,
+                        relations: {
+                            'supplier': ["name"],
+                            'createdBy': ["username"],
+                            'editedBy': ["username"],
+                            'approvalBy': ["username"],
+                            'grader': ["fullname"],
+                            'tally': ["fullname"],
+                            'npwp': ["name"],
+                            'roadPermit': ["nopol", "date"],
+                        },
+                        columns: [
+                            'id',
+                            'road_permit_id',
+                            'supplier_id',
+                            'supplier_id',
+                            'created_by',
+                            'edited_by',
+                            'approved_by',
+                            'grader_id',
+                            'tally_id',
+                            'npwp_id',
+                            'lpb_date',
+                            'no_kitir',
+                            'nopol',
+                            'code',
+                            'status',
+
+                        ],
+                        page: page
+                    },
+                    success: function(response) {
+
+                        $('.search-results').html(response.table);
+                        $('.search-pagination').html(response.pagination);
+                    }
+                });
+            }
+            fetchData("", 1, "lpbs");
+
+            $('#searchBox').on('keyup', function() {
+                fetchData(this, 1);
+            });
+
+            $(document).on('click', '.pagination a', function(e) {
+                e.preventDefault();
+                let page = $(this).attr('href').split('page=')[1];
+                let inputElement = $("#searchBox");
+
+                // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
+                let model = inputElement.length ? $(inputElement).data('model') : null;
+
+                fetchData(inputElement, page, 'lpbs');
+            });
+
+            $('#searchBox').each(function() {
+                fetchData(this, 1, 'lpbs');
+            });
+        });
     </script>
 @stop

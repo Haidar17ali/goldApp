@@ -18,7 +18,7 @@ return new class extends Migration
             $table->bigInteger('road_permit_id');
             $table->bigInteger('no_kitir');
             $table->string('nopol'); //dapat dari surat jalan satpam
-            $table->date('lpb_date');
+            $table->date('date');
             $table->bigInteger('supplier_id');
             $table->bigInteger('npwp_id'); //otomatis berdasarkan supplier
             $table->bigInteger('grader_id');

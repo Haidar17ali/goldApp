@@ -208,7 +208,7 @@
             $(document).on('click', '.pagination a', function(e) {
                 e.preventDefault();
                 let page = $(this).attr('href').split('page=')[1];
-                let inputElement = $(this).closest('.search-pagination').siblings('.search-input');
+                let inputElement = $("#searchBox");
 
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
@@ -216,7 +216,7 @@
                 fetchData(inputElement, page, 'down_payments');
             });
 
-            $('.search-input').each(function() {
+            $('#searchBox').each(function() {
                 fetchData(this, 1, 'down_payments');
             });
         });

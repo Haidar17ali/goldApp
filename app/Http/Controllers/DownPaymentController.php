@@ -9,8 +9,7 @@ use Illuminate\Http\Request;
 class DownPaymentController extends Controller
 {
     public function index() {
-        $down_payments = Down_payment::orderBy('id', 'desc')->get();
-        return view('pages.down-payments.index', compact(['down_payments']));        
+        return view('pages.down-payments.index');        
     }
 
     public function create(){

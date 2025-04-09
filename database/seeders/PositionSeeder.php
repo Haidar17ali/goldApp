@@ -43,7 +43,7 @@ class PositionSeeder extends Seeder
             ['id' => 18, 'name' => 'Stick', 'type' => 'Bagian', 'parent_id' => 6],
 
             // divis plywood
-            ['id' => 19, 'name' => 'Plywood', 'type' => 'Divis', 'parent_id' => null],
+            ['id' => 19, 'name' => 'Plywood', 'type' => 'Divisi', 'parent_id' => null],
             // department ply
             ['id' => 20, 'name' => 'Koordinator', 'type' => 'Departemen', 'parent_id' => 19],
             ['id' => 21, 'name' => 'Rotary 5', 'type' => 'Departemen', 'parent_id' => 19],
@@ -54,6 +54,15 @@ class PositionSeeder extends Seeder
             ['id' => 26, 'name' => 'Assembling 2', 'type' => 'Departemen', 'parent_id' => 19],
             ['id' => 27, 'name' => 'Assembling 3', 'type' => 'Departemen', 'parent_id' => 19],
             ['id' => 28, 'name' => 'Warehouse', 'type' => 'Departemen', 'parent_id' => 19],
+
+            // Barecore
+            ['id' => 29, 'name' => 'Warehouse', 'type' => 'Departemen', 'parent_id' => 19],
+            // department barecore
+            ['id' => 30, 'name' => 'Bandsaw Sengon', 'type' => 'Departemen', 'parent_id' => 29],
+            ['id' => 31, 'name' => 'Barecore', 'type' => 'Departemen', 'parent_id' => 29],
+            
+
+
             
         ]);
     }

@@ -12,7 +12,7 @@ class LPB extends Model
         'road_permit_id',
         'no_kitir',
         'nopol',
-        'lpb_date',
+        'date',
         'supplier_id',
         'npwp_id',
         'grader_id',
@@ -26,7 +26,7 @@ class LPB extends Model
         'approved_at',
         'conversion',
         'status',
-        'address',
+        'address_id',
     ];
 
     public function details(){

@@ -99,6 +99,29 @@ class RoadPermitController extends Controller
         return response()->json(['message' => 'Surat jalan berhasil disimpan'], 200);        
     }
 
+    public function showDetail($id)
+    {
+        $roadPermit = RoadPermit::with(['lpb.details'])->findOrFail($id);
+
+        $groupedByKitir = $roadPermit->lpb->mapWithKeys(function ($lpb) {
+            $details = $lpb->details;
+
+            // Group by quality, then by category
+            $groupedByQuality = $details->groupBy('quality')->map(function ($group) {
+                return $group->groupBy('category');
+            });
+
+            return [$lpb->no_kitir => [
+                'lpb' => $lpb,
+                'grouped' => $groupedByQuality
+            ]];
+        });
+
+        return view('pages.road-permits.modal-detail', compact('roadPermit', 'groupedByKitir'));
+    }
+
+
+
     public function edit($id,$type){
         $road_permit = RoadPermit::with(['details'])->findOrFail($id);
         $trucks = ['Pickup', 'Truk Engkel', 'Dump Truk', 'Truk Gandeng', 'Truk Fuso', 'Container'];

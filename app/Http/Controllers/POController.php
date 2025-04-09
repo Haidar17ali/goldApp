@@ -78,7 +78,7 @@ class POController extends Controller
     
         // Simpan data utama
         $data = [
-            'po_date' => date('Y-m-d'),
+            'date' => date('Y-m-d'),
             'po_code' => $POCode,
             'po_type' => $type,
             'supplier_id' => $request->supplier_id,

@@ -42,4 +42,8 @@ class RoadPermit extends Model
     public function editedBy(){
         return $this->belongsTo(User::class, 'edited_by');
     }
+
+    public function LPB(){
+        return $this->hasMany(LPB::class, 'road_permit_id');
+    }
 }

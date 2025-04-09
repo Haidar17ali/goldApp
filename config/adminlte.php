@@ -64,7 +64,7 @@ return [
     */
 
     'logo' => '<b>Jati Makmur</b>',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+    'logo_img' => 'assets/images/LogoJM.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -84,9 +84,9 @@ return [
     */
 
     'auth_logo' => [
-        'enabled' => false,
+        'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'assets/images/LogoJM.png',
             'alt' => 'Auth Logo',
             'class' => '',
             'width' => 50,
@@ -113,7 +113,7 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'assets/images/LogoJM.png',
             'alt' => 'AdminLTE Preloader Image',
             'effect' => 'animation__shake',
             'width' => 60,
@@ -198,7 +198,7 @@ return [
     'classes_content' => '',
     'classes_sidebar' => 'sidebar-dark-primary elevation-4',
     'classes_sidebar_nav' => '',
-    'classes_topnav' => 'navbar-white navbar-light',
+    'classes_topnav' => 'navbar-dark navbar-dark',
     'classes_topnav_nav' => 'navbar-expand',
     'classes_topnav_container' => 'container',
 
@@ -215,7 +215,7 @@ return [
     */
 
     'sidebar_mini' => 'lg',
-    'sidebar_collapse' => false,
+    'sidebar_collapse' => true,
     'sidebar_collapse_auto_size' => false,
     'sidebar_collapse_remember' => false,
     'sidebar_collapse_remember_no_transition' => true,
@@ -407,6 +407,28 @@ return [
                 [
                     'text' => 'DP (Down Payment)',
                     'icon' => 'fas fa-money-bill-wave-alt',
+                    'url' => 'JM/down-payment',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Laporan',
+            'icon' => 'fas fa-book',
+            'submenu' => [
+                [
+                    'text' => 'Laporan Surat Jalan',
+                    'url' => 'JM/report/surat-jalan',
+                ],
+                [
+                    'text' => 'Laporan LPB',
+                    'url' => 'JM/lpb',
+                ],
+                [
+                    'text' => 'Laporan Purchase Jurnal',
+                    'url' => 'JM/purchase-jurnal',
+                ],
+                [
+                    'text' => 'Laporan DP (Down Payment)',
                     'url' => 'JM/down-payment',
                 ],
             ],

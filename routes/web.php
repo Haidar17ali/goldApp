@@ -9,6 +9,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\PurchaseJurnalController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoadPermitController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SupplierController;
@@ -76,6 +77,7 @@ Route::prefix('JM')
         Route::get('/surat-jalan/{type}', [RoadPermitController::class, 'index'])->name('surat-jalan.index');
         Route::get('/surat-jalan/{type}/buat', [RoadPermitController::class, 'create'])->name('surat-jalan.buat');
         Route::post('/surat-jalan/{type}/buat', [RoadPermitController::class, 'store'])->name('surat-jalan.simpan');
+        Route::get('/surat-jalan/{id}/detail', [RoadPermitController::class, 'showDetail'])->name('surat-jalan.detail');
         Route::get('/surat-jalan/{id}/ubah/{type}', [RoadPermitController::class, 'edit'])->name('surat-jalan.ubah');
         Route::patch('/surat-jalan/{id}/ubah/{type}', [RoadPermitController::class, 'update'])->name('surat-jalan.update');
         Route::delete('/surat-jalan/{id}/hapus', [RoadPermitController::class, 'destroy'])->name('surat-jalan.hapus');
@@ -158,4 +160,8 @@ Route::prefix('JM')
 
         // print data
         Route::get('cetak/surat-jalan', [UtilityController::class, 'getByID'])->name('utility.cetak-surat-jalan');
+
+        // report
+        Route::get('report/surat-jalan', [ReportController::class, 'reportRoadPermits'])->name('laporan.surat-jalan');
+        Route::get('data-surat-jalan', [ReportController::class, 'getRoadPermitReport'])->name('laporan.data-surat-jalan');
     });

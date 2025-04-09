@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('p_o_s', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->dateTime('po_date');
+            $table->dateTime('date');
             $table->dateTime('arrival_date')->nullable();
             $table->dateTime('payment_date')->nullable();
             $table->text('po_code');
