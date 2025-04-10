@@ -421,7 +421,7 @@ return [
                 ],
                 [
                     'text' => 'Laporan LPB',
-                    'url' => 'JM/lpb',
+                    'url' => 'JM/report/lpb',
                 ],
                 [
                     'text' => 'Laporan Purchase Jurnal',

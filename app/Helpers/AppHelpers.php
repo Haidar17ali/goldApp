@@ -15,6 +15,16 @@ function kubikasi($diameter,$length,$qty)
     return round($diameter*$diameter*$length*0.7854/1000000*$qty,4);
 }
 
+function totalKubikasi($details){
+    $total = 0;
+    if (count($details)) {
+        foreach($details as $detail){
+            $total += kubikasi($detail->diameter, $detail->length, $detail->qty);
+        }
+    }
+    return $total;
+}
+
 function nominalKubikasi($details){
     $total = 0;
     if (count($details)) {

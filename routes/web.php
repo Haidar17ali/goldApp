@@ -164,4 +164,6 @@ Route::prefix('JM')
         // report
         Route::get('report/surat-jalan', [ReportController::class, 'reportRoadPermits'])->name('laporan.surat-jalan');
         Route::get('data-surat-jalan', [ReportController::class, 'getRoadPermitReport'])->name('laporan.data-surat-jalan');
+        Route::get('report/lpb', [ReportController::class, 'reportLpb'])->name('laporan.lpb');
+        Route::get('data-lpb', [ReportController::class, 'getLpbReport'])->name('laporan.data-lpb');
     });
