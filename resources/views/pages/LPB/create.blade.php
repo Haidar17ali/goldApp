@@ -100,7 +100,7 @@
                             </div>
                             <label for="npwp" class="col-sm-2 col-form-label">NPWP</label>
                             <div class="col-sm-4">
-                                <select class="form-control" name="npwp" disabled id="npwp">
+                                <select class="form-control" name="npwp" id="npwp">
                                     <option>Silahkan Pilih NPWP</option>
                                     @if (count($npwps))
                                         @foreach ($npwps as $npwp)

@@ -1,7 +1,8 @@
-<div class="container">
+<div class="container" id="lpb-report-content">
     <div class="laporan-title">
         <h2>LAPORAN LPB</h2>
-        <p>PERIODE 01/03/2025 S.D 31/03/2025</p>
+
+        <p>PERIODE {{ $periode }}</p>
     </div>
     <table class="table table-bordered table-striped table-hover">
         <thead class="table-dark">

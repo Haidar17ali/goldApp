@@ -247,7 +247,7 @@
                             'grader_id',
                             'tally_id',
                             'npwp_id',
-                            'lpb_date',
+                            'date',
                             'no_kitir',
                             'nopol',
                             'code',

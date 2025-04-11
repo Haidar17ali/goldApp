@@ -23,7 +23,7 @@
             @foreach ($data as $lpb)
                 <tr>
                     <th scope="row">{{ $loop->iteration }}</th>
-                    <td>{{ date('d-m-Y', strtotime($lpb->lpb_date)) }}</td>
+                    <td>{{ date('d-m-Y', strtotime($lpb->date)) }}</td>
                     <td>{{ $lpb->roadPermit != null ? date('d-m-Y', strtotime($lpb->roadPermit->date)) : '' }}
                     </td>
                     <td>{{ $lpb->no_kitir }}</td>

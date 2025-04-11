@@ -47,6 +47,6 @@ class PO extends Model
     }
 
     public function order_by(){
-        return $this->belongsTo(Employee::class, 'order_by');
+        return $this->belongsTo(Employee::class, 'order_by', 'id');
     }
 }

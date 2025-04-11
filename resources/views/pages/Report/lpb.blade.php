@@ -72,6 +72,11 @@
             {{-- hasil filter --}}
             <div class="search-results"></div>
             <div class="search-pagination d-flex justify-content-end"></div>
+            <div class="d-flex justify-content-end mt-3">
+                <button id="printLpb" class="btn btn-success" onclick="printLpb()">
+                    <i class="fas fa-print"></i> Cetak LPB
+                </button>
+            </div>
         </div>
     </div>
 
@@ -187,6 +192,70 @@
                         //     fetchData(this, 1, 'road_permits');
                         // });
                     })
+    </script>
+    <script>
+        // Cetak LPB
+        @section('plugins.PrintJs', true)
+            function printLpb() {
+                printJS({
+                    printable: 'lpb-report-content',
+                    type: 'html',
+                    scanStyles: true, // penting untuk tetap ambil gaya Bootstrap dari halaman
+                    style: `
+                            @media print {
+                                body {
+                                    -webkit-print-color-adjust: exact;
+                                    print-color-adjust: exact;
+                                    font-family: 'Arial', sans-serif;
+                                    font-size: 12px;
+                                }
+
+                                .btn,
+                                .no-print,
+                                .sidebar,
+                                .navbar,
+                                .footer {
+                                    display: none !important;
+                                }
+
+                                .laporan-title {
+                                    text-align: center;
+                                    margin-bottom: 20px;
+                                }
+
+                                .laporan-title h2 {
+                                    font-size: 20px;
+                                    font-weight: bold;
+                                }
+
+                                .laporan-title p {
+                                    font-size: 14px;
+                                }
+
+                                table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                }
+
+                                th, td {
+                                    padding: 8px !important;
+                                    text-align: center;
+                                    border: 1px solid #dee2e6;
+                                }
+
+                                thead {
+                                    background-color: #343a40 !important;
+                                    color: white !important;
+                                }
+
+                                tfoot {
+                                    font-weight: bold;
+                                    background-color: #e9ecef !important;
+                                }
+                            }
+                        `
+                });
+            }
     </script>
 
 @stop

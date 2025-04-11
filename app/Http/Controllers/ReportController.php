@@ -73,8 +73,14 @@ class ReportController extends Controller
 
         if ($start_date && $last_date) {
             $query->whereBetween('date', [$start_date, $last_date]);
+            $periode = 'PERIODE ' . date('d/m/Y', strtotime($start_date)) . ' S.D ' . date('d/m/Y', strtotime($last_date));
         } elseif ($start_date) {
+            $periode = 'PERIODE ' . date('d/m/Y', strtotime($start_date));
             $query->whereDate('date', $start_date);
+        }else{
+            // Ambil tahun dari data pertama, atau dari hari ini kalau data kosong
+            $anyDate = now();
+            $periode = 'PERIODE TAHUN ' . date('Y', strtotime($anyDate));
         }
 
         if ($supplier) {
@@ -96,7 +102,7 @@ class ReportController extends Controller
         $datas = $query->orderBy('id', 'desc')->get(); // ubah sesuai kebutuhan
         
         return response()->json([
-            'table' => view('pages.Report.datas.data-lpb', compact('datas'))->render()
+            'table' => view('pages.Report.datas.data-lpb', compact(['datas', 'periode']))->render()
         ]);
     }
 }

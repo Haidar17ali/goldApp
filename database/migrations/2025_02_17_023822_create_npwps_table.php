@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('npwps', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->bigInteger('supplier_id');
             $table->string('npwp');
             $table->string('nitku')->nullable();
             $table->string('name');

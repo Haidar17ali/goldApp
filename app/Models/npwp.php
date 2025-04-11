@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class npwp extends Model
 {
     protected $fillable = [
+        'supplier_id',
         'npwp',
         'nitku',
         'name',

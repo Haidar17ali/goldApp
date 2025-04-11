@@ -159,6 +159,7 @@ class UtilityController extends Controller
             'relations' => [
                 'supplier' => ['name'],
                 'createdBy' => ['username'],
+                'order_by' => ['fullname'],
                 'approvedBy' => ['username'],
             ]
         ],
