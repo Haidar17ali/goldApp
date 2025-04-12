@@ -38,11 +38,13 @@ class NPWPController extends Controller
         $data = npwp::findOrFail($id);
         $request->validate([
             'npwp' => 'required',
-            'name' => 'required'
+            'name' => 'required',
+            'supplier' => 'required|exists:supplier,id'
         ]);
 
         $data->npwp = $request->npwp;
         $data->nitku = $request->nitku;
+        $data->supplier_id = $request->supplier;
         $data->name = $request->name;
         $data->save();
 
