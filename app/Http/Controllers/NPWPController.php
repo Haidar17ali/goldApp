@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\npwp;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class NPWPController extends Controller
@@ -13,13 +14,15 @@ class NPWPController extends Controller
     }
 
     public function create(){
-        return view('pages.npwp.create');
+        $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
+        return view('pages.npwp.create', compact(['suppliers']));
     }
 
     public function store(Request $request){
         $request->validate([
             'npwp' => 'required',
-            'name' => 'required'
+            'name' => 'required',
+            'supplier' => 'required|exists:supplier,id'
         ]);
 
         npwp::create($request->all());

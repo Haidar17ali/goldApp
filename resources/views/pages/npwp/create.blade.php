@@ -49,6 +49,17 @@
                                     value="{{ old('name') }}">
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="supplier" class="col-sm-2 col-form-label">Supplier</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="supplier" id="supplier">
+                                    <option>Silahkan Pilih Supplier</option>
+                                    @foreach ($suppliers as $supplier)
+                                        <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                         <div class="float-right mt-3">
                             <a href="{{ route('npwp.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
@@ -76,7 +87,7 @@
             $('#position').select2({
                 theme: "bootstrap4",
             });
-            $('#number_account').select2({
+            $('#supplier').select2({
                 theme: "bootstrap4",
                 tags: true
             });
