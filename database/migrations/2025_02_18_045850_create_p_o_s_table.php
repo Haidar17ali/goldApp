@@ -18,7 +18,7 @@ return new class extends Migration
             $table->dateTime('payment_date')->nullable();
             $table->text('po_code');
             $table->enum('po_type', ['Sengon', 'Bahan-Pembantu', 'SPK']);
-            $table->bigInteger('supplier_id');
+            $table->bigInteger('supplier_id')->nullable();
             $table->enum('supplier_type', ['Umum', 'Khusus']);
             $table->double('dp')->nullable();
             $table->enum('status', ['Order', 'Datang', 'Terbayar', 'Aktif', "Pending", 'Non-Aktif', 'Tidak Disetujui', 'Gagal']);

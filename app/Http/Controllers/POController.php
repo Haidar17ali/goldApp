@@ -8,6 +8,7 @@ use App\Models\PODetails;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class POController extends Controller
@@ -26,86 +27,100 @@ class POController extends Controller
     }
 
     public function store(Request $request, $type){
-        // Set time zone
-        date_default_timezone_set('Asia/Jakarta');
-        $POCode = "PO.";
-        if($type == "Sengon"){
-            $request->validate([
-                'supplier_id' => "required|exists:suppliers,id",
-                'supplier_type' => "required|in:Umum,Khusus",
-                'activation_date' => 'required|date',
-            ]);
-            $POCode = "PO.". $type. ".". $request->supplier_type.".". date("ymdhis").".".Auth::id();
-        }        
-        
-        // ambil data stringify yang dikirim fe dan decode menjadi json
-        $details = json_decode($request->details[0], true);
-        // filter nilai null
-        $filteredDetails = array_filter($details, function ($detail) {
-            return !is_null($detail['price']) && $detail['price'] != "";
-        });
+        DB::beginTransaction();
 
-        $request->merge(['details' => json_encode($filteredDetails)]);
-        
-        $details = json_decode($request->details, true);
+        try {
+            // Set time zone
+            date_default_timezone_set('Asia/Jakarta');
+            $POCode = "PO.";
+            if($type == "Sengon"){
+                $request->validate([
+                    'supplier_id' => "exists:suppliers,id|nullable",
+                    'supplier_type' => "required|in:Umum,Khusus",
+                    'activation_date' => 'required|date',
+                ]);
+                $POCode = "PO.". $type. ".". $request->supplier_type.".". date("ymdhis").".".Auth::id();
+            }        
+            
+            // ambil data stringify yang dikirim fe dan decode menjadi json
+            $details = json_decode($request->details[0], true);
+            // filter nilai null
+            $filteredDetails = array_filter($details, function ($detail) {
+                if(array_key_exists('price', $detail)){
+                return !is_null($detail['price']) && $detail['price'] != "";
+                }
+            });
 
-        // Validasi road permit details jika ada
-        if(count($details)){
+            $request->merge(['details' => json_encode($filteredDetails)]);
+            
+            $details = json_decode($request->details, true);
+
+            // Validasi road permit details jika ada
+            if(count($details)){
+            
+                $detailErrors = [];
+                foreach ($details as $index => $detail) {
+                    if($type == "Sengon"){
+                        $validator = Validator::make($detail, [
+                            'quality' => 'required|in:Super,Afkir',
+                            'length' => 'required|numeric|in:130,260',
+                            'diameter_start' => 'required|numeric',
+                            'diameter_to' => 'required|numeric',
+                            'price' => 'required|numeric',
+                        ]);
+                    }
+            
+                    if ($validator->fails()) {
+                        $detailErrors["details.$index"] = $validator->errors()->all();
+                    }
+                }            
+                
+                if (!empty($detailErrors)) {
+                    return response()->json(['errors' => $detailErrors], 422);
+                }
+            }else{
+                return redirect()->back()->with('status', 'detailsNotFound');
+            }
         
-            $detailErrors = [];
-            foreach ($details as $index => $detail) {
-                if($type == "Sengon"){
-                    $validator = Validator::make($detail, [
-                        'quality' => 'required|in:Super,Afkir',
-                        'length' => 'required|numeric|in:130,260',
-                        'diameter_start' => 'required|numeric',
-                        'diameter_to' => 'required|numeric',
-                        'price' => 'required|numeric',
+            // Simpan data utama
+            $data = [
+                'date' => date('Y-m-d'),
+                'po_code' => $POCode,
+                'po_type' => $type,
+                'supplier_id' => $request->supplier_id,
+                'supplier_type' => $request->supplier_type,
+                'activation_date' => $request->activation_date,
+                'status' => 'Pending',
+                'created_by' => Auth::user()->id,
+            ];
+        
+            $PO = PO::create($data);
+        
+            // Simpan detail data jika ada
+            foreach ($details as $detail) {
+                if(array_key_exists('price', $detail)){
+                    PODetails::create([
+                        'po_id' => $PO->id,
+                        'quality' => $detail['quality'],
+                        'length' => strval($detail['length']),
+                        'diameter_start' => $detail['diameter_start'],
+                        'diameter_to' => $detail['diameter_to'],
+                        'price' => $detail['price'],
+                        'ppn' => $detail['ppn'] ?? null,
+                        'cubication' => $detail['cubication'] ?? null,
                     ]);
                 }
-        
-                if ($validator->fails()) {
-                    $detailErrors["details.$index"] = $validator->errors()->all();
-                }
-            }            
-            
-            if (!empty($detailErrors)) {
-                return response()->json(['errors' => $detailErrors], 422);
             }
-        }else{
-            return redirect()->back()->with('status', 'detailsNotFound');
+        
+            DB::commit();
+            session()->flash('status', 'saved');
+            return response()->json(['message' => 'data berhasil disimpan'], 200);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            
+            return response()->json(['message' => 'Gagal Simpan PO', 'error' => $e->getMessage()], 500);
         }
-    
-        // Simpan data utama
-        $data = [
-            'date' => date('Y-m-d'),
-            'po_code' => $POCode,
-            'po_type' => $type,
-            'supplier_id' => $request->supplier_id,
-            'supplier_type' => $request->supplier_type,
-            'activation_date' => $request->activation_date,
-            'status' => 'Pending',
-            'created_by' => Auth::user()->id,
-        ];
-    
-        $PO = PO::create($data);
-    
-        // Simpan detail data jika ada
-        foreach ($details as $detail) {
-            PODetails::create([
-                'po_id' => $PO->id,
-                'quality' => $detail['quality'],
-                'length' => strval($detail['length']),
-                'diameter_start' => $detail['diameter_start'],
-                'diameter_to' => $detail['diameter_to'],
-                'price' => $detail['price'],
-                'ppn' => $detail['ppn'] ?? null,
-                'cubication' => $detail['cubication'] ?? null,
-            ]);
-        }
-    
-        session()->flash('status', 'saved');
-        return response()->json(['message' => 'data berhasil disimpan'], 200);
+        
     }
 
     public function edit($id, $type){
@@ -125,7 +140,7 @@ class POController extends Controller
         
         if($type == "Sengon"){
             $request->validate([
-                'supplier_id' => "required|exists:suppliers,id",
+                'supplier_id' => "required|exists:suppliers,id|nullable",
                 'supplier_type' => "required|in:Umum,Khusus",
                 'activation_date' => 'required|date',
             ]);

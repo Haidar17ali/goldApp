@@ -31,7 +31,7 @@
                         <div class="form-group row">
                             <label for="npwp" class="col-sm-2 col-form-label">NPWP</label>
                             <div class="col-sm-10">
-                                <input type="number" class="form-control" id="npwp" name="npwp"
+                                <input type="text" class="form-control" id="npwp" name="npwp"
                                     value="{{ old('npwp', $data->npwp) }}">
                             </div>
                         </div>

@@ -78,6 +78,7 @@ Route::prefix('JM')
         Route::get('/surat-jalan/{type}/buat', [RoadPermitController::class, 'create'])->name('surat-jalan.buat');
         Route::post('/surat-jalan/{type}/buat', [RoadPermitController::class, 'store'])->name('surat-jalan.simpan');
         Route::get('/surat-jalan/{id}/detail', [RoadPermitController::class, 'showDetail'])->name('surat-jalan.detail');
+        Route::get('/surat-jalan/{id}/lpb-supplier', [RoadPermitController::class, 'LPBToSupplier'])->name('surat-jalan.LPBToSupplier');
         Route::get('/surat-jalan/{id}/ubah/{type}', [RoadPermitController::class, 'edit'])->name('surat-jalan.ubah');
         Route::patch('/surat-jalan/{id}/ubah/{type}', [RoadPermitController::class, 'update'])->name('surat-jalan.update');
         Route::delete('/surat-jalan/{id}/hapus', [RoadPermitController::class, 'destroy'])->name('surat-jalan.hapus');
@@ -93,7 +94,7 @@ Route::prefix('JM')
         Route::patch('/NPWP/{id}/ubah', [NPWPController::class, 'update'])->name('npwp.update');
         Route::delete('/NPWP/{id}/hapus', [NPWPController::class, 'destroy'])->name('npwp.hapus');
         // import dan export NPWP
-        Route::post('/import-NPWP', [NPWPController::class, 'importNPWP'])->name('npwp.import');
+        Route::post('/import-NPWP', [NPWPController::class, 'importNpwp'])->name('npwp.import');
         
         // Log
         Route::get('/log/{type}', [LogController::class, 'index'])->name('log.index');

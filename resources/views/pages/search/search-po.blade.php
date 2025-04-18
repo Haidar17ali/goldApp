@@ -26,7 +26,7 @@
             @foreach ($data as $po)
                 <tr>
                     <th scope="row">{{ $loop->iteration }}</th>
-                    <td>{{ date('d-m-Y', strtotime($po->po_date)) }}</td>
+                    <td>{{ date('d-m-Y', strtotime($po->date)) }}</td>
                     <td>{{ $po->po_code }}</td>
                     <td>{{ $po->supplier != null ? $po->supplier->name : '' }}</td>
                     @if ($type == 'Sengon')
@@ -62,6 +62,10 @@
                             @else
                                 <span class="text-muted">Belum bisa diaktifkan</span>
                             @endif
+                        @endif
+                        @if ($po->approved_by != null && $po->status != 'Tidak Disetujui' && $po->status != 'Gagal' && $po->status == 'Aktif')
+                            <a href="{{ route('utility.activation-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Non-Aktif']) }}"
+                                class="badge badge-danger">Non-Aktifkan</a>
                         @endif
                         @if ($po->approved_by == null)
                             <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Aktif']) }}"

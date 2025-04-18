@@ -36,7 +36,7 @@
                             <label for="supplier_id" class="col-sm-2 col-form-label">Supplier</label>
                             <div class="col-sm-10">
                                 <select class="form-control" name="supplier_id" id="supplier_id">
-                                    <option>Silahkan Pilih Supplier</option>
+                                    <option value="">Silahkan Pilih Supplier</option>
                                     @if (count($suppliers))
                                         @foreach ($suppliers as $supplier)
                                             <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>

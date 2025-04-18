@@ -53,18 +53,17 @@ class UtilityController extends Controller
         
         $model = $modelClass::findOrFail($id);
         
-        if ($model->status !== 'Pending') {
-            return redirect()->back()->with('error', 'Hanya data pending yang bisa disetujui');
-        }
+        // if ($model->status !== 'Pending') {
+        //     return redirect()->back()->with('error', 'Hanya data pending yang bisa disetujui');
+        // }
         
         // Khusus untuk Purchase Order: Nonaktifkan data lama dengan supplier yang sama
-        if ($model instanceof PO) {
-            $modelClass::where('supplier_id', $model->supplier_id)
-            ->where('id', '!=', $model->id)
-            ->where('status', 'Aktif')
-            ->update(['status' => 'Non-Aktif']);
-        }
-
+        // if ($model instanceof PO) {
+        //     $modelClass::where('supplier_id', $model->supplier_id)
+        //     ->where('id', '!=', $model->id)
+        //     ->where('status', 'Aktif')
+        //     ->update(['status' => 'Non-Aktif']);
+        // }
         $model->update([
             'status' => $status,
         ]);
@@ -336,7 +335,8 @@ class UtilityController extends Controller
                         }
                     });
                 }
-            })->paginate(10);
+            })
+            ->orderBy("id", "desc")->paginate(10);
         });
 
         if($modelKey  == "down_payments"){

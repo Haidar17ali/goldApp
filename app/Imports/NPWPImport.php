@@ -33,7 +33,7 @@ class NPWPImport implements ToModel, WithHeadingRow, WithBatchInserts, SkipsOnFa
 
         // Data karyawan
         $dataNPWP = [
-            'npwp' => $nitku,
+            'npwp' => trim($npwp),
             'nitku' => $nitku,
             'name' => $name,
         ];

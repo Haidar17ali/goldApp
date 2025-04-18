@@ -94,9 +94,6 @@
         localStorage.removeItem('editRoadPermitDetails');
         $(document).ready(function() {
             bsCustomFileInput.init()
-
-
-
         })
         // toast
         @section('plugins.Toast', true)
@@ -193,6 +190,7 @@
                             'nopol',
                             'driver',
                             'type',
+                            'status',
                             'created_by',
                             'edited_by',
 

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\NPWPImport;
 use App\Models\npwp;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class NPWPController extends Controller
 {
@@ -14,15 +16,13 @@ class NPWPController extends Controller
     }
 
     public function create(){
-        $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
-        return view('pages.npwp.create', compact(['suppliers']));
+        return view('pages.npwp.create');
     }
 
     public function store(Request $request){
         $request->validate([
             'npwp' => 'required',
             'name' => 'required',
-            'supplier' => 'required|exists:supplier,id'
         ]);
 
         npwp::create($request->all());
@@ -31,7 +31,7 @@ class NPWPController extends Controller
 
     public function edit($id){
         $data = npwp::findOrFail($id);
-        return view('pages.npwp.edit', compact('data'));
+        return view('pages.npwp.edit', compact(['data']));
     }
 
     public function update(Request $request, $id){
@@ -39,12 +39,10 @@ class NPWPController extends Controller
         $request->validate([
             'npwp' => 'required',
             'name' => 'required',
-            'supplier' => 'required|exists:supplier,id'
         ]);
 
         $data->npwp = $request->npwp;
         $data->nitku = $request->nitku;
-        $data->supplier_id = $request->supplier;
         $data->name = $request->name;
         $data->save();
 
@@ -54,5 +52,29 @@ class NPWPController extends Controller
     public function destroy($id){
         npwp::findOrFail($id)->delete();
         return redirect()->back()->with('status', 'deleted');
+    }
+
+    public function importNpwp(Request $request){
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ]);
+
+        $import = new NPWPImport();
+
+        try {
+            Excel::import($import, $request->file('file'));
+        } catch (\Exception $e) {
+            // Tangani exception jika ada kesalahan
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+
+        // Ambil pesan error jika ada
+        $errors = $import->getErrors();
+
+        if (!empty($errors)) {
+            return redirect()->back()->with('import_errors', $errors);
+        }
+
+        return redirect()->back()->with('status', 'importSuccess');
     }
 }

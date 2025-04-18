@@ -149,7 +149,7 @@
                         type: "{{ $type }}",
                         columns: [
                             'id',
-                            'po_date',
+                            'date',
                             'po_type',
                             'supplier_id',
                             'created_by',

@@ -31,7 +31,7 @@
                         <div class="form-group row">
                             <label for="npwp" class="col-sm-2 col-form-label">NPWP</label>
                             <div class="col-sm-10">
-                                <input type="number" class="form-control" id="npwp" name="npwp"
+                                <input type="text" class="form-control" id="npwp" name="npwp"
                                     value="{{ old('npwp') }}">
                             </div>
                         </div>
@@ -47,17 +47,6 @@
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="name" name="name"
                                     value="{{ old('name') }}">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="supplier" class="col-sm-2 col-form-label">Supplier</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="supplier" id="supplier">
-                                    <option>Silahkan Pilih Supplier</option>
-                                    @foreach ($suppliers as $supplier)
-                                        <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
-                                    @endforeach
-                                </select>
                             </div>
                         </div>
                         <div class="float-right mt-3">
@@ -87,7 +76,7 @@
             $('#position').select2({
                 theme: "bootstrap4",
             });
-            $('#supplier').select2({
+            $('#supplier_id').select2({
                 theme: "bootstrap4",
                 tags: true
             });

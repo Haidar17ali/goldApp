@@ -39,8 +39,10 @@
                     @if (Route::currentRouteName() == 'search')
                         <td>{{ $road_permit->sill_number }}</td>
                         <td>{{ $road_permit->container_number }}</td>
-                        <td><span
-                                class="badge {{ $road_permit->status == 'Selesai' ? 'badge-success' : ($road_permit->status == 'Proses Bongkar' ? 'badge-warning' : 'badge-primary') }}">{{ $road_permit->status }}</span>
+                        <td>
+                            <span
+                                class="badge {{ $road_permit->status == 'Selesai' ? 'badge-success' : ($road_permit->status == 'Proses Bongkar' ? 'badge-warning' : 'badge-primary') }}">{{ $road_permit->status }}
+                            </span>
                         </td>
                     @endif
                     {{-- <td>{{ $road_permit->createdBy != null ? $road_permit->createdBy->username : '' }}</td>
@@ -60,8 +62,10 @@
                             @endif
                         @endif
                         <a href="#" data-toggle="modal" data-id="{{ $road_permit->id }}" data-target="#details"
-                            class="badge badge-primary show-detail"><i class="fas fa-eye"></i></button>
-                            {{-- <form action="{{ route('surat-jalan.hapus', $road_permit->id) }}" class="d-inline"
+                            class="badge badge-primary show-detail"><i class="fas fa-eye"></i></a>
+                        <a href="#" data-toggle="modal" data-id="{{ $road_permit->id }}" data-target="#details"
+                            id="supplier" class="badge badge-success supplier"><i class="fas fa-eye"></i></a>
+                        {{-- <form action="{{ route('surat-jalan.hapus', $road_permit->id) }}" class="d-inline"
                             id="delete{{ $road_permit->id }}" method="post">
                             @csrf
                             @method('DELETE')
@@ -218,6 +222,34 @@
         });
     }
 </script>
+<script>
+    $(document).ready(function() {
+        $('.supplier').click(function() {
+            const id = $(this).data('id');
+            $('#modal-detail-content').html(
+                '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>'
+            );
+
+
+            $.ajax({
+                url: `/JM/surat-jalan/${id}/lpb-supplier`,
+                type: 'GET',
+                success: function(res) {
+                    console.log(res);
+
+                    $('#modal-detail-content').html(res);
+                    $('#modalDetail').modal('show');
+                },
+                error: function(xhr) {
+                    $('#modal-detail-content').html(
+                        '<div class="alert alert-danger">Gagal memuat data</div>');
+                }
+            });
+        });
+    });
+</script>
+
+{{-- print ke rayyes --}}
 <script>
     @section('plugins.PrintJs', true)
         $("#print").on('click', function(e) {

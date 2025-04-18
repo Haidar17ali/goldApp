@@ -60,7 +60,7 @@ class RoadPermitController extends Controller
     
         // Simpan data utama
         $data = [
-            'code' => generateCode('SJ', 'road_permits', 'code'),
+            'code' => generateCode('SJ', 'road_permits', 'date'),
             'date' => date('Y-m-d'),
             'in' => date('H:i:s', time()),
             'from' => $request->from,
@@ -118,6 +118,21 @@ class RoadPermitController extends Controller
         });
 
         return view('pages.road-permits.modal-detail', compact('roadPermit', 'groupedByKitir'));
+    }
+
+    public function LPBToSupplier($id)
+    {
+        $roadPermit = RoadPermit::with(['lpb.details'])->findOrFail($id);
+
+        // Kumpulkan semua detail dari LPB yang berelasi
+        $allDetails = $roadPermit->lpb
+        ->flatMap(fn ($lpb) => $lpb->details)
+        ->sortBy('quality');
+
+        // Grouping berdasarkan kategori
+        $grouped = $allDetails->groupBy('category');
+
+        return view('pages.road-permits.lpb-supplier', compact('roadPermit', 'grouped'));
     }
 
 

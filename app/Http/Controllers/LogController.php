@@ -4,13 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Imports\LogImport;
 use App\Models\Log;
+use App\Models\Stock;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class LogController extends Controller
 {
     public function index($type){
-        $logs = Log::where('type', $type)->with(['stock'])->paginate(20);
+        $logs = Log::where('type', $type)
+        ->with('stock')
+        ->orderBy('length', 'asc')
+        ->orderBy('quality', 'asc')
+        ->orderBy('diameter', 'asc')
+        ->paginate(20);
         $allLogs = Log::with(['stock'])->get();
 
         $infoAll = [
@@ -50,30 +57,28 @@ class LogController extends Controller
     }
 
     public function store(Request $request, $type){
-        $request->validate([
-            'quality' => 'required|in:Super,Afkir',
-            'length' => 'required|decimal:0,4',
-            'diameter' => 'required|decimal:0,4',
-            'quantity' => 'required|decimal:0,4',
-        ]);
+        DB::beginTransaction();
 
-        $code = 0;
-        if($type == 'Sengon'){
-            $code = 'SGN.'. substr($request->quality, 0,2).'.'.$request->length.'.'.$request->diameter;
-        }else{
+        try {
             $request->validate([
-                'id_produksi' => 'required',
-                'barcode' => 'required'
+                'quality' => 'required|in:Super,Afkir',
+                'length' => 'required|decimal:0,4',
+                'diameter' => 'required|decimal:0,4',
+                'quantity' => 'required|decimal:0,4',
             ]);
-            $code = 'MBU.'. substr($request->quality, 0,2).'.'.$request->length.'.'.$request->diameter;
-        }
-
-        $db_code = Log::where('code', $code)->where('type', $type)->first();
-
-        if($db_code){
-            $db_code->quantity += $request->quantity;
-            $db_code->save();
-        }else{
+    
+            $code = 0;
+            if($type == 'Sengon'){
+                $code = 'SGN.'. substr($request->quality, 0,2).'.'.$request->length.'.'.$request->diameter;
+            }else{
+                $request->validate([
+                    'id_produksi' => 'required',
+                    'barcode' => 'required'
+                ]);
+                $code = 'MBU.'. substr($request->quality, 0,2).'.'.$request->length.'.'.$request->diameter;
+            }
+    
+    
             $data = [
                 'id_produksi' => $request->id_produksi,
                 'barcode' => $request->barcode,
@@ -82,12 +87,31 @@ class LogController extends Controller
                 'quality' => $request->quality,
                 'length' => $request->length,
                 'diameter' => $request->diameter,
-                'quantity' => $request->quantity,
             ];
     
-            Log::create($data);
+            $log = Log::create($data);
+
+            
+            $db_code = Stock::where('log_id', $log->id)->first();
+    
+            if($db_code){
+                $db_code->quantity += $request->quantity;
+                $db_code->save();
+            }else{
+                $stocks = [
+                    'log_id' => $log->id,
+                    'qty' => $request->quantity
+                ];
+                Stock::create($stocks);
+                
+            }
+            DB::commit();
+            return redirect()->route('log.index', $type)->with('status', 'saved');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Gagal Simpan Log', 'error' => $e->getMessage()], 500);
         }
-        return redirect()->route('log.index', $type)->with('status', 'saved');
+        
 
     }
 

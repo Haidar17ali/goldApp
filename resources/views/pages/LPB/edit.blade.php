@@ -44,7 +44,7 @@
                             <label for="grader_id" class="col-sm-2 col-form-label">Grader</label>
                             <div class="col-sm-4">
                                 <select class="form-control" name="grader_id" id="grader_id">
-                                    <option>Silahkan Pilih Grader</option>
+                                    <option value="">Silahkan Pilih Grader</option>
                                     @if (count($suppliers))
                                         @foreach ($graders as $grader)
                                             <option {{ $grader->id == $lpb->grader_id ? 'selected' : '' }}
@@ -56,7 +56,7 @@
                             <label for="tally_id" class="col-sm-2 col-form-label">Tally</label>
                             <div class="col-sm-4">
                                 <select class="form-control" name="tally_id" id="tally_id">
-                                    <option>Silahkan Pilih Tally</option>
+                                    <option value="">Silahkan Pilih Tally</option>
                                     @if (count($tallies))
                                         @foreach ($tallies as $tally)
                                             <option {{ $tally->id == $lpb->tally_id ? 'selected' : '' }}
@@ -75,7 +75,7 @@
                                         @foreach ($road_permits as $road_permit)
                                             <option {{ $lpb->road_permit_id == $road_permit->id ? 'selected' : '' }}
                                                 value="{{ $road_permit->id }}">
-                                                {{ $road_permit->from . ' | ' . $road_permit->nopol . ' | ' . $road_permit->vehicle }}
+                                                {{ $road_permit->code . ' | ' . $road_permit->from . ' | ' . $road_permit->nopol . ' | ' . $road_permit->vehicle }}
                                             </option>
                                         @endforeach
                                     @endif
@@ -125,7 +125,7 @@
                                         @foreach ($purchase_orders as $purchase_order)
                                             <option {{ $lpb->po_id == $purchase_order->id ? 'selected' : '' }}
                                                 value="{{ $purchase_order->id }}">
-                                                {{ $purchase_order->po_code }}
+                                                {{ $purchase_order->po_code }}{{ $purchase_order->supplier == null ? ' | Umum' : ' | ' . $purchase_order->supplier->name }}
                                             </option>
                                         @endforeach
                                     @endif
@@ -236,6 +236,12 @@
                     $('#supplier_id').select2({
                         theme: "bootstrap4",
                     });
+                    $('#npwp').select2({
+                        theme: "bootstrap4",
+                    });
+                    $('#road_permit_id').select2({
+                        theme: "bootstrap4",
+                    });
                     // handsontable
                     let columnType = [{
                             data: 'diameter',
@@ -271,6 +277,60 @@
                             diameter: i
                         });
                     }
+
+                    $("#supplier_id").on('select2:select', function() {
+                        let idAccount = $(this).val();
+                        let url = "{{ route('utility.npwpId') }}"
+                        let data = {
+                            id: idAccount,
+                            model: 'Supplier',
+                            relation: ['npwp'],
+                        }
+                        let jsonData = loadWithData(url, data);
+
+
+                        if (jsonData != null) {
+                            $('#npwp').empty().append('<option value="">-- Pilih NPWP --</option>');
+
+                            if (jsonData.npwp_id) {
+                                $('#npwp').append('<option value="' + jsonData.npwp.id + '" selected>' + jsonData
+                                    .npwp.name + '</option>');
+                                $('#npwp_id').val(jsonData.npwp.id); // Set nilai ke input hidden
+                            } else {
+                                $('#npwp_id').val('');
+                            }
+
+                            $('#npwp').trigger('change'); // Refresh Select2
+                        } else {
+                            $('#npwp').empty().append('<option value="">-- Pilih NPWP --</option>');
+                        }
+                    });
+
+                    $("#road_permit_id").on('change', function() {
+                        let idAccount = $(this).val();
+                        let url = "{{ route('utility.suratJalanId') }}"
+                        let data = {
+                            id: idAccount,
+                            model: 'RoadPermit',
+                            relation: ["details"],
+                        };
+                        let jsonData = loadWithData(url, data);
+
+                        // if (jsonData.details.length >= 0) {
+                        //     $.each(jsonData.details, function(key, value) {
+                        //         $('#cargo').append('<option value="' + value.id + '">' + value
+                        //             .load + "||" + value.amount + ' Batang</option>');
+                        //     });
+                        // }
+
+                        if (jsonData != null) {
+                            $("#nopol").val(jsonData.nopol);
+                            $('#npwp_id').trigger('change'); // Refresh Select2
+                        } else {
+                            $("#nopol").val("");
+                        }
+
+                    });
 
                     const container = document.getElementById('handsontable-container');
                     let isUpdating = false; // Flag untuk mencegah rekursi

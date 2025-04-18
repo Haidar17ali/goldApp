@@ -29,6 +29,19 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
+                            <label for="npwp_id" class="col-sm-2 col-form-label">NPWP</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="npwp_id" id="npwp_id">
+                                    <option>Silahkan Pilih NPWP</option>
+                                    @foreach ($npwps as $npwp)
+                                        <option {{ $npwp->id == $supplier->npwp_id ? 'selected' : '' }}
+                                            value="{{ $npwp->id }}">
+                                            {{ $npwp->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <label for="nik" class="col-sm-2 col-form-label">NIK</label>
                             <div class="col-sm-10">
                                 <input type="number" class="form-control" id="nik" name="nik"
@@ -57,7 +70,7 @@
                             <label for="phone" class="col-sm-2 col-form-label">No Telp</label>
                             <div class="col-sm-10">
                                 <input type="number" class="form-control" id="phone" name="phone"
-                                    value="{{ old('phone', $supplier->nik) }}">
+                                    value="{{ old('phone', $supplier->no_telp) }}">
                             </div>
                         </div>
                         <h3>Alamat</h3>
@@ -160,6 +173,10 @@
                 theme: "bootstrap4",
             });
             $('#number_account').select2({
+                theme: "bootstrap4",
+                tags: true
+            });
+            $('#npwp_id').select2({
                 theme: "bootstrap4",
                 tags: true
             });

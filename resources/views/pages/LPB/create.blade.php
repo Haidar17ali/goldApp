@@ -44,7 +44,7 @@
                             <label for="grader_id" class="col-sm-2 col-form-label">Grader</label>
                             <div class="col-sm-4">
                                 <select class="form-control" name="grader_id" id="grader_id">
-                                    <option>Silahkan Pilih Grader</option>
+                                    <option value="">Silahkan Pilih Grader</option>
                                     @if (count($suppliers))
                                         @foreach ($suppliers as $supplier)
                                             <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
@@ -55,7 +55,7 @@
                             <label for="tally_id" class="col-sm-2 col-form-label">Tally</label>
                             <div class="col-sm-4">
                                 <select class="form-control" name="tally_id" id="tally_id">
-                                    <option>Silahkan Pilih Tally</option>
+                                    <option value="">Silahkan Pilih Tally</option>
                                     @if (count($npwps))
                                         @foreach ($npwps as $npwp)
                                             <option value="{{ $npwp->id }}">{{ $npwp->name }}</option>
@@ -72,7 +72,7 @@
                                     @if (count($road_permits))
                                         @foreach ($road_permits as $road_permit)
                                             <option value="{{ $road_permit->id }}">
-                                                {{ $road_permit->from . ' | ' . $road_permit->nopol . ' | ' . $road_permit->vehicle }}
+                                                {{ $road_permit->code . ' | ' . $road_permit->from . ' | ' . $road_permit->nopol . ' | ' . $road_permit->vehicle }}
                                             </option>
                                         @endforeach
                                     @endif
@@ -127,7 +127,7 @@
                                     @if (count($purchase_orders))
                                         @foreach ($purchase_orders as $purchase_order)
                                             <option value="{{ $purchase_order->id }}">
-                                                {{ $purchase_order->po_code }}
+                                                {{ $purchase_order->po_code }}{{ $purchase_order->supplier == null ? ' | Umum' : ' | ' . $purchase_order->supplier->name }}
                                             </option>
                                         @endforeach
                                     @endif
@@ -288,6 +288,12 @@
                     $('#supplier_id').select2({
                         theme: "bootstrap4",
                     });
+                    $('#po_id').select2({
+                        theme: "bootstrap4",
+                    });
+                    $('#road_permit_id').select2({
+                        theme: "bootstrap4",
+                    });
                     // handsontable
                     let columnType = [{
                             data: 'diameter',
@@ -333,6 +339,7 @@
                             relation: ['npwp'],
                         }
                         let jsonData = loadWithData(url, data);
+
 
                         if (jsonData != null) {
                             $('#npwp').empty().append('<option value="">-- Pilih NPWP --</option>');
