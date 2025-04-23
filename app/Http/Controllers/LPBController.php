@@ -266,13 +266,11 @@ class LPBController extends Controller
                 'updated_by' => Auth::user()->id,
             ]);
 
-            // Hapus detail lama dan rollback stock (optional: bisa dikembangkan)
-            LPBDetail::where('lpb_id', $lpb->id)->delete();
-
             // Tambahkan detail dan stock baru pakai helper
-            foreach ($filteredData as $detail) {
-                simpanDetailDanStock($lpb->id, $detail, $request->po_id);
-            }
+            
+            // Dengan helper updateLPBDetails
+            updateLPBDetails($lpb, $filteredData, $request->po_id);
+
 
             // Update stock transaction
             $stockTransaction = StockTransaction::firstOrNew(['lpb_id' => $lpb->id]);
@@ -328,39 +326,115 @@ class LPBController extends Controller
         }
     }
 
+    private function consumeLPB($id)
+    {
+        $lpb = LPB::with('details')->findOrFail($id);
+    
+        if ($lpb->used) {
+            throw new \Exception("LPB sudah digunakan.");
+        }
+    
+        foreach ($lpb->details as $detail) {
+            $log = Log::where('code', $detail->product_code)->first();
+            if ($log) {
+                updateOrCreateStock($log->id, $detail->qty, 'kurangi');
+            }
+        }
+    
+        $lpb->used = true;
+        $lpb->used_at = now();
+        $lpb->save();
+    
+        StockTransaction::create([
+            'lpb_id' => $lpb->id,
+            'type' => 'Keluar',
+        ]);
+    }
 
     public function used($id){
         DB::beginTransaction();
     
         try{
-            $lpb = LPB::with('details')->findOrFail($id);
-    
-            if ($lpb->used) {
-                return response()->json(['message' => 'LPB sudah digunakan'], 400);
-            }
-    
-            foreach ($lpb->details as $detail) {
-                $log = Log::where('code', $detail->product_code)->first();
-                if ($log) {
-                    updateOrCreateStock($log->id, $detail->qty, 'kurangi');
-                }
-            }
-    
-            $lpb->used = true;
-            $lpb->used_at = now(); // lebih idiomatis dari pada date()
-            $lpb->save();
-    
-            // Catat transaksi keluar
-            StockTransaction::create([
-                'lpb_id' => $lpb->id,
-                'type' => 'Keluar',
-            ]);
-    
+            $this->consumeLPB($id);
             DB::commit();
             return redirect()->back()->with('status', "used");
         }catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Gagal menggunakan lpb', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function bulkUpdateStatus(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $request->validate([
+                'selected' => 'required|array',
+                'status' => 'required|string',
+            ]);
+
+            $selectedIds = $request->selected;
+            $targetStatus = $request->status;
+
+            $allowedStatuses = ['Terbayar', 'Ditolak', 'Setujui', 'Terpakai'];
+            if (!in_array($targetStatus, $allowedStatuses)) {
+                return response()->json(['message' => 'Status tidak valid.'], 400);
+            }            
+
+            $lpbs = LPB::whereIn('id', $selectedIds)->get();
+    
+            if($request->status != "Terpakai" && $request->status != "Setujui"){
+                // Validasi untuk "Terbayar"
+                if ($targetStatus == "Terbayar") {
+                    $invalid = $lpbs->filter(fn($lpb) => $lpb->status != "Menunggu Pembayaran");
+                    if ($invalid->isNotEmpty()) {
+                        return response()->json([
+                            'message' => 'Gagal: Semua status harus Menunggu Pembayaran untuk dijadikan Terbayar.'
+                        ], 400);
+                    }
+
+                    // Update ke Terbayar
+                    DB::table('l_p_b_s')->whereIn('id', $selectedIds)->update([
+                        'paid_at' => now(),
+                        'status' => "Terbayar"
+                    ]);
+                }
+
+                // Validasi untuk "Ditolak"
+                elseif ($targetStatus == "Ditolak") {
+                    $invalid = $lpbs->filter(fn($lpb) => $lpb->status != "Pending");
+                    if ($invalid->isNotEmpty()) {
+                        return response()->json([
+                            'message' => 'Gagal: Hanya status Pending yang dapat ditolak.'
+                        ], 400);
+                    }
+
+                    // Update ke Ditolak
+                    DB::table('l_p_b_s')->whereIn('id', $selectedIds)->update([
+                        'status' => "Ditolak"
+                    ]);
+                }
+            }elseif($request->status == "Setujui"){
+                DB::table('l_p_b_s')->whereIn('id', $request->selected)->update([
+                    'status' => "Menunggu Pembayaran",
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now(),
+                ]);
+            }elseif ($request->status == "Terpakai") {
+                foreach($request->selected as $selectedId){
+                    $this->consumeLPB($selectedId);
+                }
+            }
+    
+            DB::commit();
+            return response()->json(['message' => 'Status berhasil diperbarui!']);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal memperbarui status',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
     

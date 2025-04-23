@@ -140,3 +140,64 @@ function updateOrCreateStock($logId, $qty, $operation = 'tambah'){
         // Jika belum ada dan operasinya kurangi, bisa diabaikan
     }
 }
+
+function updateLPBDetails($lpb, $newDetails, $poId)
+{
+    // 1. Kurangi stok dari detail lama dan hapus detail lama
+    foreach ($lpb->details as $oldDetail) {
+        $log = Log::where('code', $oldDetail->product_code)->first();
+        if ($log) {
+            $stock = Stock::where('log_id', $log->id)->first();
+            if ($stock) {
+                $stock->qty -= $oldDetail->qty;
+                $stock->save();
+            }
+        }
+    }
+    // Hapus detail lama dan rollback stock (optional: bisa dikembangkan)
+    LPBDetail::where('lpb_id', $lpb->id)->delete();
+
+    // 2. Simpan detail baru dan tambahkan stok
+    foreach ($newDetails as $detail) {
+        foreach (['afkir', '130', '260'] as $key) {
+            $qty = (int) ($detail[$key] ?? 0);
+            if ($qty > 0) {
+                $length = $key === '260' ? 260 : 130;
+                $quality = $key === 'afkir' ? 'Afkir' : 'Super';
+                $productCode = $quality === 'Afkir'
+                    ? 'SGN.Af.130.' . $detail['diameter']
+                    : "SGN.Su.{$length}." . $detail['diameter'];
+
+                // Cari harga dari PO detail
+                $poDetail = PODetails::where('po_id', $poId)
+                    ->where('diameter_start', '<=', $detail['diameter'])
+                    ->where('diameter_to', '>=', $detail['diameter'])
+                    ->where('quality', $quality)
+                    ->where('length', (string)$length)
+                    ->first();
+
+                // Update stock
+                $log = Log::where('code', $productCode)->first();
+                if ($log) {
+                    $stock = Stock::firstOrCreate(
+                        ['log_id' => $log->id],
+                        ['qty' => 0]
+                    );
+                    $stock->qty += $qty;
+                    $stock->save();
+                }
+
+                // Simpan LPB detail
+                LPBDetail::create([
+                    'lpb_id' => $lpb->id,
+                    'product_code' => $productCode,
+                    'length' => $length,
+                    'diameter' => $detail['diameter'],
+                    'qty' => $qty,
+                    'price' => $poDetail->price ?? 0,
+                    'quality' => $quality,
+                ]);
+            }
+        }
+    }
+}

@@ -36,7 +36,7 @@ class UtilityController extends Controller
         // }
 
         $model->update([
-            'status' => $status == 'Tidak Disetujui'? $status : "Pending",
+            'status' => $status,
             'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);

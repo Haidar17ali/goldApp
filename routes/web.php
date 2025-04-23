@@ -122,6 +122,7 @@ Route::prefix('JM')
         Route::patch('/lpb/{id}/ubah/', [LPBController::class, 'update'])->name('lpb.update');
         Route::get('/lpb/{id}/used/', [LPBController::class, 'used'])->name('lpb.pakai');
         Route::delete('/lpb/{id}/hapus', [LPBController::class, 'destroy'])->name('lpb.hapus');
+        Route::post('/lpb/bulk-update-status', [LPBController::class, 'bulkUpdateStatus'])->name('lpb.update-status-masal');
 
         // purchase-jurnal
         Route::get('/purchase-jurnal', [PurchaseJurnalController::class, 'index'])->name('purchase-jurnal.index');

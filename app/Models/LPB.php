@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class LPB extends Model
 {
+    protected $casts = [
+        'used' => 'boolean',
+    ];
     protected $fillable = [
         'code',
         'po_id',
@@ -25,6 +28,7 @@ class LPB extends Model
         'approved_by',
         'approved_at',
         'conversion',
+        'paid_at',
         'status',
         'address_id',
     ];

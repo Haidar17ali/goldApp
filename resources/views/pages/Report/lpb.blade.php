@@ -21,9 +21,19 @@
         </div>
         <div class="card-body">
             <div class="row justify-content-center">
+                <div class="col-md-1">
+                    <select class="form-control" name="date_by" id="dateBy">
+                        <option>Tanggal Berdasarkan...</option>
+                        <option value="paid_at">Pembayaran</option>
+                        <option value="date1">LPB</option>
+                        <option value="date2">Kedatangan</option>
+                        <option value="">Pemakaian</option>
+                    </select>
+                    <span class="text-danger error-text" id="nopol_error"></span>
+                </div>
                 <div class="col-md-2">
-                    <input type="date" class="form-control" id="startDate" name="start_date" value="{{ old('start_date') }}"
-                        placeholder="filter tanggal awal">
+                    <input type="date" class="form-control" id="startDate" name="start_date"
+                        value="{{ old('start_date') }}" placeholder="filter tanggal awal">
                     <span class="text-danger error-text" id="start_date_error"></span>
                 </div>
                 <div class="col-md-1 text-center">
@@ -47,12 +57,12 @@
                     </select>
                     <span class="text-danger error-text" id="nopol_error"></span>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <input type="text" class="form-control" id="nopol" name="nopol" value="{{ old('nopol') }}"
                         placeholder="Nopol...">
                     <span class="text-danger error-text" id="nopol_error"></span>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <select class="form-control" name="status" id="status">
                         <option>Pilih Status</option>
                         @if (count($statuses))
@@ -98,49 +108,52 @@
                         theme: "bootstrap4",
                     });
 
-                    function fetchData(start_date, last_date, supplier, nopol, status, page = 1, model) {
-                        let search = "";
+                    function fetchData(page = 1) {
+                        let dateBy = $("#dateBy").val();
+                        let start_date = $("#startDate").val();
+                        let last_date = $("#lastDate").val();
+                        let supplier = $("#supplier_id").val();
+                        let nopol = $("#nopol").val();
+                        let status = $("#status").val();
 
+                        let requestData = {};
+
+                        if (dateBy && dateBy !== "Tanggal Berdasarkan...") {
+                            requestData.dateBy = dateBy;
+                        }
+
+                        if (start_date) {
+                            requestData.start_date = start_date;
+                        }
+
+                        if (last_date) {
+                            requestData.last_date = last_date;
+                        }
+
+                        if (supplier && supplier !== "Silahkan Pilih Supplier") {
+                            requestData.supplier = supplier;
+                        }
+
+                        if (nopol) {
+                            requestData.nopol = nopol;
+                        }
+
+                        if (status && status !== "Pilih Status") {
+                            requestData.status = status;
+                        }
+
+                        requestData.page = page;
 
                         $.ajax({
                                 url: "{{ route('laporan.data-lpb') }}",
                                 method: "GET",
-                                data: {
-                                    model: model,
-                                    start_date: start_date,
-                                    last_date: last_date,
-                                    supplier: supplier,
-                                    nopol: nopol,
-                                    status: status,
-                                    relations: {
-                                        'createdBy': ["username"],
-                                        'editedBy': ["username"],
-                                        'handyman': ["fullname"],
-                                    },
-                                    columns: [
-                                        'id',
-                                        'code',
-                                        'date',
-                                        'in',
-                                        'out',
-                                        'handyman_id',
-                                        'from',
-                                        'destination',
-                                        'nopol',
-                                        'driver',
-                                        'type',
-                                        'created_by',
-                                        'edited_by',
-
-                                    ],
-                                    page: page
-                                },
+                                data: requestData,
                                 success: function(response) {
-                                    if (response.status != undefined) {
+                                    if (response.status !== undefined) {
                                         @section('plugins.Toast', true)
                                             if (response.status == "no_start_date") {
                                                 Toastify({
-                                                    text: "Pencaian tanggal awal kosong!",
+                                                    text: "Pencarian tanggal awal kosong!",
                                                     className: "danger",
                                                     close: true,
                                                     style: {
@@ -148,7 +161,6 @@
                                                     }
                                                 }).showToast();
                                             }
-
                                         }
 
                                         $('.search-results').html(response.table);
@@ -156,42 +168,22 @@
                                     }
                                 });
                         }
-                        let start_date = $("#startDate").val();
-                        let last_date = $("#lastDate").val();
-                        let supplier = $("#supplier").val();
-                        let nopol = $("#nopol").val();
-                        let status = $("#status").val();
 
-                        fetchData(start_date, last_date, supplier, nopol, status, 1, "road_permits");
+                        // First Load
+                        fetchData(1);
 
+                        // On Filter Search Button Click
                         $('#searchData').on('click', function() {
-                            let start_date = $("#startDate").val();
-                            let last_date = $("#lastDate").val();
-                            let supplier = $("#supplier").val();
-                            let nopol = $("#nopol").val();
-                            let status = $("#status").val();
-                            fetchData(start_date, last_date, supplier, nopol, status, 1, "road_permits");
-
+                            fetchData(1);
                         });
 
+                        // Pagination Click
                         $(document).on('click', '.pagination a', function(e) {
                             e.preventDefault();
                             let page = $(this).attr('href').split('page=')[1];
-
-
-
-                            let start_date = $("#startDate").val();
-                            let last_date = $("#lastDate").val();
-                            let supplier = $("#supplier").val();
-                            let nopol = $("#nopol").val();
-                            let status = $("#status").val();
-                            fetchData(start_date, last_date, supplier, nopol, status, page, "road_permits");
+                            fetchData(page);
                         });
-
-                        // $('#searchBox').each(function() {
-                        //     fetchData(this, 1, 'road_permits');
-                        // });
-                    })
+                    });
     </script>
     <script>
         // Cetak LPB

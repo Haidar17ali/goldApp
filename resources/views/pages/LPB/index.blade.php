@@ -250,6 +250,8 @@
                             'date',
                             'no_kitir',
                             'nopol',
+                            'used',
+                            'used_at',
                             'code',
                             'status',
 

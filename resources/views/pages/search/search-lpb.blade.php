@@ -1,6 +1,20 @@
+<div class="d-flex mb-3 justify-content-end">
+    <select id="status-action" class="form-control w-auto mr-2">
+        <option value="">-- Pilih Status --</option>
+        <option value="Terpakai">Terpakai</option>
+        <option value="Setujui">Setujui</option>
+        <option value="Terbayar">Terbayar</option>
+        <option value="Ditolak">Ditolak</option>
+    </select>
+    <button type="button" class="btn btn-primary" onclick="updateStatus()">Ubah Status</button>
+</div>
+<div class="mb-2">
+    <span><strong>Dipilih:</strong> <span id="selected-count">0</span> LPB</span>
+</div>
 <table class="table table-striped">
     <thead>
         <tr>
+            <th><input type="checkbox" id="select-all"></th>
             <th scope="col">#</th>
             <th scope="col">Tanggal LPB</th>
             <th scope="col">Tanggal Kedatangan</th>
@@ -22,6 +36,9 @@
         @if (count($data))
             @foreach ($data as $lpb)
                 <tr>
+                    <td>
+                        <input type="checkbox" class="lpb-checkbox" value="{{ $lpb->id }}">
+                    </td>
                     <th scope="row">{{ $loop->iteration }}</th>
                     <td>{{ date('d-m-Y', strtotime($lpb->date)) }}</td>
                     <td>{{ $lpb->roadPermit != null ? date('d-m-Y', strtotime($lpb->roadPermit->date)) : '' }}
@@ -48,12 +65,12 @@
                     <td>
                         <a href="#" class="badge badge-info badge-sm btn-modal-detail" data-toggle="modal"
                             data-id="{{ $lpb->id }}" data-target="#detailModal"><i class="fas fa-eye"></i></a>
-                        @if ($lpb->used == false)
+                        @if (!$lpb->used)
                             <a href="{{ route('lpb.pakai', $lpb->id) }}"
                                 class="badge badge-secondary badge-sm btn-modal-detail">Pakai</a>
                         @endif
                         @if ($lpb->approved_by == null)
-                            <a href="{{ route('utility.approve-lpb', ['modelType' => 'LPB', 'id' => $lpb->id, 'status' => 'Pending']) }}"
+                            <a href="{{ route('utility.approve-lpb', ['modelType' => 'LPB', 'id' => $lpb->id, 'status' => 'Menunggu Pembayaran']) }}"
                                 class="badge badge-sm badge-success"><i class="fas fa-check"></i></a>
                             <a href="{{ route('lpb.ubah', $lpb->id) }}" class="badge badge-sm badge-danger"><i
                                     class="fas fa-times"></i></a>
@@ -79,3 +96,99 @@
         @endif
     </tbody>
 </table>
+
+<script>
+    // start select checkbox
+    STORAGE_KEY = 'selected_lpb_ids';
+
+    function updateSelectedCount() {
+        let selected = getSelectedLPBs();
+        $('#selected-count').text(selected.length);
+    }
+
+    function loadSelectedCheckboxes() {
+        highlightRows();
+        let saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        $('.lpb-checkbox').each(function() {
+            if (saved.includes($(this).val())) {
+                $(this).prop('checked', true);
+            }
+        });
+    }
+
+    function updateLocalStorageOnCheckChange() {
+        let saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        updateSelectedCount();
+        $('.lpb-checkbox').on('change', function() {
+            highlightRows();
+            let id = $(this).val();
+            if ($(this).is(':checked')) {
+                if (!saved.includes(id)) {
+                    saved.push(id);
+                }
+            } else {
+                saved = saved.filter(item => item !== id);
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+            updateSelectedCount(); // <-- ini
+        });
+    }
+
+    function highlightRows() {
+        $('.lpb-checkbox').each(function() {
+            let row = $(this).closest('tr');
+            if ($(this).is(':checked')) {
+                row.addClass('table-active');
+            } else {
+                row.removeClass('table-active');
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        loadSelectedCheckboxes();
+        updateLocalStorageOnCheckChange();
+        updateSelectedCount(); // <-- ini
+        highlightRows();
+
+        $('#select-all').on('change', function() {
+            let checked = $(this).is(':checked');
+            $('.lpb-checkbox').each(function() {
+                $(this).prop('checked', checked).trigger('change');
+            });
+        });
+    });
+
+    function getSelectedLPBs() {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    }
+    // end select checkbox
+
+    function updateStatus() {
+        let selected = getSelectedLPBs();
+        let status = $('#status-action').val();
+
+        if (selected.length === 0) {
+            alert('Pilih data terlebih dahulu!');
+            return;
+        }
+
+        if (!status) {
+            alert('Pilih status yang ingin diterapkan!');
+            return;
+        }
+
+        $.post("{{ route('lpb.update-status-masal') }}", {
+            _token: "{{ csrf_token() }}",
+            selected: selected,
+            status: status
+        }, function(response) {
+            alert(response.message || 'Status berhasil diubah!');
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }).fail(function() {
+            alert('Terjadi kesalahan saat menyimpan.');
+        });
+
+    }
+</script>
