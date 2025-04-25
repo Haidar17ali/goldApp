@@ -253,6 +253,85 @@
 
             // setLocalStorage();
 
+            // Fungsi untuk menyesuaikan tampilan berdasarkan jenis barang
+            function toggleFieldsByItemType() {
+
+                const itemType = $('#item_type').val();
+
+                if (itemType === 'Sengon') {
+                    // Sembunyikan input sill dan container
+                    $('#sill_number').closest('.form-group').hide();
+                    $('#container_number').closest('.form-group').hide();
+
+                    // Atur ulang Handsontable hanya untuk Muatan dan Jumlah
+                    hot.updateSettings({
+                        columns: [{
+                                data: 'load',
+                                type: 'text'
+                            },
+                            {
+                                data: 'amount',
+                                type: 'numeric'
+                            }
+                        ],
+                        colHeaders: ['Muatan', 'Jumlah']
+                    });
+
+                    // Isi data default khusus sengon
+                    hot.loadData([{
+                            load: 'afkir',
+                            amount: 0
+                        },
+                        {
+                            load: '130',
+                            amount: 0
+                        },
+                        {
+                            load: '260',
+                            amount: 0
+                        }
+                    ]);
+
+                } else {
+                    // Tampilkan kembali input sill dan container
+                    $('#sill_number').closest('.form-group').show();
+                    $('#container_number').closest('.form-group').show();
+
+                    // Reset kolom Handsontable ke default
+                    hot.updateSettings({
+                        columns: [{
+                                data: 'load',
+                                type: 'text'
+                            },
+                            {
+                                data: 'amount',
+                                type: 'numeric'
+                            },
+                            {
+                                data: 'unit',
+                                type: 'text'
+                            },
+                            {
+                                data: 'size',
+                                type: 'text'
+                            },
+                            {
+                                data: 'cubication',
+                                type: 'numeric'
+                            }
+                        ],
+                        colHeaders: ['Muatan', 'Jumlah', 'Satuan', 'Ukuran', 'Kubikasi']
+                    });
+
+                    // Kosongkan data handsontable
+                    hot.loadData([]);
+                }
+            }
+
+            // Jalankan fungsi saat halaman dimuat dan saat jenis barang diubah
+            toggleFieldsByItemType();
+            $('#item_type').on('change', toggleFieldsByItemType);
+
 
             // Isi data dari localStorage saat halaman dimuat
             function getLocalStorage() {

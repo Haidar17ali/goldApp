@@ -13,6 +13,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoadPermitController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,14 @@ Route::prefix('JM')
         Route::delete("/bagian/{id}/hapus", [PositionController::class, "destroy"])->name('bagian.hapus');
         // ajax position
         Route::get('bagian/ajax', [PositionController::class, 'selectType'])->name('bagian.tipe');
+
+        // users
+        Route::get("/pengguna", [UserController::class, 'index'])->name("pengguna.index");
+        Route::get('/pengguna/buat', [UserController::class, 'create'])->name('pengguna.buat');
+        Route::post('/pengguna/buat', [UserController::class, 'store'])->name('pengguna.simpan');
+        Route::get('/pengguna/{id}/ubah', [UserController::class, 'edit'])->name('pengguna.ubah');
+        Route::patch('/pengguna/{id}/ubah', [UserController::class, 'update'])->name('pengguna.update');
+        Route::delete('/pengguna/{id}/hapus', [UserController::class, 'destroy'])->name('pengguna.hapus');
 
         // Karyawan
         Route::get('/karyawan', [EmployeeController::class, 'index'])->name('karyawan.index');
@@ -110,6 +119,7 @@ Route::prefix('JM')
         Route::get('/purchase-order/{type}', [POController::class, 'index'])->name('purchase-order.index');
         Route::get('/purchase-order/{type}/buat', [POController::class, 'create'])->name('purchase-order.buat');
         Route::post('/purchase-order/{type}/buat', [POController::class, 'store'])->name('purchase-order.simpan');
+        Route::get('/purchase-order/{id}/detail/{type}', [POController::class, 'detail'])->name('purchase-order.detail');
         Route::get('/purchase-order/{id}/ubah/{type}', [POController::class, 'edit'])->name('purchase-order.ubah');
         Route::patch('/purchase-order/{id}/ubah/{type}', [POController::class, 'update'])->name('purchase-order.update');
         Route::delete('/purchase-order/{id}/hapus', [POController::class, 'destroy'])->name('purchase-order.hapus');

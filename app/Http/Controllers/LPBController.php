@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class LPBController extends Controller
+class LPBController extends BaseController
 {
     public function index(){
         $lpbs = LPB::with(['roadPermit', 'details', 'supplier', 'createdBy', 'editedBy', 'ApprovalBy'])->paginate(20);
@@ -148,7 +148,11 @@ class LPBController extends Controller
     public function edit($id){
         $redirectTo = session('lpb_edit_redirect', route('lpb.index')); // Ambil halaman asal dari session, default ke index lpb
         $lpb = LPB::with(['details', 'roadPermit'])->findOrFail($id);
-
+        
+        if ($lpb->is_approved && auth()->user()->hasRole('admin')) {
+            abort(403, 'LPB yang sudah disetujui tidak dapat diedit oleh role Anda.');
+        }
+        
         // Buat array dengan diameter dari 8 sampai 65
         $diameters = range(8, 65);
         $data = [];

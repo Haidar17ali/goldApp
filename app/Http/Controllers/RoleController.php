@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class RoleController extends Controller
+class RoleController extends BaseController
 {
     public function index(){
         $roles = Role::orderBy("id", "desc")->paginate(10);
@@ -15,7 +15,11 @@ class RoleController extends Controller
 
     public function create(){
         $permissions = Permission::all();
-        return view('pages.roles.create', compact('permissions'));
+        $groupedPermissions = $permissions->groupBy(function($permission) {
+            return explode('.', $permission->name)[0];
+        });
+        
+        return view('pages.roles.create', compact('groupedPermissions'));
     }
 
     public function store(Request $request){
@@ -44,7 +48,10 @@ class RoleController extends Controller
     public function edit($id) {
         $role = Role::with('permissions')->findOrFail($id);
         $permissions = Permission::all();
-        return view('pages.roles.edit', compact(['role', 'permissions']));
+        $groupedPermissions = $permissions->groupBy(function($permission) {
+            return explode('.', $permission->name)[0];
+        });
+        return view('pages.roles.edit', compact(['role', 'groupedPermissions']));
     }
 
     public function update(Request $request, $id){

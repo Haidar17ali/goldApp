@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Purchase Order ' . $type)
+@section('title', 'Pengguna')
 
 @section('content_header')
-    <h1>Purchase Order {{ $type }}</h1>
+    <h1>Pengguna</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('purchase-order.buat', $type) }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Purchase Order {{ $type }}</a>
+            <a href="{{ route('pengguna.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
+                Pengguna</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="purchase_orders" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="users" class="form-control mb-3 float-right"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -32,8 +32,6 @@
             <div class="search-pagination d-flex justify-content-end"></div>
         </div>
     </div>
-
-
 @stop
 
 @section('css')
@@ -43,12 +41,8 @@
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
+    <script src="{{ asset('assets/JS/myHelper.js') }}"></script>
     <script>
-        $(document).ready(function() {
-            bsCustomFileInput.init()
-        })
-        let type = "{{ $type }}";
-        localStorage.removeItem("edit" + type);
         // toast
         @section('plugins.Toast', true)
             var status = "{{ session('status') }}";
@@ -79,27 +73,9 @@
                         background: "#28A745",
                     }
                 }).showToast();
-            } else if (status == "importSuccess") {
+            } else if (status == "used") {
                 Toastify({
-                    text: "Data karyawan berhasil diimport!",
-                    className: "info",
-                    close: true,
-                    style: {
-                        background: "#17a2b8",
-                    }
-                }).showToast();
-            } else if (status == "Aktif") {
-                Toastify({
-                    text: "Purchase Order sudah Di setujui!",
-                    className: "info",
-                    close: true,
-                    style: {
-                        background: "#17a2b8",
-                    }
-                }).showToast();
-            } else if (status == "Non-Aktif") {
-                Toastify({
-                    text: "Purchase Order gagal Di setujui!",
+                    text: "Data LPB Terpakai Dan Stock Berkurang!",
                     className: "info",
                     close: true,
                     style: {
@@ -107,24 +83,26 @@
                     }
                 }).showToast();
             }
-
-            // delete 
-            $(".badge-delete").click(function(e) {
-                var form = $(this).closest("form");
-                Swal.fire({
-                    title: 'Hapus Data!',
-                    text: "Apakah anda yakin akan menghapus data ini?",
-                    icon: 'warning',
-                    confirmButtonColor: '#3085d6',
-                    showCancelButton: true,
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Hapus!!'
-                }).then((result) => {
-                    if (result.value === true) {
-                        form.closest("form").submit();
-                    }
-                })
-            });
+            $(document).ready(function() {
+                // delete 
+                $(document).on("click", ".badge-delete", function(e) {
+                    e.preventDefault();
+                    var form = $(this).closest("form");
+                    Swal.fire({
+                        title: 'Hapus Data!',
+                        text: "Apakah anda yakin akan menghapus data ini?",
+                        icon: 'warning',
+                        confirmButtonColor: '#3085d6',
+                        showCancelButton: true,
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Hapus!!'
+                    }).then((result) => {
+                        if (result.value) {
+                            form.submit();
+                        }
+                    });
+                });
+            })
     </script>
     <script>
         $(document).ready(function() {
@@ -145,35 +123,27 @@
                     data: {
                         model: model,
                         search: search,
-                        traditional: true,
-                        type: "{{ $type }}",
                         columns: [
                             'id',
-                            'date',
-                            'po_type',
-                            'supplier_id',
-                            'created_by',
-                            'edited_by',
-                            'approved_by',
-                            'order_by',
-                            'po_code',
-                            'status',
-                            'po_type',
+                            'username',
+                            'email',
+                            'is_active',
+                            'employee_id',
+
                         ],
                         relations: {
-                            'supplier': ["name"],
-                            'approvedBy': ["username"],
-                            'order_by': ["fullname"],
+                            'employee': ["fullname", "alias_name", "nik"],
                         },
                         page: page
                     },
                     success: function(response) {
+
                         $('.search-results').html(response.table);
                         $('.search-pagination').html(response.pagination);
                     }
                 });
             }
-            fetchData("", 1, "purchase_orders");
+            fetchData("", 1, "users");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -187,11 +157,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'purchase_orders');
+                fetchData(inputElement, page, 'users');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'purchase_orders');
+                fetchData(this, 1, 'users');
             });
         });
     </script>

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
-class LogController extends Controller
+class LogController extends BaseController
 {
     public function index($type){
         $logs = Log::where('type', $type)

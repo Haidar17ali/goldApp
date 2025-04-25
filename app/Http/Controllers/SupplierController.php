@@ -11,7 +11,7 @@ use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
-class SupplierController extends Controller
+class SupplierController extends BaseController
 {
     public function index(){
         $suppliers = Supplier::orderBy('id', 'desc')->with(['address', 'bank'])->get();

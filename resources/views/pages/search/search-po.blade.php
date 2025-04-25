@@ -67,8 +67,11 @@
                             <a href="{{ route('utility.activation-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Non-Aktif']) }}"
                                 class="badge badge-danger">Non-Aktifkan</a>
                         @endif
+                        <a href="#" data-toggle="modal" data-id="{{ $po->id }}"
+                            data-approved="{{ $po->approved_by }}" data-target="#details"
+                            class="badge badge-primary show-detail"><i class="fas fa-eye"></i></a>
                         @if ($po->approved_by == null)
-                            <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Aktif']) }}"
+                            <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Pending']) }}"
                                 class="badge badge-success"><i class="fas fa-check"></i></a>
                             <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Tidak Disetujui']) }}"
                                 class="badge badge-danger"><i class="fas fa-times"></i></a>
@@ -95,3 +98,75 @@
         @endif
     </tbody>
 </table>
+
+
+<!-- Modal -->
+<div class="modal fade" id="details" tabindex="-1" aria-labelledby="importKaryawan" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Harga</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-detail-content">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="btn-tolak" class="btn btn-danger">
+                    <i class="fas fa-times"></i>
+                </a>
+                <a href="#" id="btn-setuju" class="btn btn-success">
+                    <i class="fas fa-check"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('.show-detail').click(function() {
+            const id = $(this).data('id');
+            const approvedBy = $(this).data('approved');
+            let approveUrl =
+                "{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => ':id', 'status' => 'Pending']) }}";
+            approveUrl = approveUrl.replace(':id', id);
+            let rejectUrl =
+                "{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => ':id', 'status' => 'Tidak Disetujui']) }}";
+            rejectUrl = rejectUrl.replace(':id', id);
+
+
+            $('#modal-detail-content').html(
+                '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>'
+            );
+
+            $.ajax({
+                url: `/JM/purchase-order/${id}/detail/sengon`,
+                type: 'GET',
+                success: function(res) {
+                    $('#modal-detail-content').html(res);
+                    $('#modalDetail').modal('show');
+                    // ✅ Update tombol dinamis berdasarkan ID yang diklik
+                    $('#btn-tolak').attr('href', rejectUrl);
+                    $('#btn-setuju').attr('href', approveUrl);
+
+                    // ✅ Sembunyikan tombol kalau sudah disetujui
+                    if (approvedBy) {
+                        $('#btn-tolak, #btn-setuju').hide();
+                    } else {
+                        $('#btn-tolak, #btn-setuju').show();
+                    }
+
+                },
+                error: function(xhr) {
+                    $('#modal-detail-content').html(
+                        '<div class="alert alert-danger">Gagal memuat data</div>');
+                }
+            });
+        });
+    });
+</script>

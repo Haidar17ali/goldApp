@@ -20,10 +20,10 @@ class PO extends Model
         'order_by',
         'created_by',
         'edited_by',
-        'edited_by',
         'approved_by',
         'approved_at',
         'activation_date',
+        'description',
     ];
 
     public function details(){

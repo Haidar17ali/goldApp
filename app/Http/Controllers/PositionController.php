@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 use function PHPSTORM_META\type;
 
-class PositionController extends Controller
+class PositionController extends BaseController
 {
     /**
      * Display a listing of the resource.

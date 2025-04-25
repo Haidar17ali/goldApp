@@ -60,6 +60,14 @@
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label for="description" class="col-sm-2 col-form-label">Keterangan</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="description" name="description"
+                                        value="{{ old('description') }}">
+                                    <span class="text-danger error-text" id="description_error"></span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label for="activation_date" class="col-sm-2 col-form-label">Tanggal Aktif</label>
                                 <div class="col-sm-4">
                                     <input type="date" class="form-control" id="activation_date" name="activation_date"

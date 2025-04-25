@@ -57,15 +57,15 @@
                                     id="print"><i class="fas fa-print"></i>Print</a>
                                 {{-- <a href="{{ route('surat-jalan.set-pembongkar', ['type' => $type, 'id' => $road_permit->id]) }}"
                                             class="badge badge-primary"><i class="fas fa-male"></i></a> --}}
-                                {{-- <a href="{{ route('surat-jalan.ubah', ['type' => $type, 'id' => $road_permit->id]) }}"
-                                                class="badge badge-success"><i class="fas fa-pencil-alt"></i></a> --}}
                             @endif
                         @endif
                         <a href="#" data-toggle="modal" data-id="{{ $road_permit->id }}" data-target="#details"
                             class="badge badge-primary show-detail"><i class="fas fa-eye"></i></a>
                         <a href="#" data-toggle="modal" data-id="{{ $road_permit->id }}" data-target="#details"
                             id="supplier" class="badge badge-success supplier"><i class="fas fa-eye"></i></a>
-                        {{-- <form action="{{ route('surat-jalan.hapus', $road_permit->id) }}" class="d-inline"
+                        <a href="{{ route('surat-jalan.ubah', ['type' => $type, 'id' => $road_permit->id]) }}"
+                            class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
+                        <form action="{{ route('surat-jalan.hapus', $road_permit->id) }}" class="d-inline"
                             id="delete{{ $road_permit->id }}" method="post">
                             @csrf
                             @method('DELETE')
@@ -73,7 +73,7 @@
                                 class="badge badge-pill badge-delete badge-danger d-inline">
                                 <i class="fas fa-trash"></i>
                             </a>
-                        </form> --}}
+                        </form>
                     </td>
                 </tr>
             @endforeach

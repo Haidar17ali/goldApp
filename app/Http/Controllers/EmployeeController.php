@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
-class EmployeeController extends Controller
+class EmployeeController extends BaseController
 {
     public function index(){
         $employees = Employee::orderBy('fullname', 'asc')->with(['salary'])->paginate(15);

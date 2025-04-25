@@ -1,0 +1,7 @@
+1. detail Po persetujuan tampilkan detail po yang bisa di setujui
+2. tambahkan muatan di surat jalan jika surat jalan sengon makan isian hanya reject, 130, 260
+3. buat flowchart dan tata cara penggunaan aplikasi
+4. penuhi data karyawan
+5. isi role user
+6. buat notifikasi jika ada PO Baru yang dibuat
+7. untuk po tambahkan catatan untuk mengetahui lokasi

@@ -6,7 +6,7 @@ use App\Models\Down_payment;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 
-class DownPaymentController extends Controller
+class DownPaymentController extends BaseController
 {
     public function index() {
         return view('pages.down-payments.index');        

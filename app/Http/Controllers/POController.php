@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class POController extends Controller
+class POController extends BaseController
 {
     public function index($type){
         $pos = PO::where('po_type', $type)->with(['createdBy', "edit_by", 'approvedBy'])->orderBy('id', 'desc')->paginate(20);
@@ -89,6 +89,7 @@ class POController extends Controller
                 'po_type' => $type,
                 'supplier_id' => $request->supplier_id,
                 'supplier_type' => $request->supplier_type,
+                'description' => $request->description,
                 'activation_date' => $request->activation_date,
                 'status' => 'Pending',
                 'created_by' => Auth::user()->id,
@@ -123,6 +124,11 @@ class POController extends Controller
         
     }
 
+    public function detail($id){
+        $po = PO::findOrFail($id);
+        return view('pages.PO.modal-detail', compact('po'));
+    }
+
     public function edit($id, $type){
         $suppliers = Supplier::where('supplier_type', $type)->get();
         $po = PO::with(['details'])->findOrFail($id);
@@ -140,7 +146,7 @@ class POController extends Controller
         
         if($type == "Sengon"){
             $request->validate([
-                'supplier_id' => "required|exists:suppliers,id|nullable",
+                'supplier_id' => "exists:suppliers,id|nullable",
                 'supplier_type' => "required|in:Umum,Khusus",
                 'activation_date' => 'required|date',
             ]);
@@ -188,6 +194,7 @@ class POController extends Controller
             $po->po_type = $type;
             $po->supplier_id = $request->supplier_id;
             $po->supplier_type = $request->supplier_type;
+            $po->description = $request->description;
             $po->activation_date = $request->activation_date;
             $po->status = 'Pending';
             $po->edited_by = Auth::user()->id;

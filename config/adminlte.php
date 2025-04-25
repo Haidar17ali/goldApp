@@ -298,30 +298,30 @@ return [
     |
     */
 
+    
     'menu' => [
-        // Navbar items:
         [
             'type' => 'navbar-search',
             'text' => 'search',
             'topnav_right' => true,
+            'can' => 'search',
         ],
         [
             'type' => 'fullscreen-widget',
             'topnav_right' => true,
         ],
 
-        // Sidebar items:
         [
             'type' => 'sidebar-menu-search',
             'text' => 'search',
+            'can' => 'search',
         ],
         [
             'text' => 'blog',
             'url' => 'admin/blog',
             'can' => 'manage-blog',
         ],
-        
-        
+
         [
             'text' => 'Master Data',
             'icon' => 'fas fa-database',
@@ -329,18 +329,22 @@ return [
                 [
                     'text' => 'Bagian',
                     'url' => 'JM/bagian',
+                    'can' => 'bagian.index',
                 ],
                 [
                     'text' => 'Karyawan',
                     'url' => 'JM/karyawan',
+                    'can' => 'karyawan.index',
                 ],
                 [
                     'text' => 'Supplier',
                     'url' => 'JM/supplier',
+                    'can' => 'supplier.index',
                 ],
                 [
                     'text' => 'NPWP',
                     'url' => 'JM/NPWP',
+                    'can' => 'npwp.index',
                 ],
                 [
                     'text' => 'Stok',
@@ -349,10 +353,12 @@ return [
                         [
                             'text' => 'Sengon',
                             'url' => 'JM/log/Sengon',
+                            'can' => 'log.index',
                         ],
                         [
                             'text' => 'Merbau',
                             'url' => 'JM/log/Merbau',
+                            'can' => 'log.index',
                         ]
                     ],
                 ]
@@ -369,10 +375,12 @@ return [
                         [
                             'text' => 'Barang Masuk',
                             'url' => 'JM/surat-jalan/In',
+                            'can' => 'surat-jalan.index',
                         ],
                         [
                             'text' => 'Barang Keluar',
                             'url' => 'JM/Out/surat-jalan/Out',
+                            'can' => 'surat-jalan.keluar',
                         ]
                     ],
                 ],
@@ -380,6 +388,7 @@ return [
                     'text' => 'LPB (Laporan Penerimaan Barang)',
                     'icon' => 'fas fa-shopping-cart',
                     'url' => 'JM/lpb',
+                    'can' => 'lpb.index',
                 ],
                 [
                     'text' => 'PO (Purchase Order)',
@@ -388,14 +397,17 @@ return [
                         [
                             'text' => 'Barang Pembantu',
                             'url' => 'JM/purchase-order/Bahan-Pembantu',
+                            'can' => 'purchase-order.index',
                         ],
                         [
                             'text' => 'SPK',
                             'url' => 'JM/purchase-order/SPK',
+                            'can' => 'purchase-order.index',
                         ],
                         [
                             'text' => 'Sengon',
                             'url' => 'JM/purchase-order/Sengon',
+                            'can' => 'purchase-order.index',
                         ],
                     ],
                 ],
@@ -403,11 +415,13 @@ return [
                     'text' => 'Purchase Jurnal',
                     'icon' => 'fas fa-book',
                     'url' => 'JM/purchase-jurnal',
+                    'can' => 'purchase-jurnal.index',
                 ],
                 [
                     'text' => 'DP (Down Payment)',
                     'icon' => 'fas fa-money-bill-wave-alt',
                     'url' => 'JM/down-payment',
+                    'can' => 'down-payment.index',
                 ],
             ],
         ],
@@ -418,18 +432,22 @@ return [
                 [
                     'text' => 'Laporan Surat Jalan',
                     'url' => 'JM/report/surat-jalan',
+                    'can' => 'laporan.surat-jalan',
                 ],
                 [
                     'text' => 'Laporan LPB',
                     'url' => 'JM/report/lpb',
+                    'can' => 'laporan.lpb',
                 ],
                 [
                     'text' => 'Laporan Purchase Jurnal',
                     'url' => 'JM/purchase-jurnal',
+                    'can' => 'purchase-jurnal.index',
                 ],
                 [
                     'text' => 'Laporan DP (Down Payment)',
                     'url' => 'JM/down-payment',
+                    'can' => 'down-payment.index',
                 ],
             ],
         ],
@@ -451,33 +469,20 @@ return [
                 [
                     'text' => 'Role',
                     'url' => 'JM/role',
+                    'can' => 'role.index',
                 ],
                 [
                     'text' => 'Permissions',
                     'url' => 'JM/permission',
+                    'can' => 'permission.index',
                 ],
                 [
                     'text' => 'Pengguna',
-                    'url' => 'JM/user-management',
+                    'url' => 'JM/pengguna',
+                    'can' => 'pengguna.index',
                 ],
             ],
         ],
-        // ['header' => 'labels'],
-        // [
-        //     'text' => 'important',
-        //     'icon_color' => 'red',
-        //     'url' => '#',
-        // ],
-        // [
-        //     'text' => 'warning',
-        //     'icon_color' => 'yellow',
-        //     'url' => '#',
-        // ],
-        // [
-        //     'text' => 'information',
-        //     'icon_color' => 'cyan',
-        //     'url' => '#',
-        // ],
     ],
 
     /*

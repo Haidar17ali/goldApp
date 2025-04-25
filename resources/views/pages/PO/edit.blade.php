@@ -36,7 +36,7 @@
                             <label for="supplier_id" class="col-sm-2 col-form-label">Supplier</label>
                             <div class="col-sm-10">
                                 <select class="form-control" name="supplier_id" id="supplier_id">
-                                    <option>Silahkan Pilih Supplier</option>
+                                    <option value="">Silahkan Pilih Supplier</option>
                                     @if (count($suppliers))
                                         @foreach ($suppliers as $supplier)
                                             <option {{ $supplier->id == $po->supplier_id ? 'selected' : '' }}
@@ -51,7 +51,7 @@
                                 <label for="supplier_type" class="col-sm-2 col-form-label">Tipe Supplier</label>
                                 <div class="col-sm-10">
                                     <select class="form-control" name="supplier_type" id="supplier_type">
-                                        <option>Silahkan Pilih Tipe</option>
+                                        <option value="">Silahkan Pilih Tipe</option>
                                         @if (count($supplier_types))
                                             @foreach ($supplier_types as $supplier_type)
                                                 <option {{ $supplier_type == $po->supplier_type ? 'selected' : '' }}
@@ -62,10 +62,18 @@
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label for="description" class="col-sm-2 col-form-label">Keterangan</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="description" name="description"
+                                        value="{{ old('description', $po->description) }}">
+                                    <span class="text-danger error-text" id="description_error"></span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label for="activation_date" class="col-sm-2 col-form-label">Tanggal Aktif</label>
                                 <div class="col-sm-4">
                                     <input type="date" class="form-control" id="activation_date" name="activation_date"
-                                        value="{{ old('activation_date', $po->activation_date) }}">
+                                        value="{{ old('activation_date', date('Y-m-d', strtotime($po->activation_date))) }}">
                                     <span class="text-danger error-text" id="activation_date_error"></span>
                                 </div>
                             </div>
@@ -108,7 +116,6 @@
             </div>
         </div>
     </form>
-
     <div id="loading" style="display: none;">
         <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
             <i class="fa fa-spinner fa-spin fa-3x"></i> <!-- Font Awesome spinner -->

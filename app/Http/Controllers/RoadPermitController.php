@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Js;
 
-class RoadPermitController extends Controller
+class RoadPermitController extends BaseController
 {
     public function index($type){
         $road_permits = RoadPermit::orderBy('id', 'desc')->with(['details', 'handyman', 'createdBy', 'editedBy'])->get();
@@ -18,8 +18,22 @@ class RoadPermitController extends Controller
 
     public function create($type){
         $trucks = ['Pickup', 'Truk Engkel', 'Dump Truk', 'Truk Gandeng', 'Truk Fuso', 'Container'];
+        $locations = [
+            'Mekanik',
+            'Utara Mekanik',
+            'Merbau',
+            'TOB',
+            'Sosoran Dalam',
+            'Tembok',
+            'Depan Barker',
+            'Gudang Baru',
+            'Lap Merbau',
+            'Tembok Depan Mesin',
+            'Kolam',
+            'Tembok Bensaw',
+        ];
         $item_types = ['Sengon', 'Merbau', 'Pembantu'];
-        return view('pages.road-permits.create', compact(['type', 'trucks', 'item_types']));
+        return view('pages.road-permits.create', compact(['type', 'trucks', 'item_types', 'locations']));
     }
     
     public function store(Request $request, $type){
@@ -29,10 +43,17 @@ class RoadPermitController extends Controller
         // Validasi road permit utama
         $validatedData = $request->validate([
             'from' => 'required|string',
-            'destination' => 'required|string',
             'nopol' => 'required|string',
             'driver' => 'required|string',
         ]);
+
+        $destination = "CV. Jati Makmur";
+        if($type == "out"){
+            $destination = $request->destination;
+            $request->validate([
+                'destination' => 'required|string',
+            ]);
+        }
 
         // ambil data stringify yang dikirim fe dan decode menjadi json
         $details = json_decode($request->road_permit_details[0], true);
@@ -44,8 +65,7 @@ class RoadPermitController extends Controller
             foreach ($details as $index => $detail) {
                 $validator = Validator::make($detail, [
                     'load' => 'required|string',
-                    'amount' => 'required|numeric|min:1',
-                    'unit' => 'required|string',
+                    // 'amount' => 'required|numeric|min:1',
                 ]);
         
                 if ($validator->fails()) {
@@ -64,13 +84,13 @@ class RoadPermitController extends Controller
             'date' => date('Y-m-d'),
             'in' => date('H:i:s', time()),
             'from' => $request->from,
-            'destination' => $request->destination,
+            'destination' => $destination,
             'vehicle' => $request->vehicle,
             'type_item' => $request->item_type,
             'nopol' => $request->nopol,
             'driver' => $request->driver,
             'handyman_id' => 1,
-            'unpack_location' => $request->unpack_location,
+            'unpack_location' => $request->location .'-'. $request->sub,
             'sill_number' => $request->sill_number,
             'container_number' => $request->container_number,
             'description' => $request->description,
@@ -88,7 +108,7 @@ class RoadPermitController extends Controller
                     'road_permit_id' => $permit->id,
                     'load' => $detail['load'],
                     'amount' => $detail['amount'],
-                    'unit' => $detail['unit'],
+                    'unit' => $detail['unit']?? "Batang",
                     'size' => $detail['size'] ?? null,
                     'cubication' => $detail['cubication'] ?? null,
                 ]);
@@ -116,6 +136,7 @@ class RoadPermitController extends Controller
                 'grouped' => $groupedByQuality
             ]];
         });
+        
 
         return view('pages.road-permits.modal-detail', compact('roadPermit', 'groupedByKitir'));
     }

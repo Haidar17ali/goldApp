@@ -38,14 +38,16 @@
                                 <span class="text-danger error-text" id="from_error"></span>
                             </div>
                         </div>
-                        <div class="form-group row">
-                            <label for="destination" class="col-sm-2 col-form-label">Penerima*</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="destination" name="destination"
-                                    value="{{ old('destination') }}">
-                                <span class="text-danger error-text" id="destination_error"></span>
+                        @if ($type == 'out')
+                            <div class="form-group row">
+                                <label for="destination" class="col-sm-2 col-form-label">Penerima*</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="destination" name="destination"
+                                        value="{{ old('destination') }}">
+                                    <span class="text-danger error-text" id="destination_error"></span>
+                                </div>
                             </div>
-                        </div>
+                        @endif
                         <div class="form-group row">
                             <label for="item_type" class="col-sm-2 col-form-label">Jenis Barang</label>
                             <div class="col-sm-10">
@@ -94,20 +96,35 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="unpack_location" class="col-sm-2 col-form-label">Lokasi Bongkar</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="unpack_location" name="unpack_location"
-                                    value="{{ old('unpack_location') }}">
+                            <label for="location" class="col-sm-2 col-form-label">Lokasi Bongkar</label>
+                            <div class="col-sm-6">
+                                <select class="form-control" name="location" id="location">
+                                    <option value="">Pilih Lokasi</option>
+                                    @foreach ($locations as $location)
+                                        <option value="{{ $location }}">{{ $location }}</option>
+                                    @endforeach
+                                </select>
+                                <span class="text-danger error-text" id="handyman_error"></span>
+                            </div>
+                            <label for="sub_number" class="col-sm-2 col-form-label">Nomer Sub</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" name="sub_number" id="sub_number">
+                                    <option value="">Pilih Sub</option>
+                                    @for ($i = 1; $i <= 40; $i++)
+                                        <option value="{{ $i }}">{{ $i }}</option>
+                                    @endfor
+                                </select>
+                                <span class="text-danger error-text" id="handyman_error"></span>
                             </div>
                         </div>
-                        <div class="form-group row">
+                        <div class="form-group row" id="sill_number_group">
                             <label for="sill_number" class="col-sm-2 col-form-label">Nomer Sill</label>
                             <div class="col-sm-10">
                                 <input type="number" class="form-control" id="sill_number" name="sill_number"
                                     value="{{ old('sill_number') }}">
                             </div>
                         </div>
-                        <div class="form-group row">
+                        <div class="form-group row" id="container_number_group">
                             <label for="container_number" class="col-sm-2 col-form-label">Nomer Container</label>
                             <div class="col-sm-10">
                                 <input type="number" class="form-control" id="container_number" name="container_number"
@@ -242,6 +259,85 @@
                         },
                     });
 
+                    // Fungsi untuk menyesuaikan tampilan berdasarkan jenis barang
+                    function toggleFieldsByItemType() {
+
+                        const itemType = $('#item_type').val();
+
+                        if (itemType === 'Sengon') {
+                            // Sembunyikan input sill dan container
+                            $('#sill_number').closest('.form-group').hide();
+                            $('#container_number').closest('.form-group').hide();
+
+                            // Atur ulang Handsontable hanya untuk Muatan dan Jumlah
+                            hot.updateSettings({
+                                columns: [{
+                                        data: 'load',
+                                        type: 'text'
+                                    },
+                                    {
+                                        data: 'amount',
+                                        type: 'numeric'
+                                    }
+                                ],
+                                colHeaders: ['Muatan', 'Jumlah']
+                            });
+
+                            // Isi data default khusus sengon
+                            hot.loadData([{
+                                    load: 'afkir',
+                                    amount: 0
+                                },
+                                {
+                                    load: '130',
+                                    amount: 0
+                                },
+                                {
+                                    load: '260',
+                                    amount: 0
+                                }
+                            ]);
+
+                        } else {
+                            // Tampilkan kembali input sill dan container
+                            $('#sill_number').closest('.form-group').show();
+                            $('#container_number').closest('.form-group').show();
+
+                            // Reset kolom Handsontable ke default
+                            hot.updateSettings({
+                                columns: [{
+                                        data: 'load',
+                                        type: 'text'
+                                    },
+                                    {
+                                        data: 'amount',
+                                        type: 'numeric'
+                                    },
+                                    {
+                                        data: 'unit',
+                                        type: 'text'
+                                    },
+                                    {
+                                        data: 'size',
+                                        type: 'text'
+                                    },
+                                    {
+                                        data: 'cubication',
+                                        type: 'numeric'
+                                    }
+                                ],
+                                colHeaders: ['Muatan', 'Jumlah', 'Satuan', 'Ukuran', 'Kubikasi']
+                            });
+
+                            // Kosongkan data handsontable
+                            hot.loadData([]);
+                        }
+                    }
+
+                    // Jalankan fungsi saat halaman dimuat dan saat jenis barang diubah
+                    toggleFieldsByItemType();
+                    $('#item_type').on('change', toggleFieldsByItemType);
+
                     // Isi data dari localStorage saat halaman dimuat
                     function getLocalStorage() {
                         const savedData = localStorage.getItem('roadPermitDetails');
@@ -352,5 +448,12 @@
 
                         getLocalStorage();
                     });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('#location').select2({
+                theme: "bootstrap4",
+            });
+        })
     </script>
 @stop

@@ -7,7 +7,7 @@ use App\Models\RoadPermit;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 
-class ReportController extends Controller
+class ReportController extends BaseController
 {
     public function reportRoadPermits(){
         return view('pages.Report.road-permits');

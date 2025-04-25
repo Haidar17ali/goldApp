@@ -26,19 +26,27 @@
                 <h3>Pilih Permission</h3>
                 <hr>
                 <div class="container row">
-                    @if (count($permissions))
-                        @foreach ($permissions as $permission)
-                            <div class="toggle-container col-md-3">
-                                <!-- Tombol Toggle -->
-                                <label class="switch">
-                                    <input type="checkbox" value="{{ $permission->id }}" id="{{ $permission->name }}"
-                                        name="permissions[]"
-                                        {{ $role->permissions->contains($permission->id) ? 'checked' : '' }}>
-                                    <span class="slider round"></span>
-                                </label>
-                                <!-- Tulisan di samping tombol -->
-                                <label for="{{ $permission->name }}"
-                                    class="toggle-text"><b>{{ $permission->name }}</b></label>
+                    @if ($groupedPermissions->count())
+                        @foreach ($groupedPermissions as $group => $permissions)
+                            <div class="col-12 mb-3">
+                                <h5 class="text-primary text-uppercase"><b>{{ ucfirst($group) }}</b></h5>
+                                <div class="row">
+                                    @foreach ($permissions as $permission)
+                                        <div class="toggle-container col-md-3">
+                                            <!-- Tombol Toggle -->
+                                            <label class="switch">
+                                                <input type="checkbox" value="{{ $permission->id }}"
+                                                    id="{{ $permission->name }}" name="permissions[]"
+                                                    {{ $role->permissions->contains('id', $permission->id) ? 'checked' : '' }}>
+                                                <span class="slider round"></span>
+                                            </label>
+                                            <!-- Tulisan di samping tombol -->
+                                            <label for="{{ $permission->name }}"
+                                                class="toggle-text"><b>{{ $permission->name }}</b></label>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <hr>
                             </div>
                         @endforeach
                     @else

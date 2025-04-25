@@ -8,7 +8,7 @@ use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
-class NPWPController extends Controller
+class NPWPController extends BaseController
 {
     public function index(){
         $datas = npwp::paginate(10);

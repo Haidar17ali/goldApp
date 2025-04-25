@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class PurchaseJurnalController extends Controller
+class PurchaseJurnalController extends BaseController
 {
     public function index(){
         $purchase_jurnals = PurchaseJurnal::with(['details.lpbs.details', 'createdBy'])->paginate(10);

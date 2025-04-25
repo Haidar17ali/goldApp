@@ -28,6 +28,7 @@ return new class extends Migration
             $table->integer('approved_by')->nullable();
             $table->dateTime('approved_at')->nullable();
             $table->dateTime('activation_date')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

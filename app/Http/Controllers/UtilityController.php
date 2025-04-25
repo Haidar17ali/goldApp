@@ -28,19 +28,22 @@ class UtilityController extends Controller
         }
         
         // Khusus untuk Purchase Order: Nonaktifkan data lama dengan supplier yang sama
-        // if ($model instanceof PO) {
-        //     $modelClass::where('supplier_id', $model->supplier_id)
-        //     ->where('id', '!=', $model->id)
-        //     ->where('status', 'approved')
-        //     ->update(['status' => 'Non-Aktif']);
-        // }
-
+        
         $model->update([
             'status' => $status,
             'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
-
+        
+        // if ($model instanceof PO) {
+        //     $modelClass::where('supplier_id', $model->supplier_id)
+        //     ->where('id', '!=', $model->id)
+        //     ->update([
+        //         'status' => 'Pending',
+        //         'approved_by' => Auth::id(),
+        //         'approved_at' => now(),
+        //     ]);
+        // }
         return redirect()->back()->with('status', $status);
     }
 
@@ -219,6 +222,19 @@ class UtilityController extends Controller
                 'handyman' => ['fullname'],
             ]
         ],
+        'users' => [
+            'model' => 'App\\Models\\User',
+            'columns' => [
+                'id',
+                'username',
+                'email',
+                'is_active',
+                'employee_id',
+            ],
+            'relations' => [
+                'employee'=> ["fullname", "alias_name", "nik"],
+            ]
+        ],
         'purchase_jurnals' => [
             'model' => 'App\\Models\\PurchaseJurnal',
             'columns' => [
@@ -297,7 +313,7 @@ class UtilityController extends Controller
         $modelClass = $modelInfo['model'];
         $columns = $request->input('columns', []); // Ambil dari frontend, default array kosong
         $relations = $request->input('relations', []); // Relasi dari frontend jika ada
-
+        
         // Jika frontend tidak mengirimkan kolom, gunakan default dari backend
         if (empty($columns)) {
             $columns = $modelInfo['columns'];
@@ -330,8 +346,10 @@ class UtilityController extends Controller
                 }
                 foreach($relations as $relation => $fields){
                     $q->orWhereHas($relation, function($query) use ($fields,$search){
-                        foreach($fields as $field){
-                            $query->where($field, 'like', "%$search%");
+                        if($fields){
+                            foreach($fields as $field){
+                                $query->where($field, 'like', "%$search%");
+                            }
                         }
                     });
                 }
@@ -382,6 +400,11 @@ class UtilityController extends Controller
 
             return response()->json([
                 'table' => view('pages.search.search-PJ', compact(['data']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "users"){
+            return response()->json([
+                'table' => view('pages.search.search-user', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }
