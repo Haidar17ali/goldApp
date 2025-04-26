@@ -96,11 +96,31 @@
                                 <span class="text-danger error-text" id="handyman_error"></span>
                             </div>
                         </div>
+                        @php
+                            $locate = explode('-', $road_permit->unpack_location);
+                        @endphp
                         <div class="form-group row">
-                            <label for="unpack_location" class="col-sm-2 col-form-label">Lokasi Bongkar</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="unpack_location" name="unpack_location"
-                                    value="{{ old('unpack_location', $road_permit->unpack_location) }}">
+                            <label for="location" class="col-sm-2 col-form-label">Lokasi Bongkar</label>
+                            <div class="col-sm-6">
+                                <select class="form-control" name="location" id="location">
+                                    <option value="">Pilih Lokasi</option>
+                                    @foreach ($locations as $location)
+                                        <option {{ $locate[0] == $location ? 'selected' : '' }}
+                                            value="{{ $location }}">{{ $location }}</option>
+                                    @endforeach
+                                </select>
+                                <span class="text-danger error-text" id="handyman_error"></span>
+                            </div>
+                            <label for="sub_number" class="col-sm-2 col-form-label">Nomer Sub</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" name="sub_number" id="sub_number">
+                                    <option value="">Pilih Sub</option>
+                                    @for ($i = 1; $i <= 40; $i++)
+                                        <option {{ $locate[1] == $i ? 'selected' : '' }} value="{{ $i }}">
+                                            {{ $i }}</option>
+                                    @endfor
+                                </select>
+                                <span class="text-danger error-text" id="handyman_error"></span>
                             </div>
                         </div>
                         <div class="form-group row">

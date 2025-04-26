@@ -90,7 +90,7 @@ class RoadPermitController extends BaseController
             'nopol' => $request->nopol,
             'driver' => $request->driver,
             'handyman_id' => 1,
-            'unpack_location' => $request->location .'-'. $request->sub,
+            'unpack_location' => $request->location .'-'. $request->sub_number,
             'sill_number' => $request->sill_number,
             'container_number' => $request->container_number,
             'description' => $request->description,
@@ -161,9 +161,23 @@ class RoadPermitController extends BaseController
     public function edit($id,$type){
         $road_permit = RoadPermit::with(['details'])->findOrFail($id);
         $trucks = ['Pickup', 'Truk Engkel', 'Dump Truk', 'Truk Gandeng', 'Truk Fuso', 'Container'];
+        $locations = [
+            'Mekanik',
+            'Utara Mekanik',
+            'Merbau',
+            'TOB',
+            'Sosoran Dalam',
+            'Tembok',
+            'Depan Barker',
+            'Gudang Baru',
+            'Lap Merbau',
+            'Tembok Depan Mesin',
+            'Kolam',
+            'Tembok Bensaw',
+        ];
         $item_types = ['Sengon', 'Merbau', 'Pembantu'];
 
-        return view('pages.road-permits.edit', compact(['type', 'trucks', 'item_types', 'road_permit']));
+        return view('pages.road-permits.edit', compact(['type', 'trucks', 'item_types', 'road_permit', 'locations']));
     }
 
     public function update(Request $request, $id, $type){
@@ -196,8 +210,6 @@ class RoadPermitController extends BaseController
             foreach ($details as $index => $detail) {
                 $validator = Validator::make($detail, [
                     'load' => 'required|string',
-                    'amount' => 'required|numeric|min:1',
-                    'unit' => 'required|string|in:Batang,Palet,Sak,Liter,Rit,Box,Pcs, Drum,Bandel,Box/Galon',
                 ]);
         
                 if ($validator->fails()) {
@@ -218,7 +230,7 @@ class RoadPermitController extends BaseController
             $road_permit->nopol = $request->nopol;
             $road_permit->driver = $request->driver;
             $road_permit->handyman_id = 1;
-            $road_permit->unpack_location = $request->unpack_location;
+            $road_permit->unpack_location = $request->location .'-'. $request->sub_number;
             $road_permit->sill_number = $request->sill_number;
             $road_permit->container_number = $request->container_number;
             $road_permit->description = $request->description;
