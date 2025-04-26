@@ -3,5 +3,5 @@
 3. buat flowchart dan tata cara penggunaan aplikasi
 4. penuhi data karyawan
 5. isi role user
-6. buat notifikasi jika ada PO Baru yang dibuat
+6. buat notifikasi jika ada PO Baru yang dibuat  ----- SELESAI -----
 7. untuk po tambahkan catatan untuk mengetahui lokasi ----- SELESAI -----

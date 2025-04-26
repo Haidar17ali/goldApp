@@ -8,6 +8,8 @@ use App\Models\Log;
 use App\Models\Stock;
 use App\Models\LPBDetail;
 use App\Models\PODetails;
+use App\Models\User;
+use App\Models\Notification;
 
 function money_format($money){
     return number_format($money,0, ',','.');
@@ -201,3 +203,19 @@ function updateLPBDetails($lpb, $newDetails, $poId)
         }
     }
 }
+
+function sendToPermission($permission, $type, $title, $message, $link)
+    {
+        $users = User::permission($permission)->get();
+
+        foreach ($users as $user) {
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => $type,
+                'title' => $title,
+                'message' => $message,
+                'link' => $link,
+                'is_read' => false,
+            ]);
+        }
+    }

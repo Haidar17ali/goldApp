@@ -47,6 +47,10 @@ class User extends Authenticatable
         return $this->belongsTo(Employee::class, "employee_id");
     }
 
+    public function notifications(){
+        return $this->hasMany(Notification::class);
+    }
+
     protected function casts(): array
     {
         return [

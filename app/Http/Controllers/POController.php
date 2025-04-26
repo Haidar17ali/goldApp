@@ -112,6 +112,8 @@ class POController extends BaseController
                     ]);
                 }
             }
+
+            sendToPermission('utility.approve-po', "Pembuatan PO", "PO Baru #". $POCode, 'Ada PO baru yang menunggu persetujuan', route('purchase-order.detail', ["id"=>$PO->id, "type" => $type]));
         
             DB::commit();
             session()->flash('status', 'saved');

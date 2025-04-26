@@ -152,6 +152,7 @@
                             'date',
                             'po_type',
                             'supplier_id',
+                            'supplier_type',
                             'created_by',
                             'edited_by',
                             'approved_by',
