@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Salary;
 use App\Models\Address;
 use App\Models\Bank;
+use App\Models\Position;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -30,34 +31,45 @@ class EmployeeImport implements ToModel , WithHeadingRow, WithBatchInserts, Skip
     */
     public function model(array $row)
     {
+        if (empty($row['fullname']) || empty($row['entry_date'])) {
+            return null;
+        }
         // ubah Format tanggal
         $entry_date= date('Y-m-d', ($row['entry_date'] - 25569) * 86400);
         // Buat atau ambil data gaji
         $salary = Salary::firstOrCreate(['salary' => $row['salary']]);
 
-        // Ambil atau buat alamat baru
-        $addressData = [
-            'address' => $row['address'],
-            'rt' => $row['rt'],
-            'rw' => $row['rw'],
-            'kelurahan' => $row['kelurahan'],
-            'kecamatan' => $row['kecamatan'],
-            'city' => $row['city'],
-        ];
-        $address = Address::where($addressData)->first();
-        if (!$address) {
-            $address = Address::create($addressData);
+        $address = null;
+        if ($row["address"] != null) {
+            // Ambil atau buat alamat baru
+            $addressData = [
+                'address' => $row['address'],
+                'rt' => $row['rt'],
+                'rw' => $row['rw'],
+                'kelurahan' => $row['kelurahan'],
+                'kecamatan' => $row['kecamatan'],
+                'city' => $row['city'],
+            ];
+            $address = Address::where($addressData)->first();
+            if (!$address) {
+                $address = Address::create($addressData);
+            }
         }
-        // Ambil atau buat bank baru
-        $bankData = [
-            'bank_name' => $row['bank_name'],
-            'bank_account' => $row['bank_account'],
-            'number_account' => $row['number_account'],
-        ];
-        $bank = Bank::where($bankData)->first();
-        if (!$bank) {
-            $bank = Bank::create($bankData);
+
+        $bank = null;
+        if ($row["bank_account"] != null) {
+            // Ambil atau buat bank baru
+            $bankData = [
+                'bank_name' => $row['bank_name'],
+                'bank_account' => $row['bank_account'],
+                'number_account' => $row['number_account'],
+            ];
+            $bank = Bank::where($bankData)->first();
+            if (!$bank) {
+                $bank = Bank::create($bankData);
+            }
         }
+
         // Buat NIP
         $entryDate = str_replace('-', '', $entry_date);
         $maxCode = Employee::where('entry_date', 'like', $entry_date . '%')->max('nip');
@@ -67,6 +79,7 @@ class EmployeeImport implements ToModel , WithHeadingRow, WithBatchInserts, Skip
         // Data karyawan
         $dataEmployee = [
             'nip' => $nip,
+            'pin' => $row['pin'],
             'nik' => $row['nik'],
             'no_kk' => $row['no_kk'],
             'fullname' => $row['fullname'],
@@ -75,7 +88,7 @@ class EmployeeImport implements ToModel , WithHeadingRow, WithBatchInserts, Skip
             'mariage_status' => $row['mariage_status'],
             'family_depents' => $row['family_depents'],
             'employee_type' => $row['employee_type'],
-            'address_id' => $address->id,
+            'address_id' => $address->id??null,
             'position_id' => $row['position'],
             'entry_date' => $entry_date,
             'salary_id' => $salary->id,
@@ -87,8 +100,10 @@ class EmployeeImport implements ToModel , WithHeadingRow, WithBatchInserts, Skip
             'status' => $row['status'],
         ];
         
-        if ($row['payment_type'] == "ATM") {
-            $dataEmployee['bank_id'] = $bank->id;
+        if($bank != null){
+            if ($row['payment_type'] == "ATM") {
+                $dataEmployee['bank_id'] = $bank->id;
+            }
         }
 
         return new Employee($dataEmployee);
@@ -98,7 +113,7 @@ class EmployeeImport implements ToModel , WithHeadingRow, WithBatchInserts, Skip
     {
         return [
             'nik' => 'required|numeric',
-            'no_kk' => 'required|numeric',
+            'no_kk' => 'numeric|nullable',
             'fullname' => 'required',
             'alias_name' => 'required',
             'gender' => ['required', Rule::in([0, 1])],

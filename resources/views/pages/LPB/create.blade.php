@@ -45,9 +45,9 @@
                             <div class="col-sm-4">
                                 <select class="form-control" name="grader_id" id="grader_id">
                                     <option value="">Silahkan Pilih Grader</option>
-                                    @if (count($suppliers))
-                                        @foreach ($suppliers as $supplier)
-                                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                                    @if (count($graderTallies))
+                                        @foreach ($graderTallies as $graderTally)
+                                            <option value="{{ $graderTally->id }}">{{ $graderTally->alias_name }}</option>
                                         @endforeach
                                     @endif
                                 </select>
@@ -56,9 +56,9 @@
                             <div class="col-sm-4">
                                 <select class="form-control" name="tally_id" id="tally_id">
                                     <option value="">Silahkan Pilih Tally</option>
-                                    @if (count($npwps))
-                                        @foreach ($npwps as $npwp)
-                                            <option value="{{ $npwp->id }}">{{ $npwp->name }}</option>
+                                    @if (count($graderTallies))
+                                        @foreach ($graderTallies as $graderTally)
+                                            <option value="{{ $graderTally->id }}">{{ $graderTally->alias_name }}</option>
                                         @endforeach
                                     @endif
                                 </select>
@@ -128,6 +128,7 @@
                                         @foreach ($purchase_orders as $purchase_order)
                                             <option value="{{ $purchase_order->id }}">
                                                 {{ $purchase_order->po_code }}{{ $purchase_order->supplier == null ? ' | Umum' : ' | ' . $purchase_order->supplier->name }}
+                                                {{ $purchase_order != null ? $purchase_order->description : '' }}
                                             </option>
                                         @endforeach
                                     @endif
@@ -292,6 +293,12 @@
                         theme: "bootstrap4",
                     });
                     $('#road_permit_id').select2({
+                        theme: "bootstrap4",
+                    });
+                    $('#grader_id').select2({
+                        theme: "bootstrap4",
+                    });
+                    $('#tally_id').select2({
                         theme: "bootstrap4",
                     });
                     // handsontable

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\RoadPermit;
 use App\Models\RoadPermitDetail;
 use Illuminate\Http\Request;
@@ -17,6 +18,9 @@ class RoadPermitController extends BaseController
     }
 
     public function create($type){
+        $handymans = Employee::whereHas('position', function ($query) {
+            $query->where('name', 'tukang batu');
+        })->get();
         $trucks = ['Pickup', 'Truk Engkel', 'Dump Truk', 'Truk Gandeng', 'Truk Fuso', 'Container'];
         $locations = [
             'Mekanik',
@@ -33,7 +37,7 @@ class RoadPermitController extends BaseController
             'Tembok Bensaw',
         ];
         $item_types = ['Sengon', 'Merbau', 'Pembantu'];
-        return view('pages.road-permits.create', compact(['type', 'trucks', 'item_types', 'locations']));
+        return view('pages.road-permits.create', compact(['type', 'trucks', 'item_types', 'locations', 'handymans']));
     }
     
     public function store(Request $request, $type){
@@ -89,7 +93,7 @@ class RoadPermitController extends BaseController
             'type_item' => $request->item_type,
             'nopol' => $request->nopol,
             'driver' => $request->driver,
-            'handyman_id' => 1,
+            'handyman_id' => $request->handyman,
             'unpack_location' => $request->location .'-'. $request->sub_number,
             'sill_number' => $request->sill_number,
             'container_number' => $request->container_number,
@@ -159,6 +163,9 @@ class RoadPermitController extends BaseController
 
 
     public function edit($id,$type){
+        $handymans = Employee::whereHas('position', function ($query) {
+            $query->where('name', 'tukang batu');
+        })->get();
         $road_permit = RoadPermit::with(['details'])->findOrFail($id);
         $trucks = ['Pickup', 'Truk Engkel', 'Dump Truk', 'Truk Gandeng', 'Truk Fuso', 'Container'];
         $locations = [
@@ -177,7 +184,7 @@ class RoadPermitController extends BaseController
         ];
         $item_types = ['Sengon', 'Merbau', 'Pembantu'];
 
-        return view('pages.road-permits.edit', compact(['type', 'trucks', 'item_types', 'road_permit', 'locations']));
+        return view('pages.road-permits.edit', compact(['type', 'trucks', 'item_types', 'road_permit', 'locations', 'handymans']));
     }
 
     public function update(Request $request, $id, $type){
@@ -229,13 +236,13 @@ class RoadPermitController extends BaseController
             $road_permit->type_item = $request->item_type;
             $road_permit->nopol = $request->nopol;
             $road_permit->driver = $request->driver;
-            $road_permit->handyman_id = 1;
+            $road_permit->handyman_id = $request->handyman;
             $road_permit->unpack_location = $request->location .'-'. $request->sub_number;
             $road_permit->sill_number = $request->sill_number;
             $road_permit->container_number = $request->container_number;
             $road_permit->description = $request->description;
             $road_permit->type = $type;
-            $road_permit->created_by = Auth::user()->id;
+            $road_permit->updated_by = Auth::user()->id;
             $road_permit->save();
     
         // Simpan detail data jika ada
@@ -276,7 +283,7 @@ class RoadPermitController extends BaseController
 
         $road_permit->out = date('Y-m-d H;i:s', time());
         $road_permit->status = 'Sudah Dibongkar';
-        $road_permit->edited_by = Auth::user()->id;
+        $road_permit->issued_by = Auth::user()->id;
         $road_permit->save();
         return redirect()->back()->with('status', 'edited');
     }

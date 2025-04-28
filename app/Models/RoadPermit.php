@@ -25,6 +25,7 @@ class RoadPermit extends Model
         'type_item',
         'created_by',
         'edited_by',
+        'issued_by',
     ];
 
     public function details(){
@@ -41,6 +42,10 @@ class RoadPermit extends Model
 
     public function editedBy(){
         return $this->belongsTo(User::class, 'edited_by');
+    }
+
+    public function issuedBy(){
+        return $this->belongsTo(User::class, 'issued_by');
     }
 
     public function LPB(){

@@ -31,11 +31,12 @@ class LPBController extends BaseController
         $road_permits = RoadPermit::where('type_item', 'Sengon')->where('status', 'Sudah dibongkar')->get();
         $purchase_orders = PO::with(['supplier'])->where('po_type', 'Sengon')->where('status','Aktif')->get();
         $npwps = npwp::all();
+        $graderTallies = Employee::whereHas('position', function ($query) {
+            $query->where('name', 'Grader')->orWhere("name","Tally");
+        })->get();
         $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
-        $graders = Employee::where('position_id', 'Grader')->get();
-        $tallies = Employee::where('position_id', 'Tally')->get();
 
-        return view('pages.LPB.create', compact(['road_permits', 'suppliers', 'graders', 'tallies', 'purchase_orders', 'npwps']));
+        return view('pages.LPB.create', compact(['road_permits', 'suppliers', 'graderTallies', 'purchase_orders', 'npwps']));
     }
 
     public function store(Request $request){
@@ -197,10 +198,11 @@ class LPBController extends BaseController
         $purchase_orders = PO::where('po_type', 'Sengon')->where('status','Aktif')->get();
         $npwps = npwp::all();
         $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
-        $graders = Employee::where('position_id', 'Grader')->get();
-        $tallies = Employee::where('position_id', 'Tally')->get();
+        $graderTallies = Employee::whereHas('position', function ($query) {
+            $query->where('name', 'Grader')->orWhere("name","Tally");
+        })->get();
 
-        return view('pages.LPB.edit', compact(['road_permits', 'suppliers', 'graders', 'tallies', 'purchase_orders', 'npwps', 'lpb', 'initialData', 'redirectTo']));
+        return view('pages.LPB.edit', compact(['road_permits', 'suppliers', 'graderTallies', 'purchase_orders', 'npwps', 'lpb', 'initialData', 'redirectTo']));
     }
 
     public function update(Request $request, $id)

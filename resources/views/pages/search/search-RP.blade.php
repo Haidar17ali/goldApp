@@ -53,16 +53,20 @@
                                 <a href="{{ route('surat-jalan.keluar', $road_permit->id) }}"
                                     class="badge badge-warning"><i class="fas fa-hourglass-end"></i></a>
                                 {{-- edit data --}}
+                                {{-- <a href="{{ route('surat-jalan.set-pembongkar', ['type' => $type, 'id' => $road_permit->id]) }}"
+                                    class="badge badge-primary"><i class="fas fa-male"></i></a> --}}
+                            @endif
+                            @if ($road_permit->out != null && $road_permit->handyman_id != null)
                                 <a href="#" data-id="{{ $road_permit->id }}" class="badge badge-primary print"
                                     id="print"><i class="fas fa-print"></i>Print</a>
-                                {{-- <a href="{{ route('surat-jalan.set-pembongkar', ['type' => $type, 'id' => $road_permit->id]) }}"
-                                            class="badge badge-primary"><i class="fas fa-male"></i></a> --}}
                             @endif
                         @endif
-                        <a href="#" data-toggle="modal" data-id="{{ $road_permit->id }}" data-target="#details"
-                            class="badge badge-primary show-detail"><i class="fas fa-eye"></i></a>
-                        <a href="#" data-toggle="modal" data-id="{{ $road_permit->id }}" data-target="#details"
-                            id="supplier" class="badge badge-success supplier"><i class="fas fa-eye"></i></a>
+                        @can(['surat-jalan.detail', 'surat-jalan.LPBToSupplier'])
+                            <a href="#" data-toggle="modal" data-id="{{ $road_permit->id }}" data-target="#details"
+                                class="badge badge-primary show-detail"><i class="fas fa-eye"></i></a>
+                            <a href="#" data-toggle="modal" data-id="{{ $road_permit->id }}" data-target="#details"
+                                id="supplier" class="badge badge-success supplier"><i class="fas fa-eye"></i></a>
+                        @endcan
                         <a href="{{ route('surat-jalan.ubah', ['type' => $type, 'id' => $road_permit->id]) }}"
                             class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
                         <form action="{{ route('surat-jalan.hapus', $road_permit->id) }}" class="d-inline"
@@ -235,7 +239,6 @@
                 url: `/JM/surat-jalan/${id}/lpb-supplier`,
                 type: 'GET',
                 success: function(res) {
-                    console.log(res);
 
                     $('#modal-detail-content').html(res);
                     $('#modalDetail').modal('show');
@@ -258,10 +261,17 @@
 
             let data = {
                 id: id,
-                model: "RoadPermit"
+                model: "RoadPermit",
+                relation: [
+                    "createdBy",
+                    "issuedBy",
+                    "handyman",
+                    "details"
+                ]
             };
 
             let datas = loadWithData("{{ route('utility.cetak-surat-jalan') }}", data)
+
 
             // Template untuk print
             let printContent = `
@@ -283,7 +293,8 @@
                                             </div>
                                             <div>
                                                 <strong>Jam Masuk:</strong> ${datas.in}<br>
-                                                <strong>Jam Keluar:</strong> 
+                                                <strong>Jam Keluar: ${datas.out}</strong><br>
+                                                <strong>Dibuat Oleh: ${datas.created_by != null ? datas.created_by.username : ""}</strong> 
                                             </div>
                                         </div>
 
@@ -297,9 +308,12 @@
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td style="border: 2px solid black; padding: 8px; text-align: center;">..... BTG</td>
-                                                    <td style="border: 2px solid black; padding: 8px; text-align: center;">..... BTG</td>
-                                                    <td style="border: 2px solid black; padding: 8px; text-align: center;">..... BTG</td>
+                                                     ${datas.details && datas.details.length > 0 ? // Cek apakah datas.details ada dan tidak kosong
+                                                        datas.details.map(detail => `
+                                                        <td style="border: 2px solid black; padding: 8px; text-align: center;">${detail.amount} BTG</td>
+                                                        `).join('') : // Jika tidak ada data
+                                                        `<td style="border: 2px solid black; padding: 8px; text-align: center;" colspan="3">Tidak ada detail barang.</td>`
+                                                    }
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -312,17 +326,17 @@
 
                                         <div style="margin-top: 30px; font-size: 14px;">
                                             <div style="display: flex; justify-content: space-around;">
-                                                <div>
+                                                <div style="text-align:center;">
                                                     Satpam, <br><br><br><br>
-                                                    (............................)
+                                                    (${datas.issued_by != null ? datas.issued_by.username : ""})
                                                 </div>
-                                                <div>
+                                                <div style="text-align:center;">
                                                     Pengemudi, <br><br><br><br>
-                                                    (............................)
+                                                    (${datas.driver})
                                                 </div>
-                                                <div>
+                                                <div style="text-align:center;">
                                                     Pembongkar, <br><br><br><br>
-                                                    (............................)
+                                                    (${datas.handyman != null ? datas.handyman.fullname : ""})
                                                 </div>
                                             </div>
                                         </div>

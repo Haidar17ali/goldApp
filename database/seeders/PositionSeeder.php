@@ -45,23 +45,15 @@ class PositionSeeder extends Seeder
             // divis plywood
             ['id' => 19, 'name' => 'Plywood', 'type' => 'Divisi', 'parent_id' => null],
             // department ply
-            ['id' => 20, 'name' => 'Koordinator', 'type' => 'Departemen', 'parent_id' => 19],
-            ['id' => 21, 'name' => 'Rotary 5', 'type' => 'Departemen', 'parent_id' => 19],
-            ['id' => 22, 'name' => 'Rotary 9', 'type' => 'Departemen', 'parent_id' => 19],
-            ['id' => 23, 'name' => 'Repair OPC/PPC', 'type' => 'Departemen', 'parent_id' => 19],
-            ['id' => 24, 'name' => 'Repair Core', 'type' => 'Departemen', 'parent_id' => 19],
-            ['id' => 25, 'name' => 'Assembling 1', 'type' => 'Departemen', 'parent_id' => 19],
-            ['id' => 26, 'name' => 'Assembling 2', 'type' => 'Departemen', 'parent_id' => 19],
-            ['id' => 27, 'name' => 'Assembling 3', 'type' => 'Departemen', 'parent_id' => 19],
-            ['id' => 28, 'name' => 'Warehouse', 'type' => 'Departemen', 'parent_id' => 19],
-
-            // Barecore
-            ['id' => 29, 'name' => 'Warehouse', 'type' => 'Departemen', 'parent_id' => 19],
-            // department barecore
-            ['id' => 30, 'name' => 'Bandsaw Sengon', 'type' => 'Departemen', 'parent_id' => 29],
-            ['id' => 31, 'name' => 'Barecore', 'type' => 'Departemen', 'parent_id' => 29],
+            ['id' => 20, 'name' => 'Warehouse', 'type' => 'Departemen', 'parent_id' => 19],
+            ['id' => 21, 'name' => 'GA', 'type' => 'Departemen', 'parent_id' => 19],
             
-
+            // bagian WH plywood
+            ['id' => 22, 'name' => 'Grader', 'type' => 'Bagian', 'parent_id' => 20],
+            ['id' => 23, 'name' => 'Tally', 'type' => 'Bagian', 'parent_id' => 20],
+            
+            // Bagian GA PLY
+            ['id' => 24, 'name' => 'Tukang Batu', 'type' => 'Bagian', 'parent_id' => 21],
 
             
         ]);

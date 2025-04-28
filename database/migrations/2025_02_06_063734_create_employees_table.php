@@ -16,7 +16,7 @@ return new class extends Migration
             $table->bigInteger('nip');
             $table->integer('pin')->nullable();
             $table->bigInteger('nik');
-            $table->bigInteger('no_kk');
+            $table->bigInteger('no_kk')->nullable();
             $table->string('fullname');
             $table->string('alias_name');
             $table->boolean('gender');

@@ -88,6 +88,9 @@
                     @endif
                 </tbody>
             </table>
+            <div class="mt-2">
+                {{ $employees->links() }}
+            </div>
         </div>
     </div>
 
