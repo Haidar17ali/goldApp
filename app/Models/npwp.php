@@ -11,4 +11,8 @@ class npwp extends Model
         'nitku',
         'name',
     ];
+
+    public function lpbs() {
+        return $this->hasMany(LPB::class);
+    }
 }
