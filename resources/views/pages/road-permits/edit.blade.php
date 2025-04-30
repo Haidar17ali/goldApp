@@ -88,9 +88,12 @@
                         <div class="form-group row">
                             <label for="handyman" class="col-sm-2 col-form-label">Pembongkar</label>
                             <div class="col-sm-10">
-                                <select class="form-control" name="handyman" id="handyman">
-                                    @foreach ($trucks as $truck)
-                                        <option value="{{ $truck }}">{{ $truck }}</option>
+                                <select {{ $road_permit->handyman_id == '' ? 'selected' : '' }} class="form-control"
+                                    name="handyman" id="handyman">
+                                    <option value="">Pilih Pembongkar</option>
+                                    @foreach ($handymans as $handyman)
+                                        <option {{ $road_permit->handyman_id == $handyman->id ? 'selected' : '' }}
+                                            value="{{ $handyman->id }}">{{ $handyman->fullname }}</option>
                                     @endforeach
                                 </select>
                                 <span class="text-danger error-text" id="handyman_error"></span>

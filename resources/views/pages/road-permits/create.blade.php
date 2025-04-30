@@ -31,10 +31,25 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
+                            <label for="item_type" class="col-sm-2 col-form-label">Jenis Barang</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="item_type" id="item_type">
+                                    @foreach ($item_types as $item_type)
+                                        <option value="{{ $item_type }}">{{ $item_type }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <label for="from" class="col-sm-2 col-form-label">Pengirim*</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="from" name="from"
-                                    value="{{ old('from') }}">
+                                {{-- <input type="text" class="form-control" id="from" name="from"
+                                    value="{{ old('from') }}"> --}}
+                                <select class="form-control" name="from" id="from">
+                                    @foreach ($suppliers as $supplier)
+                                        <option value="{{ $supplier->name }}">{{ $supplier->name }}</option>
+                                    @endforeach
+                                </select>
                                 <span class="text-danger error-text" id="from_error"></span>
                             </div>
                         </div>
@@ -49,17 +64,7 @@
                             </div>
                         @endif
                         <div class="form-group row">
-                            <label for="item_type" class="col-sm-2 col-form-label">Jenis Barang</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="item_type" id="item_type">
-                                    @foreach ($item_types as $item_type)
-                                        <option value="{{ $item_type }}">{{ $item_type }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="vehicle" class="col-sm-2 col-form-label">Kendaraan</label>
+                            <label for="vehicle" class="col-sm-2 col-form-label">Kendaraan*</label>
                             <div class="col-sm-10">
                                 <select class="form-control" name="vehicle" id="vehicle">
                                     @foreach ($trucks as $truck)
@@ -88,6 +93,7 @@
                             <label for="handyman" class="col-sm-2 col-form-label">Pembongkar</label>
                             <div class="col-sm-10">
                                 <select class="form-control" name="handyman" id="handyman">
+                                    <option value="">Pilih Pembongkar</option>
                                     @foreach ($handymans as $handyman)
                                         <option value="{{ $handyman->id }}">{{ $handyman->fullname }}</option>
                                     @endforeach
@@ -455,6 +461,9 @@
                 theme: "bootstrap4",
             });
             $('#handyman').select2({
+                theme: "bootstrap4",
+            });
+            $('#from').select2({
                 theme: "bootstrap4",
             });
         })
