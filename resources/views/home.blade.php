@@ -62,71 +62,73 @@
         </div>
     </div>
 
-    <div class="row">
-        <!-- Top NPWP Chart -->
-        <!-- Top NPWP Chart + Table -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Top 7 NPWP Pembayaran</h3>
-                </div>
-                <div class="card-body">
-                    <canvas id="topNpwpChart" height="150"></canvas>
-
-                    <hr>
-
-                    <h5 class="mt-4 mb-2">Detail Data</h5>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nama NPWP</th>
-                                    <th>Total Uang Transfer</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($topNpwpData as $index => $npwp)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $npwp->nama_npwp }}</td>
-                                        <td>Rp {{ number_format($npwp->total_uang, 0, ',', '.') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+    @can(['lpb.index'])
+        <div class="row">
+            <!-- Top NPWP Chart -->
+            <!-- Top NPWP Chart + Table -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Top 7 NPWP Pembayaran</h3>
                     </div>
+                    <div class="card-body">
+                        <canvas id="topNpwpChart" height="150"></canvas>
 
+                        <hr>
+
+                        <h5 class="mt-4 mb-2">Detail Data</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama NPWP</th>
+                                        <th>Total Uang Transfer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($topNpwpData as $index => $npwp)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $npwp->nama_npwp }}</td>
+                                            <td>Rp {{ number_format($npwp->total_uang, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Stok Sengon</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="stokSengonChart"></canvas>
+                        <hr>
+
+                        <h5>Belum Terpakai:</h5>
+                        <ul>
+                            <li>Reject 130: {{ $stokBelumTerpakai['reject_130'] }} m³</li>
+                            <li>Super 130: {{ $stokBelumTerpakai['super_130'] }} m³</li>
+                            <li>Super 260: {{ $stokBelumTerpakai['super_260'] }} m³</li>
+                        </ul>
+
+                        <h5 class="mt-3">Terpakai Hari Ini:</h5>
+                        <ul>
+                            <li>Reject 130: {{ $stokTerpakaiHariIni['reject_130'] }} m³</li>
+                            <li>Super 130: {{ $stokTerpakaiHariIni['super_130'] }} m³</li>
+                            <li>Super 260: {{ $stokTerpakaiHariIni['super_260'] }} m³</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Stok Sengon</h3>
-                </div>
-                <div class="card-body">
-                    <canvas id="stokSengonChart"></canvas>
-                    <hr>
-
-                    <h5>Belum Terpakai:</h5>
-                    <ul>
-                        <li>Reject 130: {{ $stokBelumTerpakai['reject_130'] }} m³</li>
-                        <li>Super 130: {{ $stokBelumTerpakai['super_130'] }} m³</li>
-                        <li>Super 260: {{ $stokBelumTerpakai['super_260'] }} m³</li>
-                    </ul>
-
-                    <h5 class="mt-3">Terpakai Hari Ini:</h5>
-                    <ul>
-                        <li>Reject 130: {{ $stokTerpakaiHariIni['reject_130'] }} m³</li>
-                        <li>Super 130: {{ $stokTerpakaiHariIni['super_130'] }} m³</li>
-                        <li>Super 260: {{ $stokTerpakaiHariIni['super_260'] }} m³</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
+    @endcan
 @stop
 
 @section('js')

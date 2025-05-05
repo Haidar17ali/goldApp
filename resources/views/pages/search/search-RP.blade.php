@@ -144,14 +144,18 @@
 
 <script>
     $(document).ready(function() {
-        $('.show-detail').click(function() {
+        $('.show-detail').click(function(e) {
+            e.preventDefault();
             const id = $(this).data('id');
+            let url = "{{ route('surat-jalan.detail', ':id') }}";
+            url = url.replace(":id", id);
+
             $('#modal-detail-content').html(
                 '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>'
             );
 
             $.ajax({
-                url: `/JM/surat-jalan/${id}/detail`,
+                url: url,
                 type: 'GET',
                 success: function(res) {
                     $('#modal-detail-content').html(res);
@@ -230,13 +234,15 @@
     $(document).ready(function() {
         $('.supplier').click(function() {
             const id = $(this).data('id');
+            let url = "{{ route('surat-jalan.LPBToSupplier', ':id') }}";
+            url = url.replace(':id', id);
             $('#modal-detail-content').html(
                 '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>'
             );
 
 
             $.ajax({
-                url: `/JM/surat-jalan/${id}/lpb-supplier`,
+                url: url,
                 type: 'GET',
                 success: function(res) {
 
@@ -271,7 +277,6 @@
             };
 
             let datas = loadWithData("{{ route('utility.cetak-surat-jalan') }}", data)
-
 
             // Template untuk print
             let printContent = `

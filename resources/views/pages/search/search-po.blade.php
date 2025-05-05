@@ -115,14 +115,16 @@
                     <div class="spinner-border text-primary"></div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <a href="#" id="btn-tolak" class="btn btn-danger">
-                    <i class="fas fa-times"></i>
-                </a>
-                <a href="#" id="btn-setuju" class="btn btn-success">
-                    <i class="fas fa-check"></i>
-                </a>
-            </div>
+            @if ($po->approved_at == null)
+                <div class="modal-footer">
+                    <a href="#" id="btn-tolak" class="btn btn-danger">
+                        <i class="fas fa-times"></i>
+                    </a>
+                    <a href="#" id="btn-setuju" class="btn btn-success">
+                        <i class="fas fa-check"></i>
+                    </a>
+                </div>
+            @endif
         </div>
     </div>
 </div>
@@ -131,6 +133,8 @@
     $(document).ready(function() {
         $('.show-detail').click(function() {
             const id = $(this).data('id');
+            let url = "{{ route('purchase-order.detail', ['id' => ':id', 'type' => 'sengon']) }}";
+            url = url.replace(':id', id)
             const approvedBy = $(this).data('approved');
             let approveUrl =
                 "{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => ':id', 'status' => 'Pending']) }}";
@@ -145,7 +149,7 @@
             );
 
             $.ajax({
-                url: `/JM/purchase-order/${id}/detail/sengon`,
+                url: url,
                 type: 'GET',
                 success: function(res) {
                     $('#modal-detail-content').html(res);
