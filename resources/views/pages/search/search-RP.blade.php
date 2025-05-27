@@ -261,7 +261,7 @@
 {{-- print ke rayyes --}}
 <script>
     @section('plugins.PrintJs', true)
-        $("#print").on('click', function(e) {
+        $(".print").on('click', function(e) {
             e.preventDefault();
             let id = $(this).data('id');
 

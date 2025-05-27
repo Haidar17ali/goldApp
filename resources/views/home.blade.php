@@ -108,7 +108,9 @@
                         <h3 class="card-title">Stok Sengon</h3>
                     </div>
                     <div class="card-body">
-                        <canvas id="stokSengonChart"></canvas>
+                        <div class="chart-container">
+                            <canvas id="stokSengonChart" width="10" height="10"></canvas>
+                        </div>
                         <hr>
 
                         <h5>Belum Terpakai:</h5>
@@ -129,7 +131,65 @@
             </div>
         </div>
     @endcan
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary">
+                    <h3 class="card-title text-white">Ringkasan LPB Belum Terpakai</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-bordered table-striped">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>No</th>
+                                <th>Tanggal</th>
+                                <th>No Kitir</th>
+                                <th>Total Kubikasi (m³)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($lpbsBelumTerpakai as $index => $lpb)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($lpb->date)->format('d-m-Y') }}</td>
+                                    <td>{{ $lpb->no_kitir }}</td>
+                                    <td>{{ number_format($lpb->total_kubikasi, 4, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center">Tidak ada LPB belum terpakai.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3">Total</th>
+                                <th>{{ number_format($totalKubikasiLpbBelumTerpakai, 4, ',', '.') }} m³</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 @stop
+<style>
+    .chart-container {
+        width: 400px;
+        height: 300px;
+        margin: 0 auto;
+        /* Center horizontally */
+        position: relative;
+        /* Required by Chart.js for proper rendering */
+    }
+
+    #stokSengonChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+</style>
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -183,6 +243,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false, // biar ikut ukuran CSS
                 plugins: {
                     legend: {
                         position: 'bottom'

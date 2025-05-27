@@ -15,4 +15,9 @@ class LPBDetail extends Model
         'price',
         'quality',
     ];
+
+    public function lpb()
+    {
+        return $this->belongsTo(Lpb::class);
+    }
 }

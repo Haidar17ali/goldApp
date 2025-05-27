@@ -9,17 +9,7 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <div id="error-messages"></div>
+            <div id="error-datas" class="alert alert-danger d-none"></div>
             <div class="badge badge-primary float-right">Ubah Surat Jalan</div>
         </div>
     </div>
@@ -32,19 +22,25 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
-                            <label for="from" class="col-sm-2 col-form-label">Pengirim*</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="from" name="from"
-                                    value="{{ old('from', $road_permit->from) }}">
-                                <span class="text-danger error-text" id="from_error"></span>
+                            <label for="in" class="col-sm-2 col-form-label">Masuk</label>
+                            <div class="col-sm-4">
+                                @php
+                                    $datetimeValue = old(
+                                        'in',
+                                        \Carbon\Carbon::parse($road_permit->date . ' ' . $road_permit->in)->format(
+                                            'Y-m-d\TH:i',
+                                        ),
+                                    );
+                                @endphp
+                                <input type="datetime-local" class="form-control" id="in" name="in"
+                                    value="{{ $datetimeValue }}">
+                                <span class="text-danger error-text" id="in_error"></span>
                             </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="destination" class="col-sm-2 col-form-label">Penerima*</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="destination" name="destination"
-                                    value="{{ old('destination', $road_permit->destination) }}">
-                                <span class="text-danger error-text" id="destination_error"></span>
+                            <label for="out" class="col-sm-2 col-form-label">Keluar</label>
+                            <div class="col-sm-4">
+                                <input type="datetime-local" class="form-control" id="out" name="out"
+                                    value="{{ old('out', $road_permit->out) }}">
+                                <span class="text-danger error-text" id="out_error"></span>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -58,6 +54,28 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="from" class="col-sm-2 col-form-label">Pengirim*</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="from" id="from">
+                                    @foreach ($suppliers as $supplier)
+                                        <option {{ $supplier->name == $road_permit->from ? 'selected' : '' }}
+                                            value="{{ $supplier->name }}">{{ $supplier->name }}</option>
+                                    @endforeach
+                                </select>
+                                <span class="text-danger error-text" id="from_error"></span>
+                            </div>
+                        </div>
+                        @if ($type == 'out')
+                            <div class="form-group row">
+                                <label for="destination" class="col-sm-2 col-form-label">Penerima*</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="destination" name="destination"
+                                        value="{{ old('destination', $road_permit->destination) }}">
+                                    <span class="text-danger error-text" id="destination_error"></span>
+                                </div>
+                            </div>
+                        @endif
                         <div class="form-group row">
                             <label for="vehicle" class="col-sm-2 col-form-label">Kendaraan</label>
                             <div class="col-sm-10">
@@ -396,20 +414,32 @@
                 }
             };
 
-
             $('#formRP').on('submit', function(e) {
                 e.preventDefault();
                 document.getElementById('loading').style.display = 'flex';
+                $('#error-datas').html('').addClass('d-none'); // Kosongkan error lama setiap submit ulang
 
                 let data = hot.getSourceData();
-                data = data.slice(0, -1);
+                data = data.slice(0, -1); // hapus baris kosong terakhir
 
-                let permits = document.getElementById('road_permit_details').value =
-                    JSON.stringify(data);
+                // Validasi muatan kosong
+                if (data.length === 0) {
+                    Toastify({
+                        text: "Muatan tidak boleh kosong!",
+                        className: "danger",
+                        close: true,
+                        style: {
+                            background: "red",
+                        }
+                    }).showToast();
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('road_permit_details').value = JSON.stringify(data);
 
                 const form = e.target;
                 const formData = new FormData(form);
-
 
                 fetch(form.action, {
                         method: form.method,
@@ -418,57 +448,53 @@
                             'Accept': 'application/json'
                         },
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                throw err; // Lempar error agar bisa ditangkap di catch()
-                            });
-                        }
-                        return response.json();
-                        response.json()
-                    })
-                    .then(data => {
+                    .then(async response => {
+                        const data = await response.json();
 
-                        if (data.errors) {
-                            $('.error-text').text('');
-                            $.each(data.errors, function(key, value) {
-                                if (key.startsWith('details')) {
-                                    $('#details_error').text(
-                                        'Terdapat kesalahan pada data muatan.');
-                                } else {
-                                    $('#' + key + '_error').text(value[0]);
-                                }
-                            });
-                        } else {
-                            localStorage.removeItem('editRoadPermitDetails');
-                            window.location.href = "{{ route('surat-jalan.index', $type) }}";
+                        if (!response.ok) {
+                            let errorContainer = $("#error-datas");
+                            errorContainer.removeClass("d-none").html('');
+
+                            // Jika validasi Laravel gagal (status 422)
+                            if (response.status === 422 && data.errors) {
+                                Object.entries(data.errors).forEach(([field, msgs]) => {
+                                    errorContainer.append(
+                                        `<div>• ${msgs.join(", ")}</div>`);
+                                });
+                            }
+                            // Jika error kustom dari backend (500 atau error lainnya)
+                            else if (data.message || data.error) {
+                                errorContainer.append(
+                                    `<strong>${data.message || 'Error'}</strong><br><div>${data.error || '-'}</div>`
+                                );
+                            } else {
+                                errorContainer.append(
+                                    `<div>• Terjadi kesalahan tak dikenal.</div>`);
+                            }
+
+                            throw new Error('Handled error');
                         }
+
+                        // Jika sukses
+                        localStorage.removeItem('roadPermitDetails');
+                        window.location.href = "{{ route('surat-jalan.index', $type) }}";
                     })
                     .catch(error => {
-
-                        let errorContainer = document.getElementById("error-datas");
-
-                        // Pastikan elemen ada di DOM
-                        if (!errorContainer) {
-                            console.error("Elemen #error-datas tidak ditemukan di DOM.");
-                        } else {
-                            console.log(error);
-                            Object.entries(error.errors).forEach(([field, msgs]) => {
-                                let errorText = `${field}: ${msgs.join("| ")}<br>`;
-                                $("#error-datas").append(errorText)
-                            });
+                        if (error.message !== 'Handled error') {
+                            // Jika error tidak ditangani sebelumnya
+                            let errorContainer = $("#error-datas");
+                            errorContainer.removeClass("d-none").html(
+                                `<div>• Terjadi kesalahan tak dikenal.</div>`);
+                            console.error("Uncaught error:", error);
                         }
                     })
                     .finally(() => {
                         document.getElementById('loading').style.display = 'none';
                     });
-
-
             });
 
+
             getLocalStorage();
-
-
         });
         @section('plugins.Toast', true)
             var status = "{{ session('status') }}";

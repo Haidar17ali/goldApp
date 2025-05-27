@@ -71,22 +71,28 @@
                             data-approved="{{ $po->approved_by }}" data-target="#details"
                             class="badge badge-primary show-detail"><i class="fas fa-eye"></i></a>
                         @if ($po->approved_by == null)
-                            <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Pending']) }}"
-                                class="badge badge-success"><i class="fas fa-check"></i></a>
-                            <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Tidak Disetujui']) }}"
-                                class="badge badge-danger"><i class="fas fa-times"></i></a>
-                            ||
-                            <a href="{{ route('purchase-order.ubah', ['type' => $type, 'id' => $po->id]) }}"
-                                class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
-                            <form action="{{ route('purchase-order.hapus', $po->id) }}" class="d-inline"
-                                id="delete{{ $po->id }}" method="post">
-                                @csrf
-                                @method('DELETE')
-                                <a href="#" data-id="{{ $po->id }}"
-                                    class="badge badge-pill badge-delete badge-danger d-inline">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                            </form>
+                            @can(['utility.approve-po'])
+                                <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Pending']) }}"
+                                    class="badge badge-success"><i class="fas fa-check"></i></a>
+                                <a href="{{ route('utility.approve-po', ['modelType' => 'PO', 'id' => $po->id, 'status' => 'Tidak Disetujui']) }}"
+                                    class="badge badge-danger"><i class="fas fa-times"></i></a>
+                                ||
+                            @endcan
+                            @can(['purchase-order.ubah'])
+                                <a href="{{ route('purchase-order.ubah', ['type' => $type, 'id' => $po->id]) }}"
+                                    class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
+                            @endcan
+                            @can(['purchase-order.hapus'])
+                                <form action="{{ route('purchase-order.hapus', $po->id) }}" class="d-inline"
+                                    id="delete{{ $po->id }}" method="post">
+                                    @csrf
+                                    @method('DELETE')
+                                    <a href="#" data-id="{{ $po->id }}"
+                                        class="badge badge-pill badge-delete badge-danger d-inline">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </form>
+                            @endcan
                         @endif
                     </td>
                 </tr>

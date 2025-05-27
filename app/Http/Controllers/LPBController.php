@@ -18,6 +18,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 
 class LPBController extends BaseController
 {
@@ -52,9 +55,10 @@ class LPBController extends BaseController
             // Validasi input utama
             $validatedData = $request->validate([
                 'no_kitir' => 'required',
+                'arrival_date' => 'required|date',
                 'grader_id' => 'required',
                 'tally_id' => 'required',
-                'road_permit_id' => 'required|exists:road_permits,id',
+                // 'road_permit_id' => 'required|exists:road_permits,id',
                 'supplier_id' => 'required',
                 'npwp_id' => 'required',
                 'nopol' => 'required|string',
@@ -95,11 +99,23 @@ class LPBController extends BaseController
     
             // Generate LPB Code
             $lpbCode = generateCode('LPB', 'l_p_b_s', 'date');
+
+            // ambil data supplier untuk ambil data bank nya
+            $supplier = Supplier::with(['bank'])->where("id", $request->supplier_id)->first();
+            $bank_name = "data tidak ada";
+            $bank_account = "data tidak ada";
+            $number_account = "data tidak ada";
+            if($supplier){
+                $bank_name = $supplier->bank != null ? $supplier->bank->bank_name : "Nama Bank Tidak Ditemukan";
+                $bank_account = $supplier->bank != null ? $supplier->bank->bank_account : "Nama Rek Tidak Ditemukan";
+                $number_account = $supplier->bank != null ? $supplier->bank->number_account : "No Rek Tidak Ditemukan";
+            }
     
             // Simpan LPB utama
             $lpb = LPB::create([
                 'code' => $lpbCode,
                 'date' => date('Y-m-d'),
+                'arrival_date' => $request->arrival_date,
                 'po_id' => $request->po_id,
                 'no_kitir' => $request->no_kitir,
                 'grader_id' => $request->grader_id ?? 1,
@@ -107,6 +123,9 @@ class LPBController extends BaseController
                 'road_permit_id' => $request->road_permit_id,
                 'supplier_id' => $request->supplier_id,
                 'npwp_id' => $request->npwp_id,
+                'bank_name' => $bank_name,
+                'bank_account' => $bank_account,
+                'number_account' => $number_account,
                 'nopol' => $request->nopol,
                 'conversion' => $request->conversion,
                 'perhutani' => $perhutani,
@@ -217,13 +236,14 @@ class LPBController extends BaseController
             $perhutani = false;
             if ($request->perhutani == true) {
                 $status = "Terbayar";
-                $perhutani = $request->perhutani;
+                $perhutani = true;
             }
 
             // Validasi input utama
             $validatedData = $request->validate([
                 'no_kitir' => 'required',
-                'road_permit_id' => 'required|exists:road_permits,id',
+                // 'road_permit_id' => 'required|exists:road_permits,id',
+                'arrival_date' => 'required|date',
                 'supplier_id' => 'required',
                 'npwp_id' => 'required',
                 'nopol' => 'required|string',
@@ -257,9 +277,30 @@ class LPBController extends BaseController
 
             // Update data utama LPB
             $lpb = LPB::findOrFail($id);
+
+            // ambil data supplier untuk ambil data bank nya
+            $supplier = Supplier::with(['bank'])->where("id", $request->supplier_id)->first();
+            $bank_name = "";
+            $bank_account = "";
+            $number_account = "";
+            if($supplier){
+                $bank_name = $supplier->bank != null ? $supplier->bank->bank_name : "Nama Bank Tidak Ditemukan";
+                $bank_account = $supplier->bank != null ? $supplier->bank->bank_account : "Nama Rek Tidak Ditemukan";
+                $number_account = $supplier->bank != null ? $supplier->bank->number_account : "No Rek Tidak Ditemukan";
+            }
+
+            if($lpb->approved_by == null){
+                $lpb->update([
+                    'bank_name' => $bank_name,
+                    'bank_account' => $bank_account,
+                    'number_account' => $number_account,
+                ]);
+            }
+
             $lpb->update([
                 'po_id' => $request->po_id,
                 'no_kitir' => $request->no_kitir,
+                'arrival_date' => $request->arrival_date,
                 'grader_id' => $request->grader_id ?? 1,
                 'tally_id' => $request->tally_id ?? 1,
                 'road_permit_id' => $request->road_permit_id,
@@ -268,7 +309,6 @@ class LPBController extends BaseController
                 'nopol' => $request->nopol,
                 'conversion' => $request->conversion,
                 'perhutani' => $perhutani,
-                'status' => $status,
                 'updated_by' => Auth::user()->id,
             ]);
 
@@ -443,6 +483,104 @@ class LPBController extends BaseController
             ], 500);
         }
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $file = $request->file('file');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            
+            // Ambil sheet LPB
+            $lpbSheet = $spreadsheet->getSheetByName('LPB');
+            $lpbData = $lpbSheet ? $lpbSheet->toArray(null, true, true, true) : [];
+            
+            // Ambil sheet LPB Detail
+            $detailSheet = $spreadsheet->getSheetByName('LPB_Detail');
+            $detailData = $detailSheet ? $detailSheet->toArray(null, true, true, true) : [];
+
+            if (count($lpbData) <= 1) {
+                return back()->with('error', 'Data LPB tidak ditemukan di sheet.');
+            }
+            
+            // Ubah header ke format array associative
+            $lpbHeaders = array_map('strtolower', $lpbData[1]);
+            unset($lpbData[1]);
+            
+            foreach ($lpbData as $index => $row) {
+                $data = array_combine($lpbHeaders, $row);
+                $supplier = Supplier::with("bank")->where('id', $data['supplier_id'])->first();
+                
+                if($supplier!= null){
+                    $lpb = LPB::create([
+                        'code' => generateCodeImport('LPB', 'l_p_b_s', 'date', $index),
+                        'no_kitir' => $data['no_kitir'],
+                        'date' => $data['arrival_date'],
+                        'arrival_date' => $data['arrival_date'],
+                        'grader_id' => $data['grader_id'],
+                        'tally_id' => $data['tally_id'],
+                        'supplier_id' => $data['supplier_id'],
+                        'npwp_id' => $data['npwp_id'],
+                        'bank_name' => $supplier?->bank?->bank_name,
+                        'bank_account' => $supplier?->bank?->bank_account,
+                        'number_account' => $supplier?->bank?->number_account,
+                        'nopol' => $data['nopol'],
+                        'po_id' => $data['po_id'],
+                        'road_permit_id' => $data['road_permit_id'],
+                        'perhutani' => filter_var($data['perhutani'], FILTER_VALIDATE_BOOLEAN),
+                        'conversion' => $data['conversion'],
+                        'approved_by' => $data['approved_by'] ?? null,
+                        'approved_at' => $data['approved_at'] ?? null,
+                        'used' => filter_var($data['used'], FILTER_VALIDATE_BOOLEAN),
+                        'used_at' => $data['used_at'] ?? null,
+                        'paid_at' => $data['paid_at'] ?? null,
+                        'status' => !empty($data['paid_at']) ? 'Terbayar' : 'Pending',
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+                
+                
+                // Simpan detail berdasarkan no_kitir
+                $dHeaders = array_map('strtolower', $detailData[1]);
+                foreach ($detailData as $dRow) {
+                    $dData = array_combine($dHeaders, $dRow);
+                    
+                    $poDetail = PODetails::where('po_id', $data['po_id'])
+                    ->where('diameter_start', '<=', $dData['diameter'])
+                    ->where('diameter_to', '>=', $dData['diameter'])
+                    ->where('quality', $dData['quality'])
+                    ->where('length', (string)$dData['length'])
+                    ->first();
+                    
+                    if($poDetail != null){
+                        if ($dData['no_kitir'] === $data['no_kitir']) {
+                            LPBDetail::create([
+                                'lpb_id' => $lpb->id,
+                                'product_code' => $dData['product_code'],
+                                'length' => $dData['length'],
+                                'diameter' => $dData['diameter'],
+                                'quality' => $dData['quality'],
+                                'qty' => $dData['qty'],
+                                'price' => $poDetail->price,
+                            ]);
+                        }
+                    }
+                }
+            }
+            DB::commit();
+            return back()->with('success', 'Import berhasil!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            dd($e);
+            return back()->with('error', 'Gagal import: ' . $e->getMessage());
+        }
+    }
+
     
 
 }

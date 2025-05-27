@@ -10,17 +10,40 @@
                 <th>Tanggal</th>
                 <th>Nama</th>
                 <th>NPWP</th>
+                <th>No Tally</th>
+                <th>Nopol</th>
                 <th>Nama Rek</th>
                 <th>No Rek</th>
+                <th>Bank</th>
                 <th>QTY</th>
                 <th>Kubikasi</th>
-                <th>Konversi</th>
                 <th>Nilai</th>
                 <th>PPH22</th>
                 <th>Total</th>
             </tr>
         </thead>
         <tbody>
+            @php
+                $grouped = $datas->groupBy(function ($item) {
+                    return $item->supplier?->name ?? 'Supplier Tidak Ditemukan';
+                });
+
+                // Hitung total nilai per supplier untuk sorting
+                $sorted = $grouped
+                    ->map(function ($items, $supplierName) {
+                        $total = 0;
+
+                        foreach ($items as $data) {
+                            $nominalKubikasi =
+                                $data->details != '' ? nominalKubikasi($data->details) - $data->conversion * 3000 : 0;
+                            $pph22 = $nominalKubikasi * 0.0025;
+                            $total += $nominalKubikasi - $pph22;
+                        }
+
+                        return ['items' => $items, 'total' => $total];
+                    })
+                    ->sortBy('total');
+            @endphp
             @php
                 $grantTotalQty = 0;
                 $grantTotalKubikasi = 0;
@@ -29,46 +52,79 @@
                 $grantTotalPph22 = 0;
                 $grantTotal = 0;
             @endphp
-            @forelse($datas as $key => $data)
+
+            @forelse($sorted as $supplierName => $group)
                 @php
-                    $totalKubikasi = $data->details != '' ? totalKubikasi($data->details) : 0;
-                    $nominalKubikasi =
-                        $data->details != '' ? nominalKubikasi($data->details) - $data->conversion * 3000 : 0;
-                    $pph22 = $nominalKubikasi * 0.0025;
-                    $grantTotalQty += $data->details != '' ? $data->details->sum('qty') : 0;
-                    $grantTotalKubikasi += $totalKubikasi;
-                    $grantTotalKonversi += $data->conversion;
-                    $grantTotalNominal += $nominalKubikasi;
-                    $grantTotalPph22 += $pph22;
-                    $grantTotal += $nominalKubikasi - $pph22;
+                    $items = $group['items'];
+                    $supplierTotalQty = 0;
+                    $supplierTotalKubikasi = 0;
+                    // $supplierTotalKonversi = 0;
+                    $supplierTotalNominal = 0;
+                    $supplierTotalPph22 = 0;
+                    $supplierTotal = 0;
                 @endphp
-                <tr>
-                    <td>{{ date('d-m-Y', strtotime($data->date)) }}</td>
-                    <td>{{ $data->supplier != '' ? $data->supplier->name : 'Supplier Tidak DiTemukan' }}</td>
-                    <td>{{ $data->npwp != '' ? $data->npwp->name : 'NPWP Tidak DiTemukan' }}</td>
-                    <td>{{ $data->supplier && $data->supplier->bank ? $data->supplier->bank->bank_account : 'Bank Tidak Ditemukan' }}
-                    <td>{{ $data->supplier && $data->supplier->bank ? $data->supplier->bank->number_account : 'Bank Tidak Ditemukan' }}
-                    </td>
-                    <td>{{ $data->details != '' ? $data->details->sum('qty') : 0 }} Btg</td>
-                    <td>{{ $totalKubikasi }} M3</td>
-                    <td>Rp.{{ money_format($data->conversion * 3000) }}</td>
-                    <td>Rp{{ money_format($nominalKubikasi) }}
-                    </td>
-                    <td>Rp{{ money_format($pph22) }}</td>
-                    <td>Rp{{ money_format($nominalKubikasi - $pph22) }}</td>
+
+                @foreach ($items as $data)
+                    @php
+                        $totalKubikasi = $data->details != '' ? totalKubikasi($data->details) : 0;
+                        $nominalKubikasi =
+                            $data->details != '' ? nominalKubikasi($data->details) - $data->conversion * 3000 : 0;
+                        $pph22 = $nominalKubikasi * 0.0025;
+
+                        $supplierTotalQty += $data->details != '' ? $data->details->sum('qty') : 0;
+                        $supplierTotalKubikasi += $totalKubikasi;
+                        // $supplierTotalKonversi += $data->conversion;
+                        $supplierTotalNominal += $nominalKubikasi;
+                        $supplierTotalPph22 += $pph22;
+                        $supplierTotal += $nominalKubikasi - $pph22;
+
+                        $grantTotalQty += $data->details != '' ? $data->details->sum('qty') : 0;
+                        $grantTotalKubikasi += $totalKubikasi;
+                        // $grantTotalKonversi += $data->conversion;
+                        $grantTotalNominal += $nominalKubikasi;
+                        $grantTotalPph22 += $pph22;
+                        $grantTotal += $nominalKubikasi - $pph22;
+                    @endphp
+                    <tr>
+                        <td>{{ date('d-m-Y', strtotime($data->date)) }}</td>
+                        <td>{{ $supplierName }}</td>
+                        <td>{{ $data->npwp?->name ?? 'NPWP Tidak Ditemukan' }}</td>
+                        <td>{{ $data->no_kitir }}</td>
+                        <td>{{ $data->nopol }}</td>
+                        <td>{{ $data->bank_account }}</td>
+                        <td>{{ $data->number_account }}</td>
+                        <td>{{ $data->bank_name }}</td>
+                        <td>{{ $data->details != '' ? $data->details->sum('qty') : 0 }} Btg</td>
+                        <td>{{ $totalKubikasi }} M3</td>
+                        {{-- <td>Rp.{{ money_format($data->conversion * 3000) }}</td> --}}
+                        <td>Rp{{ money_format($nominalKubikasi) }}</td>
+                        <td>Rp{{ money_format($pph22) }}</td>
+                        <td>Rp{{ money_format($nominalKubikasi - $pph22) }}</td>
+                    </tr>
+                @endforeach
+
+                <tr style="font-weight:bold; background-color: #e9ecef;">
+                    <td colspan="8" class="text-right">TOTAL {{ strtoupper($supplierName) }}</td>
+                    <td>{{ $supplierTotalQty }} Btg</td>
+                    <td>{{ $supplierTotalKubikasi }} M3</td>
+                    {{-- <td>Rp.{{ money_format($supplierTotalKonversi * 3000) }}</td> --}}
+                    <td>Rp{{ money_format($supplierTotalNominal) }}</td>
+                    <td>Rp{{ money_format($supplierTotalPph22) }}</td>
+                    <td>Rp{{ money_format($supplierTotal) }}</td>
                 </tr>
             @empty
                 <tr>
                     <td colspan="11" class="text-center"><strong>Data Tidak Di Temukan</strong></td>
                 </tr>
-            @endforelse ($datas as $data)
+            @endforelse
+
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="5" class="text-right">Grand Total</th>
+                <th colspan="8" class="text-right">Grand Total</th>
                 <th>{{ $grantTotalQty }}</th>
                 <th>{{ $grantTotalKubikasi }}</th>
-                <th>Rp.{{ money_format($grantTotalKonversi * 3000) }}</th>
+                {{-- <th>Rp.{{ money_format($grantTotalKonversi * 3000) }}</th> --}}
                 <th>Rp.{{ money_format($grantTotalNominal) }}</th>
                 <th>Rp.{{ money_format($grantTotalPph22) }}</th>
                 <th>Rp.{{ money_format($grantTotal) }}</th>

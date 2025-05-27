@@ -33,6 +33,12 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
+                            <label for="arrival_date" class="col-sm-2 col-form-label">Tanggal Kedatangan</label>
+                            <div class="col-sm-4">
+                                <input type="date" class="form-control" id="arrival_date" name="arrival_date"
+                                    value="{{ old('arrival_date', $lpb->arrival_date) }}">
+                                <span class="text-danger error-text" id="arrival_date_error"></span>
+                            </div>
                             <label for="no_kitir" class="col-sm-2 col-form-label">No Kitir</label>
                             <div class="col-sm-4">
                                 <input type="numeric" class="form-control" id="no_kitir" name="no_kitir"
@@ -47,8 +53,9 @@
                                     <option value="">Silahkan Pilih Grader</option>
                                     @if (count($graderTallies))
                                         @foreach ($graderTallies as $graderTally)
-                                            <option {{ $graderTally->id == $lpb->graderTally_id ? 'selected' : '' }}
-                                                value="{{ $graderTally->id }}">{{ $graderTally->alias_name }}</option>
+                                            <option value="{{ $graderTally->id }}"
+                                                {{ $graderTally->id == $lpb->grader_id ? 'selected' : '' }}>
+                                                {{ $graderTally->alias_name }}</option>
                                         @endforeach
                                     @endif
                                 </select>
@@ -59,16 +66,16 @@
                                     <option value="">Silahkan Pilih Tally</option>
                                     @if (count($graderTallies))
                                         @foreach ($graderTallies as $graderTally)
-                                            <option {{ $graderTally->id == $lpb->graderTally_id ? 'selected' : '' }}
+                                            <option {{ $graderTally->id == $lpb->tally_id ? 'selected' : '' }}
                                                 value="{{ $graderTally->id }}">{{ $graderTally->alias_name }}</option>
                                         @endforeach
                                     @endif
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group row">
+                        {{-- <div class="form-group row">
                             <label for="road_permit_id" class="col-sm-2 col-form-label">Surat Jalan</label>
-                            <div class="col-sm-10">
+                            <div class="col-sm-7">
                                 <select class="form-control" name="road_permit_id" id="road_permit_id">
                                     <option>Silahkan Pilih Surat Jalan</option>
                                     @if (count($road_permits))
@@ -81,7 +88,19 @@
                                     @endif
                                 </select>
                             </div>
-                        </div>
+                            <label for="status_sj" class="col-sm-1 col-form-label">Status SJ</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" name="status_sj" id="status_sj">
+                                    <option value="Pakai"
+                                        {{ $lpb->roadPermit && $lpb->roadPermit->status === 'Selesai' ? '' : 'selected' }}>
+                                        Pakai</option>
+                                    <option value="Selesai"
+                                        {{ $lpb->roadPermit && $lpb->roadPermit->status === 'Selesai' ? 'selected' : '' }}>
+                                        Selesai</option>
+                                </select>
+
+                            </div>
+                        </div> --}}
                         <div class="form-group row">
                             <label for="supplier_id" class="col-sm-2 col-form-label">Supplier</label>
                             <div class="col-sm-4">
@@ -139,6 +158,17 @@
                                 <input type="numeric" class="form-control" id="conversion" name="conversion"
                                     value="{{ old('conversion', $lpb->conversion) }}">
                                 <span class="text-danger error-text" id="conversion_error"></span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="perhutani" class="col-sm-2 col-form-label">Perhutani</label>
+                            <div class="toggle-container col-md-3">
+                                <!-- Tombol Toggle -->
+                                <label class="switch">
+                                    <input type="checkbox" {{ $lpb->perhutani == true ? 'checked' : '' }} value="true"
+                                        id="perhutani" name="perhutani">
+                                    <span class="slider round"></span>
+                                </label>
                             </div>
                         </div>
                         <h3>Data Barang</h3>
@@ -222,6 +252,46 @@
             opacity: 0;
             width: 0;
             height: 0;
+        }
+
+        /* Style untuk slider */
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+        }
+
+        input:checked+.slider {
+            background-color: #2196F3;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
         }
     </style>
 @stop
@@ -354,7 +424,7 @@
                         minSpareRows: 1,
                         data: datas,
                         columns: columnType,
-                        rowHeaders: true,
+                        // rowHeaders: true,
                         colHeaders: ['Diameter', 'Afkir', '130', '260', 'Kubikasi Afkir', 'Kubikasi 130',
                             'Kubikasi 260', 'Total'
                         ],
@@ -557,4 +627,5 @@
                         getLocalStorage();
                     });
     </script>
+    @include('components.loading')
 @stop

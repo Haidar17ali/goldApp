@@ -163,6 +163,7 @@
 @stop
 
 @section('js')
+    <script src="{{ asset('assets/js/myHelper.js') }}"></script>
     <script>
         $(document).ready(function() {
             $('#address').select2({
@@ -219,7 +220,24 @@
 
                     }
                 })
-            })
+            });
+            $("#number_account").on('select2:select', function() {
+                let idAccount = $(this).val();
+                let url = "{{ route('utility.ajax-no-rek') }}"
+                let data = {
+                    id: idAccount
+                }
+                let jsonData = loadWithData(url, data);
+
+
+                if (jsonData != null) {
+                    $("#bank_account").val(jsonData.bank_account);
+                    $("#bank_name").val(jsonData.bank_name);
+                } else {
+                    $("#bank_account").val("");
+                    $("#bank_name").val("");
+                }
+            });
         });
     </script>
 @stop

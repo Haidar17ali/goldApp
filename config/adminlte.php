@@ -323,6 +323,11 @@ return [
             'url' => 'admin/blog',
             'can' => 'manage-blog',
         ],
+        [
+            'text' => 'Dashboard',
+            'icon' => 'fas fa-tachometer-alt',
+            'url' => 'home',
+        ],
 
         [
             'text' => 'Master Data',
@@ -440,6 +445,11 @@ return [
                     'text' => 'Laporan LPB',
                     'url' => 'JM/report/lpb',
                     'can' => 'laporan.lpb',
+                ],
+                [
+                    'text' => 'Laporan LPB Supplier',
+                    'url' => 'JM/report/lpb-supplier',
+                    'can' => 'laporan.lpb-supplier',
                 ],
                 [
                     'text' => 'Laporan Purchase Jurnal',

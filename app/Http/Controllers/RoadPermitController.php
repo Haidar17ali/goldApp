@@ -55,6 +55,8 @@ class RoadPermitController extends BaseController
                 'from' => 'required|string',
                 'nopol' => 'required|string',
                 'driver' => 'required|string',
+                'in' => 'required|date',
+                'out' => 'required|date|after:in',
             ]);
 
             $destination = "CV. Jati Makmur";
@@ -91,8 +93,9 @@ class RoadPermitController extends BaseController
             // Simpan data utama
             $data = [
                 'code' => generateCode('SJ', 'road_permits', 'date'),
-                'date' => date('Y-m-d'),
-                'in' => date('H:i:s', time()),
+                'date' => $request->in,
+                "in" => $request->in,
+                "out" => $request->out,
                 'from' => $request->from,
                 'destination' => $destination,
                 'vehicle' => $request->vehicle,
@@ -219,10 +222,19 @@ class RoadPermitController extends BaseController
             // Validasi road permit utama
             $validatedData = $request->validate([
                 'from' => 'required|string',
-                'destination' => 'required|string',
                 'nopol' => 'required|string',
                 'driver' => 'required|string',
+                'in' => 'required|date',
+                'out' => 'required|date|after:in',
             ]);
+
+            $destination = "CV. Jati Makmur";
+            if($type == "out"){
+                $destination = $request->destination;
+                $request->validate([
+                    'destination' => 'required|string',
+                ]);
+            }
 
             // ambil data stringify yang dikirim fe dan decode menjadi json
 
@@ -245,8 +257,11 @@ class RoadPermitController extends BaseController
             }
         
             // Simpan data utama
+                $road_permit->date = $request->in;
+                $road_permit->in = $request->in;
+                $road_permit->out = $request->out;
                 $road_permit->from = $request->from;
-                $road_permit->destination = $request->destination;
+                $road_permit->destination = $destination;
                 $road_permit->vehicle = $request->vehicle;
                 $road_permit->type_item = $request->item_type;
                 $road_permit->nopol = $request->nopol;

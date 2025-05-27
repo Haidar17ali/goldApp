@@ -136,23 +136,26 @@
                 }).showToast();
             }
 
-            // delete 
-            $(".badge-delete").click(function(e) {
-                var form = $(this).closest("form");
-                Swal.fire({
-                    title: 'Hapus Data!',
-                    text: "Apakah anda yakin akan menghapus data ini?",
-                    icon: 'warning',
-                    confirmButtonColor: '#3085d6',
-                    showCancelButton: true,
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Hapus!!'
-                }).then((result) => {
-                    if (result.value === true) {
-                        form.closest("form").submit();
-                    }
-                })
-            });
+            $(document).ready(function() {
+                // delete 
+                $(document).on('click', ".badge-delete", function(e) {
+                    e.preventDefault();
+                    var form = $(this).closest("form");
+                    Swal.fire({
+                        title: 'Hapus Data!',
+                        text: "Apakah anda yakin akan menghapus data ini?",
+                        icon: 'warning',
+                        confirmButtonColor: '#3085d6',
+                        showCancelButton: true,
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Hapus!!'
+                    }).then((result) => {
+                        if (result.value === true) {
+                            form.closest("form").submit();
+                        }
+                    })
+                });
+            })
     </script>
     <script>
         $(document).ready(function() {

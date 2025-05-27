@@ -10,6 +10,7 @@ use App\Models\LPBDetail;
 use App\Models\PODetails;
 use App\Models\User;
 use App\Models\Notification;
+use Illuminate\Http\Request;
 
 function money_format($money){
     return number_format($money,0, ',','.');
@@ -72,6 +73,14 @@ function generateCode($prefix, $table, $dateColumn)
     $noUrut = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
 
     // Gabungkan menjadi format {PREFIX}{YYYYMMDD}{XXX}
+    return strtoupper($prefix) . $tanggal . $noUrut;
+}
+
+function generateCodeImport($prefix, $table, $dateColumn, $offset = 1)
+{
+    $tanggal = Carbon::now()->format('Ymd');
+    $count = DB::table($table)->whereDate($dateColumn, Carbon::today())->count() + $offset;
+    $noUrut = str_pad($count, 3, '0', STR_PAD_LEFT);
     return strtoupper($prefix) . $tanggal . $noUrut;
 }
 
@@ -205,17 +214,254 @@ function updateLPBDetails($lpb, $newDetails, $poId)
 }
 
 function sendToPermission($permission, $type, $title, $message, $link)
-    {
-        $users = User::permission($permission)->get();
+{
+    $users = User::permission($permission)->get();
 
-        foreach ($users as $user) {
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => $type,
-                'title' => $title,
-                'message' => $message,
-                'link' => $link,
-                'is_read' => false,
-            ]);
+    foreach ($users as $user) {
+        Notification::create([
+            'user_id' => $user->id,
+            'type' => $type,
+            'title' => $title,
+            'message' => $message,
+            'link' => $link,
+            'is_read' => false,
+        ]);
+    }
+}
+
+function getLPBSupplier(Request $request)
+{
+    $supplier = $request->supplier;
+    $nopolInput = $request->nopol;
+    $start_date = $request->start_date;
+    $end = $request->last_date;
+    $date_by = $request->dateBy ?: 'arrival_date';
+
+    $periode = $start_date ? 'PERIODE ' . date('d/m/Y', strtotime($start_date)) : null;
+
+    $query = Lpb::with(['details', 'supplier']);
+
+    if ($start_date && $end) {
+        $query->whereBetween($date_by, [$start_date, $end]);
+    } elseif ($start_date) {
+        $query->whereDate($date_by, $start_date);
+    }
+
+    if ($supplier && $supplier != 'Pilih Supplier') {
+        $query->where('supplier_id', $supplier);
+    }
+
+    if ($nopolInput) {
+        $query->where('nopol', 'LIKE', "%$nopolInput%");
+    }
+
+    $lpbs = $query->get();
+
+    $groupedLpbs = [];
+    $grandTotal = [
+        'qty' => 0,
+        'm3' => 0,
+        'nilai' => 0,
+        'pph' => 0,
+        'transfer' => 0,
+    ];
+
+    foreach ($lpbs as $lpb) {
+        $supplierName = $lpb->supplier->name ?? '-';
+        $supplierId = $lpb->supplier->id ?? '-';
+        $nopol = $lpb->nopol ?? '-';
+        // Dinamis tanggal sesuai kolom yang dipilih user
+        $tglKirim = '-';
+        if (!empty($date_by) && !empty($lpb->$date_by)) {
+            $tglKirim = $lpb->$date_by;
+        }
+
+        $groupKey = "{$nopol}_{$tglKirim}";
+
+        // Siapkan grup supplier
+        if (!isset($groupedLpbs[$supplierName])) {
+            $groupedLpbs[$supplierName] = [];
+        }
+
+        // Siapkan grup berdasarkan nopol + tanggal
+        if (!isset($groupedLpbs[$supplierName][$groupKey])) {
+            $groupedLpbs[$supplierName][$groupKey] = [
+                'kitir' =>$lpb->no_kitir ?? '-',
+                'supplier' =>$lpb->supplier->name ?? '-',
+                'npwp' =>$lpb->npwp->name ?? '-',
+                'supplierId' =>$lpb->supplier->id ?? '-',
+                'nopol' => $nopol,
+                'tgl_kirim' => $tglKirim,
+                'qty' => 0,
+                'm3' => 0,
+                'nilai' => 0,
+                'pph' => 0,
+                'transfer' => 0,
+            ];
+        }
+
+        // Hitung total dari semua detail
+        foreach ($lpb->details as $detail) {
+            $detailQty = $detail->qty;
+            $detailM3 = kubikasi((float)$detail->diameter, (float)$detail->length, $detailQty);
+            $detailNilai = $detailM3 * $detail->price;
+
+            $groupedLpbs[$supplierName][$groupKey]['qty'] += $detailQty;
+            $groupedLpbs[$supplierName][$groupKey]['m3'] += $detailM3;
+            $groupedLpbs[$supplierName][$groupKey]['nilai'] += $detailNilai;
         }
     }
+
+    // Hitung PPh dan transfer sekaligus, serta grand total
+    foreach ($groupedLpbs as $supplierName => &$groups) {
+        foreach ($groups as &$row) {
+            $row['pph'] = $row['nilai'] * 0.0025;
+            $row['transfer'] = $row['nilai'] - $row['pph'];
+
+            $grandTotal['qty'] += $row['qty'];
+            $grandTotal['m3'] += $row['m3'];
+            $grandTotal['nilai'] += $row['nilai'];
+            $grandTotal['pph'] += $row['pph'];
+            $grandTotal['transfer'] += $row['transfer'];
+        }
+    }
+
+    // set header view date
+    $dateByLabelMap = [
+        'arrival_date' => 'TGL KIRIM',
+        'date' => 'TGL LPB',
+        'paid_at' => 'TGL BAYAR',
+        // Tambahkan jika ada pilihan tanggal lain
+    ];
+
+    $headerDate = $dateByLabelMap[$date_by] ?? strtoupper(str_replace('_', ' ', $date_by));
+
+    return [
+        'groupedLpbs' => $groupedLpbs,
+        'grandTotal' => $grandTotal,
+        'periode' => $periode,
+        'headerDate' => $headerDate,  // ini yang baru
+        'dateBy' => $date_by,          // opsional, jika ingin pakai di view
+        'start_date' => $start_date,
+        'end_date' => $end,
+    ];        // opsional, jika ingin pakai di view);
+}
+
+
+function getLPBSupplierDetail(Request $request)
+{
+    $start_date = $request->start_date;
+    $end_date = $request->end_date;
+    $date_by = $request->date_by;
+    $supplier = $request->supplier;
+    $nopol = $request->nopol;
+
+    $periode = ($start_date && $end_date)
+        ? 'PERIODE ' . date('d/m/Y', strtotime($start_date)) . ' - ' . date('d/m/Y', strtotime($end_date))
+        : ($start_date ? 'PERIODE ' . date('d/m/Y', strtotime($start_date)) : null);
+
+    $query = Lpb::with(['details', 'roadPermit', 'supplier']);
+
+    if ($start_date && $end_date) {
+        $query->whereBetween($date_by, [$start_date, $end_date]);
+    } elseif ($start_date) {
+        $query->whereDate($date_by, $start_date);
+    }
+
+    if ($supplier && $supplier != 'Pilih Supplier') {
+        $query->where('supplier_id', $supplier);
+    }
+
+    if ($nopol) {
+        $query->whereHas('roadPermit', function ($q) use ($nopol) {
+            $q->where('nopol', 'LIKE', "%$nopol%");
+        });
+    }
+
+    $lpbs = $query->get();
+
+    $firstLpb = $lpbs->first();
+    $nopolResult = $firstLpb?->roadPermit?->nopol ?? '-';
+    $pemilik = $firstLpb?->supplier?->name ?? '-';
+
+    $details = $lpbs->pluck('details')->flatten();
+
+    // Grouping berdasarkan kualitas|panjang|diameter
+    $grouped = $details->groupBy(function ($item) {
+        return "{$item->quality}|{$item->length}|{$item->diameter}";
+    });
+
+    $results = [];
+
+    foreach ($grouped as $key => $items) {
+        [$quality, $length, $diameter] = explode('|', $key);
+        $qty = $items->sum('qty');
+        $m3 = kubikasi((float)$diameter, (float)$length, $qty);
+        $price = $items->first()->price ?? 0;
+        $nilai = $m3 * $price;
+
+        $keyLabel = strtolower($quality . ' ' . $length);
+        $results[$keyLabel][$length][] = [
+            'diameter' => $diameter,
+            'harga' => $price,
+            'qty' => $qty,
+            'm3' => $m3,
+            'nilai' => $nilai,
+        ];
+    }
+
+    // Urutkan berdasarkan urutan kualitas tertentu
+    $orderedKeys = ['afkir 130', 'super 130', 'super 260'];
+    $sortedResults = [];
+
+    foreach ($orderedKeys as $key) {
+        if (isset($results[$key])) {
+            $sortedResults[$key] = $results[$key];
+        }
+    }
+
+    // Tambahkan sisa kualitas lain jika ada
+    foreach ($results as $key => $value) {
+        if (!isset($sortedResults[$key])) {
+            $sortedResults[$key] = $value;
+        }
+    }
+
+    // Grand Total
+    $grandTotalQty = $details->sum('qty');
+    $grandTotalM3 = $details->sum(function ($item) {
+        return kubikasi((float)$item->diameter, (float)$item->length, $item->qty);
+    });
+    $grandTotalNilai = $details->sum(function ($item) {
+        return kubikasi((float)$item->diameter, (float)$item->length, $item->qty) * $item->price;
+    });
+
+    // Grand Total PPh22 (dari semua LPB)
+    // Hitung total PPh22 manual
+    $grandTotalPph = 0;
+
+    foreach ($lpbs as $lpb) {
+        $lpbTotal = 0;
+
+        foreach ($lpb->details as $detail) {
+            $m3 = kubikasi((float)$detail->diameter, (float)$detail->length, $detail->qty);
+            $nilai = $m3 * $detail->price;
+            $lpbTotal += $nilai;
+        }
+        
+
+        $pph = $lpbTotal * 0.0025;
+        $grandTotalPph += $pph;
+    }
+
+    return compact(
+        'sortedResults',
+        'periode',
+        'nopolResult',
+        'pemilik',
+        'grandTotalQty',
+        'grandTotalM3',
+        'grandTotalNilai',
+        'grandTotalPph'
+    );
+}

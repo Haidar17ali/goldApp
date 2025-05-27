@@ -33,6 +33,12 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
+                            <label for="arrival_date" class="col-sm-2 col-form-label">Tanggal Kedatangan</label>
+                            <div class="col-sm-4">
+                                <input type="date" class="form-control" id="arrival_date" name="arrival_date"
+                                    value="{{ old('arrival_date') }}">
+                                <span class="text-danger error-text" id="arrival_date_error"></span>
+                            </div>
                             <label for="no_kitir" class="col-sm-2 col-form-label">No Kitir</label>
                             <div class="col-sm-4">
                                 <input type="numeric" class="form-control" id="no_kitir" name="no_kitir"
@@ -64,7 +70,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group row">
+                        {{-- <div class="form-group row">
                             <label for="road_permit_id" class="col-sm-2 col-form-label">Surat Jalan</label>
                             <div class="col-sm-7">
                                 <select class="form-control" name="road_permit_id" id="road_permit_id">
@@ -85,7 +91,7 @@
                                     <option>Selesai</option>
                                 </select>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="form-group row">
                             <label for="supplier_id" class="col-sm-2 col-form-label">Supplier</label>
                             <div class="col-sm-4">
@@ -397,7 +403,7 @@
                         minSpareRows: 1,
                         data: datas,
                         columns: columnType,
-                        rowHeaders: true,
+                        // rowHeaders: true,
                         colHeaders: ['Diameter', 'Afkir', '130', '260', 'Kubikasi Afkir', 'Kubikasi 130',
                             'Kubikasi 260', 'Total'
                         ],
@@ -604,4 +610,5 @@
                         getLocalStorage();
                     });
     </script>
+    @include('components.loading')
 @stop

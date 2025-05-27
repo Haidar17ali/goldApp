@@ -43,6 +43,8 @@
             </div>
             <hr>
 
+            <button onclick="printLPBNopol()" class="btn btn-success no-print float-right"><i
+                    class="fas fa-print"></i>Cetak</button>
             {{-- hasil filter --}}
             <div class="search-results"></div>
             <div class="search-pagination d-flex justify-content-end"></div>
@@ -154,5 +156,90 @@
                         // });
                     })
     </script>
+    <script>
+        @section('plugins.PrintJs', true)
+            function printLPBNopol() {
+                printJS({
+                    printable: "print-preview",
+                    type: 'html',
+                    scanStyles: true,
+                    style: `
+                            @media print {
+                                .print-section {
+                                    page-break-after: always;
+                                    padding: 20px;
+                                    font-family: Arial, sans-serif;
+                                    font-size: 13px;
+                                    color: #333;
+                                }
 
+                                .print-section:last-child {
+                                    page-break-after: avoid;
+                                }
+
+                                .lpb-header {
+                                    margin-bottom: 10px;
+                                    padding-bottom: 5px;
+                                    border-bottom: 2px solid #666;
+                                }
+
+                                .lpb-header h4 {
+                                    margin: 0;
+                                    font-size: 16px;
+                                    color: #000;
+                                }
+
+                                .lpb-header h5 {
+                                    margin: 5px 0 0 0;
+                                    font-size: 14px;
+                                    color: #555;
+                                }
+
+                                table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-bottom: 15px;
+                                }
+
+                                table,
+                                th,
+                                td {
+                                    border: 1px solid #ccc;
+                                }
+
+                                th {
+                                    background-color: #f2f2f2;
+                                    font-weight: bold;
+                                    padding: 8px;
+                                    text-align: center;
+                                }
+
+                                td {
+                                    padding: 6px;
+                                    text-align: center;
+                                }
+
+                                .total-row {
+                                    font-weight: bold;
+                                    background-color: #e6f7ff;
+                                }
+
+                                .grand-total-table {
+                                    margin-top: 20px;
+                                }
+
+                                .grand-total-table th {
+                                    background-color: #d9ead3;
+                                    color: #000;
+                                }
+
+                                .grand-total-table td {
+                                    background-color: #f6fff2;
+                                }
+                            }
+                        `
+                });
+            }
+    </script>
+    @include('components.loading')
 @stop

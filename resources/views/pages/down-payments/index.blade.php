@@ -151,7 +151,8 @@
             }
 
             // delete 
-            $(".badge-delete").click(function(e) {
+            $(document).on('click', ".badge-delete", function(e) {
+                e.preventDefault();
                 var form = $(this).closest("form");
                 Swal.fire({
                     title: 'Hapus Data!',
@@ -176,8 +177,6 @@
 
                 // Jika inputElement valid, gunakan model dari elemen tersebut
                 if (inputElement && $(inputElement).length > 0) {
-                    console.log("ok");
-
                     model = $(inputElement).data('model');
                     search = $(inputElement).val();
                 }

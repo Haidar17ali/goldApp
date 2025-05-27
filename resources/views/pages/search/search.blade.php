@@ -30,7 +30,11 @@
                     </td>
                     <td>
                         @if ($item->status == 'Pending')
-                            <a href="{{ route('utility.activation-dp', ['modelType' => 'Down_payment', 'id' => $item->id, 'status' => 'Menunggu Pembayaran']) }}"
+                            <a href="{{ route('utility.activation-dp', [
+                                'modelType' => 'Down_payment',
+                                'id' => $item->id,
+                                'status' => 'Menunggu Pembayaran',
+                            ]) }}"
                                 class="badge badge-success">
                                 <i class="fas fa-check"></i>
                             </a>

@@ -9,17 +9,8 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            <div id="error-datas" class="alert alert-danger d-none"></div>
 
-            <div id="error-messages"></div>
             <div class="badge badge-primary float-right">Buat Surat Jalan</div>
         </div>
     </div>
@@ -30,6 +21,20 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
+                        <div class="form-group row">
+                            <label for="in" class="col-sm-2 col-form-label">Masuk</label>
+                            <div class="col-sm-4">
+                                <input type="datetime-local" class="form-control" id="in" name="in"
+                                    value="{{ old('in') }}">
+                                <span class="text-danger error-text" id="in_error"></span>
+                            </div>
+                            <label for="out" class="col-sm-2 col-form-label">Keluar</label>
+                            <div class="col-sm-4">
+                                <input type="datetime-local" class="form-control" id="out" name="out"
+                                    value="{{ old('out') }}">
+                                <span class="text-danger error-text" id="out_error"></span>
+                            </div>
+                        </div>
                         <div class="form-group row">
                             <label for="item_type" class="col-sm-2 col-form-label">Jenis Barang</label>
                             <div class="col-sm-10">
@@ -43,8 +48,6 @@
                         <div class="form-group row">
                             <label for="from" class="col-sm-2 col-form-label">Pengirim*</label>
                             <div class="col-sm-10">
-                                {{-- <input type="text" class="form-control" id="from" name="from"
-                                    value="{{ old('from') }}"> --}}
                                 <select class="form-control" name="from" id="from">
                                     @foreach ($suppliers as $supplier)
                                         <option value="{{ $supplier->name }}">{{ $supplier->name }}</option>
@@ -220,11 +223,97 @@
 
     <script>
         $(document).ready(function() {
-                    // handsontable
-                    const container = document.getElementById('handsontable-container');
-                    const hot = new Handsontable(container, {
-                        minSpareRows: 1,
-                        data: [],
+            // handsontable
+            const container = document.getElementById('handsontable-container');
+            const hot = new Handsontable(container, {
+                minSpareRows: 1,
+                data: [],
+                columns: [{
+                        data: 'load',
+                        type: 'text'
+                    },
+                    {
+                        data: 'amount',
+                        type: 'numeric'
+                    },
+                    {
+                        data: 'unit',
+                        type: 'text'
+                    },
+                    {
+                        data: 'size',
+                        type: 'text'
+                    },
+                    {
+                        data: 'cubication',
+                        type: 'numeric'
+                    },
+                ],
+                rowHeaders: true,
+                colHeaders: ['Muatan', 'Jumlah', 'Satuan', 'Ukuran', 'Kubikasi'],
+                contextMenu: true,
+                autoColumnSize: true,
+                autoRowSize: true,
+                // manualRowResize: true,
+                // manualColumnResize: true,
+                persistentState: true,
+                licenseKey: 'non-commercial-and-evaluation',
+                stretchH: 'all',
+                afterChange: function(changes, source) {
+
+                    if (source === 'edit' || source === 'paste') {
+                        const data = hot.getData();
+                        localStorage.setItem('roadPermitDetails', JSON.stringify(data));
+                    }
+                },
+            });
+
+            // Fungsi untuk menyesuaikan tampilan berdasarkan jenis barang
+            function toggleFieldsByItemType() {
+
+                const itemType = $('#item_type').val();
+
+                if (itemType === 'Sengon') {
+                    // Sembunyikan input sill dan container
+                    $('#sill_number').closest('.form-group').hide();
+                    $('#container_number').closest('.form-group').hide();
+
+                    // Atur ulang Handsontable hanya untuk Muatan dan Jumlah
+                    hot.updateSettings({
+                        columns: [{
+                                data: 'load',
+                                type: 'text'
+                            },
+                            {
+                                data: 'amount',
+                                type: 'numeric'
+                            }
+                        ],
+                        colHeaders: ['Muatan', 'Jumlah']
+                    });
+
+                    // Isi data default khusus sengon
+                    hot.loadData([{
+                            load: 'afkir',
+                            amount: 0
+                        },
+                        {
+                            load: '130',
+                            amount: 0
+                        },
+                        {
+                            load: '260',
+                            amount: 0
+                        }
+                    ]);
+
+                } else {
+                    // Tampilkan kembali input sill dan container
+                    $('#sill_number').closest('.form-group').show();
+                    $('#container_number').closest('.form-group').show();
+
+                    // Reset kolom Handsontable ke default
+                    hot.updateSettings({
                         columns: [{
                                 data: 'load',
                                 type: 'text'
@@ -244,228 +333,154 @@
                             {
                                 data: 'cubication',
                                 type: 'numeric'
-                            },
+                            }
                         ],
-                        rowHeaders: true,
-                        colHeaders: ['Muatan', 'Jumlah', 'Satuan', 'Ukuran', 'Kubikasi'],
-                        contextMenu: true,
-                        autoColumnSize: true,
-                        autoRowSize: true,
-                        // manualRowResize: true,
-                        // manualColumnResize: true,
-                        persistentState: true,
-                        licenseKey: 'non-commercial-and-evaluation',
-                        stretchH: 'all',
-                        afterChange: function(changes, source) {
-
-                            if (source === 'edit' || source === 'paste') {
-                                const data = hot.getData();
-                                localStorage.setItem('roadPermitDetails', JSON.stringify(data));
-                            }
-                        },
+                        colHeaders: ['Muatan', 'Jumlah', 'Satuan', 'Ukuran', 'Kubikasi']
                     });
 
-                    // Fungsi untuk menyesuaikan tampilan berdasarkan jenis barang
-                    function toggleFieldsByItemType() {
+                    // Kosongkan data handsontable
+                    hot.loadData([]);
+                }
+            }
 
-                        const itemType = $('#item_type').val();
+            // Jalankan fungsi saat halaman dimuat dan saat jenis barang diubah
+            toggleFieldsByItemType();
+            $('#item_type').on('change', toggleFieldsByItemType);
 
-                        if (itemType === 'Sengon') {
-                            // Sembunyikan input sill dan container
-                            $('#sill_number').closest('.form-group').hide();
-                            $('#container_number').closest('.form-group').hide();
+            // Isi data dari localStorage saat halaman dimuat
+            function getLocalStorage() {
+                const savedData = localStorage.getItem('roadPermitDetails');
 
-                            // Atur ulang Handsontable hanya untuk Muatan dan Jumlah
-                            hot.updateSettings({
-                                columns: [{
-                                        data: 'load',
-                                        type: 'text'
-                                    },
-                                    {
-                                        data: 'amount',
-                                        type: 'numeric'
-                                    }
-                                ],
-                                colHeaders: ['Muatan', 'Jumlah']
+                if (savedData != null) {
+                    try {
+                        const parsedData = JSON.parse(savedData);
+
+                        const columnHeaders = ["load", "amount", "unit", "size",
+                            "cubication"
+                        ]; // Sesuaikan dengan jumlah kolom
+                        const formattedData = parsedData.map(row => {
+                            let obj = {};
+                            row.forEach((value, index) => {
+                                obj[columnHeaders[index]] =
+                                    value; // Konversi array ke objek dengan key yang benar
                             });
+                            return obj;
+                        });
 
-                            // Isi data default khusus sengon
-                            hot.loadData([{
-                                    load: 'afkir',
-                                    amount: 0
-                                },
-                                {
-                                    load: '130',
-                                    amount: 0
-                                },
-                                {
-                                    load: '260',
-                                    amount: 0
-                                }
-                            ]);
-
-                        } else {
-                            // Tampilkan kembali input sill dan container
-                            $('#sill_number').closest('.form-group').show();
-                            $('#container_number').closest('.form-group').show();
-
-                            // Reset kolom Handsontable ke default
-                            hot.updateSettings({
-                                columns: [{
-                                        data: 'load',
-                                        type: 'text'
-                                    },
-                                    {
-                                        data: 'amount',
-                                        type: 'numeric'
-                                    },
-                                    {
-                                        data: 'unit',
-                                        type: 'text'
-                                    },
-                                    {
-                                        data: 'size',
-                                        type: 'text'
-                                    },
-                                    {
-                                        data: 'cubication',
-                                        type: 'numeric'
-                                    }
-                                ],
-                                colHeaders: ['Muatan', 'Jumlah', 'Satuan', 'Ukuran', 'Kubikasi']
-                            });
-
-                            // Kosongkan data handsontable
-                            hot.loadData([]);
-                        }
+                        hot.loadData(formattedData); // Memuat data ke Handsontable
+                    } catch (error) {
+                        console.error("Gagal memuat data dari localStorage:", error);
                     }
+                }
+            };
 
-                    // Jalankan fungsi saat halaman dimuat dan saat jenis barang diubah
-                    toggleFieldsByItemType();
-                    $('#item_type').on('change', toggleFieldsByItemType);
+            $('#formRP').on('submit', function(e) {
+                e.preventDefault();
+                document.getElementById('loading').style.display = 'flex';
+                $('#error-datas').html(''); // Kosongkan error lama setiap submit ulang
 
-                    // Isi data dari localStorage saat halaman dimuat
-                    function getLocalStorage() {
-                        const savedData = localStorage.getItem('roadPermitDetails');
+                let data = hot.getSourceData();
+                data = data.slice(0, -1); // hapus baris kosong terakhir (Handsontable)
 
-                        if (savedData != null) {
-                            try {
-                                const parsedData = JSON.parse(savedData);
-
-                                const columnHeaders = ["load", "amount", "unit", "size",
-                                    "cubication"
-                                ]; // Sesuaikan dengan jumlah kolom
-                                const formattedData = parsedData.map(row => {
-                                    let obj = {};
-                                    row.forEach((value, index) => {
-                                        obj[columnHeaders[index]] =
-                                            value; // Konversi array ke objek dengan key yang benar
-                                    });
-                                    return obj;
-                                });
-
-                                hot.loadData(formattedData); // Memuat data ke Handsontable
-                            } catch (error) {
-                                console.error("Gagal memuat data dari localStorage:", error);
-                            }
+                // Validasi muatan kosong
+                if (data.length === 0) {
+                    Toastify({
+                        text: "Muatan tidak boleh kosong!",
+                        className: "danger",
+                        close: true,
+                        style: {
+                            background: "red",
                         }
-                    };
+                    }).showToast();
+                    document.getElementById('loading').style.display = 'none';
+                    return; // hentikan submit
+                }
 
+                // Simpan data muatan ke input tersembunyi
+                document.getElementById('road_permit_details').value = JSON.stringify(data);
 
-                    $('#formRP').on('submit', function(e) {
-                            e.preventDefault();
-                            document.getElementById('loading').style.display = 'flex';
+                const form = e.target;
+                const formData = new FormData(form);
 
-                            let data = hot.getSourceData();
-                            data = data.slice(0, -1);
+                fetch(form.action, {
+                        method: form.method,
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw err;
+                            }); // ke catch()
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.errors) {
+                            // Validasi gagal
+                            let errorContainer = $("#error-datas");
+                            errorContainer.removeClass("d-none").html(
+                                ''); // Tampilkan container dan kosongkan
 
-                            if (data.length == 0) {
-                                @section('plugins.Toast', true)
-                                    Toastify({
-                                        text: "Muatan tidak boleh kosong!",
-                                        className: "danger",
-                                        close: true,
-                                        style: {
-                                            background: "red",
-                                        }
-                                    }).showToast();
-                                } //punya if
-
-
-                                let permits = document.getElementById('road_permit_details').value =
-                                    JSON.stringify(data);
-
-                                const form = e.target;
-                                const formData = new FormData(form);
-
-
-                                fetch(form.action, {
-                                        method: form.method,
-                                        body: formData,
-                                        headers: {
-                                            'Accept': 'application/json'
-                                        },
-                                    })
-                                    .then(response => {
-                                        if (!response.ok) {
-                                            return response.json().then(err => {
-                                                throw err; // Lempar error agar bisa ditangkap di catch()
-                                            });
-                                        }
-                                        return response.json();
-                                        response.json()
-                                    })
-                                    .then(data => {
-
-                                        if (data.errors) {
-                                            $('.error-text').text('');
-                                            $.each(data.errors, function(key, value) {
-                                                if (key.startsWith('details')) {
-                                                    $('#details_error').text(
-                                                        'Terdapat kesalahan pada data muatan.');
-                                                } else {
-                                                    $('#' + key + '_error').text(value[0]);
-                                                }
-                                            });
-                                        } else {
-                                            localStorage.removeItem('roadPermitDetails');
-                                            window.location.href = "{{ route('surat-jalan.index', $type) }}";
-                                        }
-                                    })
-                                    .catch(error => {
-                                        let errorContainer = document.getElementById("error-datas");
-
-                                        // Pastikan elemen ada di DOM
-                                        if (!errorContainer) {
-                                            console.error("Elemen #error-datas tidak ditemukan di DOM.");
-                                        } else {
-                                            Object.entries(error.errors).forEach(([field, msgs]) => {
-                                                let errorText = `${field}: ${msgs.join("| ")}<br>`;
-                                                $("#error-datas").append(errorText)
-                                            });
-                                        }
-                                    })
-                                    .finally(() => {
-                                        document.getElementById('loading').style.display = 'none';
-                                    });
-
-
+                            $.each(data.errors, function(key, value) {
+                                errorContainer.append(`<div>• ${value.join(', ')}</div>`);
                             });
+                        } else {
+                            localStorage.removeItem('roadPermitDetails');
+                            window.location.href = "{{ route('surat-jalan.index', $type) }}";
+                        }
+                    })
+                    .catch(error => {
+                        let errorContainer = $("#error-datas");
+                        errorContainer.removeClass("d-none").html('');
 
-                        getLocalStorage();
+                        if (error.message === 'Gagal Simpan Surat Jalan' && error.error) {
+                            // Jika error dari catch di controller
+                            errorContainer.append(
+                                `<strong>${error.message}</strong><br><div>${error.error}</div>`);
+                        } else if (error.errors) {
+                            // Validasi error (422)
+                            Object.entries(error.errors).forEach(([field, msgs]) => {
+                                errorContainer.append(`<div>• ${msgs.join(", ")}</div>`);
+                            });
+                        } else {
+                            errorContainer.append(`<div>• Terjadi kesalahan tak dikenal.</div>`);
+                        }
+                    })
+                    .finally(() => {
+                        document.getElementById('loading').style.display = 'none';
                     });
+            });
+
+            getLocalStorage();
+        });
     </script>
     <script>
         $(document).ready(function() {
-            $('#location').select2({
-                theme: "bootstrap4",
-            });
-            $('#handyman').select2({
-                theme: "bootstrap4",
-            });
-            $('#from').select2({
-                theme: "bootstrap4",
-            });
-        })
+                    $('#location').select2({
+                        theme: "bootstrap4",
+                    });
+                    $('#handyman').select2({
+                        theme: "bootstrap4",
+                    });
+                    $('#from').select2({
+                        theme: "bootstrap4",
+                    });
+
+                    @section('plugins.Toast', true)
+                        var status = "{{ session('status') }}";
+                        if (status == "errDate") {
+                            Toastify({
+                                text: "Tanggal keluar lebih besar dari pada tanggal masuk",
+                                className: "danger",
+                                close: true,
+                                style: {
+                                    background: "red",
+                                }
+                            }).showToast();
+                        }
+                    })
     </script>
 @stop

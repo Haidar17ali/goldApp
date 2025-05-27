@@ -558,4 +558,5 @@
                         getLocalStorage();
                     });
     </script>
+    @include('components.loading')
 @stop

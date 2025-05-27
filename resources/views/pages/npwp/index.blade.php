@@ -169,7 +169,8 @@
             }
 
             // delete 
-            $(".badge-delete").click(function(e) {
+            $(document).on('click', ".badge-delete", function(e) {
+                e.preventDefault();
                 var form = $(this).closest("form");
                 Swal.fire({
                     title: 'Hapus Data!',

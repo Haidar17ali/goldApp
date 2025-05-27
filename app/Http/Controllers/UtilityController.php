@@ -127,6 +127,7 @@ class UtilityController extends Controller
         'down_payments' => [
             'model' => 'App\\Models\\Down_payment',
             'columns' => [
+                'id',
                 'supplier_id',
                 'nominal',
                 'date',

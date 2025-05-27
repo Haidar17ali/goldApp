@@ -15,12 +15,16 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('code')->unique();
             $table->bigInteger('po_id');
-            $table->bigInteger('road_permit_id');
+            $table->bigInteger('road_permit_id')->nullable();
             $table->bigInteger('no_kitir');
             $table->string('nopol'); //dapat dari surat jalan satpam
             $table->date('date');
+            $table->date('arrival_date');
             $table->bigInteger('supplier_id');
             $table->bigInteger('npwp_id'); //otomatis berdasarkan supplier
+            $table->string('bank_name');
+            $table->string('bank_account');
+            $table->string('number_account');
             $table->bigInteger('grader_id');
             $table->bigInteger('tally_id');
             $table->boolean('used')->nullable();

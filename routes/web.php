@@ -18,7 +18,7 @@ use App\Http\Controllers\UtilityController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Auth::routes();
@@ -50,7 +50,7 @@ Route::prefix('JM')
         Route::patch("/bagian/{id}/ubah", [PositionController::class, "update"])->name('bagian.update');
         Route::delete("/bagian/{id}/hapus", [PositionController::class, "destroy"])->name('bagian.hapus');
         // ajax position
-        Route::get('bagian/ajax', [PositionController::class, 'selectType'])->name('bagian.tipe');
+        Route::get('bagian/ajax/tipe', [PositionController::class, 'selectType'])->name('bagian.tipe');
 
         // users
         Route::get("/pengguna", [UserController::class, 'index'])->name("pengguna.index");
@@ -133,6 +133,7 @@ Route::prefix('JM')
         Route::get('/lpb/{id}/used/', [LPBController::class, 'used'])->name('lpb.pakai');
         Route::delete('/lpb/{id}/hapus', [LPBController::class, 'destroy'])->name('lpb.hapus');
         Route::post('/lpb/bulk-update-status', [LPBController::class, 'bulkUpdateStatus'])->name('lpb.update-status-masal');
+        Route::post('/lpb/import', [LPBController::class, 'import'])->name('lpb.import');
 
         // purchase-jurnal
         Route::get('/purchase-jurnal', [PurchaseJurnalController::class, 'index'])->name('purchase-jurnal.index');
@@ -178,4 +179,9 @@ Route::prefix('JM')
         Route::get('data-surat-jalan', [ReportController::class, 'getRoadPermitReport'])->name('laporan.data-surat-jalan');
         Route::get('report/lpb', [ReportController::class, 'reportLpb'])->name('laporan.lpb');
         Route::get('data-lpb', [ReportController::class, 'getLpbReport'])->name('laporan.data-lpb');
+        Route::get('report/lpb-supplier', [ReportController::class, 'reportLpbSupplier'])->name('laporan.lpb-supplier');
+        Route::get('data-lpb-supplier', [ReportController::class, 'getLpbSupplierReport'])->name('laporan.data-lpb-supplier');
+        Route::get('/lpb-supplier/export-pdf', [ReportController::class, 'exportLpbSupplierPdf'])->name('laporan.lpb-supplier-export-pdf');
+        Route::get('/lpb-supplier/export-excel', [ReportController::class, 'exportLpbSupplierExcel'])->name('laporan.lpb-supplier-export-excel');
+        Route::get('/lpb-supplier/export-excel/all', [ReportController::class, 'exportAllLpbSupplierExcel'])->name('laporan.all-lpb-supplier-export-excel');
     });
