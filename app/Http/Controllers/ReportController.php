@@ -6,6 +6,7 @@ use App\Exports\AllLPBSupplierReportExport;
 use App\Exports\LpbReportExport;
 use App\Exports\LPBSupplierReportExport;
 use App\Models\LPB;
+use App\Models\PO;
 use App\Models\RoadPermit;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
@@ -15,7 +16,15 @@ use Maatwebsite\Excel\Facades\Excel;
 class ReportController extends BaseController
 {
     public function reportRoadPermits(){
-        return view('pages.Report.road-permits');
+        $statuses = [
+            'Menunggu Pembayaran',
+            'Pengajuan Pembayaran',
+            'Terbayar', 
+            'Pending', 
+            'Tolak'
+        ];
+        $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
+        return view('pages.Report.road-permits', compact(['suppliers', 'statuses']));
     }
 
     public function getRoadPermitReport(Request $request){
@@ -26,13 +35,19 @@ class ReportController extends BaseController
         $start_date = $request->start_date;
         $last_date = $request->last_date;
         $nopol = $request->nopol;
+        $supplier = $request->supplier;
+
+        if($start_date == null && $last_date == null){
+            $start_date = date('Y-m-d');
+            $last_date = date('Y-m-d');
+        }
     
         if ($last_date && !$start_date) {
             return response()->json(["status" => "no_start_date"]);
         }
     
         $query = Lpb::with('details')
-            ->where('status', 'menunggu pembayaran');
+            ->where('status', $request->status);
     
         if ($start_date && $last_date) {
             $query->whereBetween('date', [$start_date, $last_date]);
@@ -42,6 +57,10 @@ class ReportController extends BaseController
     
         if ($nopol) {
             $query->where('nopol', 'LIKE', "%$nopol%");
+        }
+
+        if ($supplier) {
+            $query->where('supplier_id', $supplier);
         }
     
         $lpbs = $query->orderBy('date', 'asc')->get();
@@ -74,6 +93,11 @@ class ReportController extends BaseController
         $start_date = $request->start_date;
         $last_date = $request->last_date;
         $date_by = $request->dateBy ?? 'date1';
+        
+        if($start_date == null && $last_date == null){
+            $start_date = date('Y-m-d');
+            $last_date = date('Y-m-d');
+        }
 
         $supplier = $request->supplier;
         $nopol = $request->nopol;
@@ -204,7 +228,7 @@ class ReportController extends BaseController
             $data['grandTotalQty'],
             $data['grandTotalM3'],
             $data['grandTotalNilai'],
-            $data['grandTotalPph']
+            $data['grandTotalPph'],
         ), 'laporan-lpb-'.$request->start_date.'-'.$data['pemilik'].'-'.$data['nopolResult'].'.xlsx');        
     }
 

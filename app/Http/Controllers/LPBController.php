@@ -98,7 +98,7 @@ class LPBController extends BaseController
             }
     
             // Generate LPB Code
-            $lpbCode = generateCode('LPB', 'l_p_b_s', 'date');
+            $lpbCode = generateCodeImport('LPB', 'l_p_b_s', 'date');
 
             // ambil data supplier untuk ambil data bank nya
             $supplier = Supplier::with(['bank'])->where("id", $request->supplier_id)->first();
@@ -372,7 +372,7 @@ class LPBController extends BaseController
         }
     }
 
-    private function consumeLPB($id)
+    private function consumeLPB($id, $date)
     {
         $lpb = LPB::with('details')->findOrFail($id);
     
@@ -388,7 +388,7 @@ class LPBController extends BaseController
         }
     
         $lpb->used = true;
-        $lpb->used_at = now();
+        $lpb->used_at = $date;
         $lpb->save();
     
         StockTransaction::create([
@@ -401,7 +401,7 @@ class LPBController extends BaseController
         DB::beginTransaction();
     
         try{
-            $this->consumeLPB($id);
+            $this->consumeLPB($id, now());
             DB::commit();
             return redirect()->back()->with('status', "used");
         }catch (\Exception $e) {
@@ -418,6 +418,7 @@ class LPBController extends BaseController
             $request->validate([
                 'selected' => 'required|array',
                 'status' => 'required|string',
+                "date" => 'date|nullable'
             ]);
 
             $selectedIds = $request->selected;
@@ -442,7 +443,7 @@ class LPBController extends BaseController
 
                     // Update ke Terbayar
                     DB::table('l_p_b_s')->whereIn('id', $selectedIds)->update([
-                        'paid_at' => now(),
+                        'paid_at' => $request->date,
                         'status' => "Terbayar"
                     ]);
                 }
@@ -469,7 +470,7 @@ class LPBController extends BaseController
                 ]);
             }elseif ($request->status == "Terpakai") {
                 foreach($request->selected as $selectedId){
-                    $this->consumeLPB($selectedId);
+                    $this->consumeLPB($selectedId, $request->date);
                 }
             }
     
@@ -518,7 +519,7 @@ class LPBController extends BaseController
                 
                 if($supplier!= null){
                     $lpb = LPB::create([
-                        'code' => generateCodeImport('LPB', 'l_p_b_s', 'date', $index),
+                        'code' => generateCodeImport('LPB', 'l_p_b_s', 'date'),
                         'no_kitir' => $data['no_kitir'],
                         'date' => $data['arrival_date'],
                         'arrival_date' => $data['arrival_date'],
@@ -547,8 +548,23 @@ class LPBController extends BaseController
                 
                 // Simpan detail berdasarkan no_kitir
                 $dHeaders = array_map('strtolower', $detailData[1]);
-                foreach ($detailData as $dRow) {
+                foreach ($detailData as $i => $dRow) {
+
                     $dData = array_combine($dHeaders, $dRow);
+                    if (
+                        empty($dData['product_code']) ||
+                        !is_numeric($dData['diameter']) ||
+                        !is_numeric($dData['length']) ||
+                        empty($dData['quality']) ||
+                        empty($dData['no_kitir'])
+                    ) {
+                        continue;
+                    }
+
+                    if ($dData['no_kitir'] !== $data['no_kitir']) {
+                        continue; // hanya proses yang sesuai dengan LPB ini
+                    }
+                    
                     
                     $poDetail = PODetails::where('po_id', $data['po_id'])
                     ->where('diameter_start', '<=', $dData['diameter'])

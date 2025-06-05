@@ -29,126 +29,200 @@ class HomeController extends BaseController
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index()
-{
-    $users = User::all();
-    $employees = Employee::all();
-    $roadPermits = RoadPermit::all();
+    {
+        $users = User::all();
+        $employees = Employee::all();
+        $roadPermits = RoadPermit::all();
 
-    // Data stok belum dipakai, dikelompokkan
-    $stockGrouped = LpbDetail::whereHas('lpb', function ($query) {
-        $query->whereNull('used');
-    })
-    ->select('quality', 'length', 'diameter')
-    ->selectRaw('SUM(qty) as total_qty')
-    ->groupBy('quality', 'length', 'diameter')
-    ->orderBy('quality')
-    ->orderBy('length')
-    ->orderBy('diameter')
-    ->get();
-
-    // LPB bulan ini
-    $lpbs = LPB::with(['details', 'npwp'])
-        ->whereMonth('date', now())
+        // Data stok belum dipakai, dikelompokkan
+        $stockGrouped = LpbDetail::whereHas('lpb', function ($query) {
+            $query->whereNull('used')
+            ->orWhere("used", 0);
+        })
+        ->select('quality', 'length', 'diameter')
+        ->selectRaw('SUM(qty) as total_qty')
+        ->groupBy('quality', 'length', 'diameter')
+        ->orderBy('quality')
+        ->orderBy('length')
+        ->orderBy('diameter')
         ->get();
 
-    // LPB belum dipakai → hanya ambil tgl kirim, no_kitir, dan total kubikasi
-    $lpbsBelumTerpakai = LPB::with('details')
-    ->where('used', null)
-    ->orderByDesc('date')
-    ->get()
-    ->map(function ($lpb) {
-        $totalKubikasi = 0;
-        foreach ($lpb->details as $detail) {
-            $totalKubikasi += kubikasi($detail->diameter, $detail->length, $detail->qty);
-        }
+        // LPB bulan ini
+        $lpbs = LPB::with(['details', 'npwp'])
+            ->whereMonth('date', now())
+            ->get();
 
-        return (object) [
-            'no_kitir' => $lpb->no_kitir,
-            'date' => $lpb->date,
-            'total_kubikasi' => $totalKubikasi,
-        ];
-    });
-
-    $totalKubikasiLpbBelumTerpakai = $lpbsBelumTerpakai->sum('total_kubikasi');
-
-    // Data Top NPWP
-    $topNpwpData = \App\Models\NPWP::with(['lpbs.details'])
+        // LPB belum dipakai → hanya ambil tgl kirim, no_kitir, dan total kubikasi
+        $lpbsBelumTerpakai = LPB::with('details')
+        ->whereNull('used')
+        ->orWhere("used", 0)
+        ->orderByDesc('date')
         ->get()
-        ->map(function ($npwp) {
-            $totalUang = 0;
-            foreach ($npwp->lpbs as $lpb) {
-                foreach ($lpb->details as $detail) {
-                    $totalUang += kubikasi($detail->diameter, $detail->length, $detail->qty) * $detail->price;
-                }
+        ->map(function ($lpb) {
+            $totalKubikasi = 0;
+            foreach ($lpb->details as $detail) {
+                $totalKubikasi += kubikasi($detail->diameter, $detail->length, $detail->qty);
             }
 
             return (object) [
-                'nama_npwp' => $npwp->name,
-                'total_uang' => $totalUang,
+                'no_kitir' => $lpb->no_kitir,
+                'date' => $lpb->date,
+                'total_kubikasi' => $totalKubikasi,
             ];
-        })
-        ->sortByDesc('total_uang')
-        ->take(7)
-        ->values();
+        });
 
-    // Hitung stok belum terpakai berdasarkan kualitas
-    $stokBelumTerpakai = [
-        'reject_130' => 0,
-        'super_130'  => 0,
-        'super_260'  => 0,
-    ];
+        $totalKubikasiLpbBelumTerpakai = $lpbsBelumTerpakai->sum('total_kubikasi');
 
-    foreach ($stockGrouped as $detail) {
-        if ($detail->quality == "Afkir" && $detail->length == 130) {
-            $stokBelumTerpakai["reject_130"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
-        } elseif ($detail->quality == "Super") {
-            if ($detail->length == 130) {
-                $stokBelumTerpakai["super_130"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
-            } elseif ($detail->length == 260) {
-                $stokBelumTerpakai["super_260"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
-            }
-        }
-    }
+        // Data Top NPWP
+        $topNpwpData = \App\Models\NPWP::with(['lpbs.details'])
+            ->get()
+            ->map(function ($npwp) {
+                $totalUang = 0;
+                foreach ($npwp->lpbs as $lpb) {
+                    foreach ($lpb->details as $detail) {
+                        $totalUang += kubikasi($detail->diameter, $detail->length, $detail->qty) * $detail->price;
+                    }
+                }
 
-    // Stok terpakai hari ini
-    $lpbsTerpakaiHariIni = LPB::where('used', true)
-        ->whereDate('used_at', today())
-        ->with('details')
-        ->get();
+                return (object) [
+                    'nama_npwp' => $npwp->name,
+                    'total_uang' => $totalUang,
+                ];
+            })
+            ->sortByDesc('total_uang')
+            ->take(7)
+            ->values();
 
-    $stokTerpakaiHariIni = [
-        'reject_130' => 0,
-        'super_130'  => 0,
-        'super_260'  => 0,
-    ];
+        // Hitung stok belum terpakai berdasarkan kualitas
+        $stokBelumTerpakai = [
+            'reject_130' => 0,
+            'super_130'  => 0,
+            'super_260'  => 0,
+        ];
 
-    foreach ($lpbsTerpakaiHariIni as $lpb) {
-        foreach ($lpb->details as $detail) {
-            $quality = strtolower(str_replace(' ', '_', $detail->quality));
-
-            if ($quality == "afkir" && $detail->length == 130) {
-                $stokTerpakaiHariIni["reject_130"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
-            } elseif ($quality == "super") {
+        foreach ($stockGrouped as $detail) {
+            if ($detail->quality == "Afkir" && $detail->length == 130) {
+                $stokBelumTerpakai["reject_130"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
+            } elseif ($detail->quality == "Super") {
                 if ($detail->length == 130) {
-                    $stokTerpakaiHariIni["super_130"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    $stokBelumTerpakai["super_130"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
                 } elseif ($detail->length == 260) {
-                    $stokTerpakaiHariIni["super_260"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    $stokBelumTerpakai["super_260"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
                 }
             }
         }
+
+        // Stok terpakai hari ini
+        $lpbsTerpakaiHariIni = LPB::where('used', true)
+            ->whereDate('used_at', today())
+            ->with('details')
+            ->get();
+
+        $stokTerpakaiHariIni = [
+            'reject_130' => 0,
+            'super_130'  => 0,
+            'super_260'  => 0,
+        ];
+
+        foreach ($lpbsTerpakaiHariIni as $lpb) {
+            foreach ($lpb->details as $detail) {
+                $quality = strtolower(str_replace(' ', '_', $detail->quality));
+
+                if ($quality == "afkir" && $detail->length == 130) {
+                    $stokTerpakaiHariIni["reject_130"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                } elseif ($quality == "super") {
+                    if ($detail->length == 130) {
+                        $stokTerpakaiHariIni["super_130"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    } elseif ($detail->length == 260) {
+                        $stokTerpakaiHariIni["super_260"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    }
+                }
+            }
+        }
+
+        return view('home', compact([
+            'users',
+            'employees',
+            'roadPermits',
+            'lpbs',
+            'lpbsBelumTerpakai',
+            'topNpwpData',
+            'stokBelumTerpakai',
+            'stokTerpakaiHariIni',
+            'totalKubikasiLpbBelumTerpakai'
+        ]));
     }
 
-    return view('home', compact([
-        'users',
-        'employees',
-        'roadPermits',
-        'lpbs',
-        'lpbsBelumTerpakai',
-        'topNpwpData',
-        'stokBelumTerpakai',
-        'stokTerpakaiHariIni',
-        'totalKubikasiLpbBelumTerpakai'
-    ]));
-}
+    public function filterStok(Request $request){
+        $startDate = $request->input('start_date');
+        $lastDate = $request->input('last_date') ?? $startDate;
+
+        // LPB terpakai dalam rentang tanggal
+        $lpbsTerpakai = LPB::where('used', true)
+            ->whereBetween('used_at', [$startDate, $lastDate])
+            ->with('details')
+            ->get();
+
+        $stokTerpakai = [
+            'reject_130' => 0,
+            'super_130'  => 0,
+            'super_260'  => 0,
+        ];
+
+        foreach ($lpbsTerpakai as $index => $lpb) {
+            foreach ($lpb->details as $detail) {
+                if ($detail->quality == "Afkir" && $detail->length == 130) {
+                    $stokTerpakai["reject_130"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                } elseif ($detail->quality == "Super") {
+                    if ($detail->length == 130) {
+                        $stokTerpakai["super_130"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    } elseif ($detail->length == 260) {
+                        $stokTerpakai["super_260"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    }
+                }
+            }
+        }
+
+        // LPB belum terpakai → belum digunakan sampai batas lastDate
+        $stockGrouped = LpbDetail::whereHas('lpb', function ($query) use ($lastDate) {
+            $query->where(function ($q) {
+                $q->whereNull('used')
+                ->orWhere('used', 0);
+            })
+            ->whereDate('date', '<=', $lastDate) // ⬅️ batas terakhir LPB
+            ->orWhere('used_at', '>', $lastDate);
+        })
+        ->select('quality', 'length', 'diameter')
+        ->selectRaw('SUM(qty) as total_qty')
+        ->groupBy('quality', 'length', 'diameter')
+        ->orderBy('quality')
+        ->orderBy('length')
+        ->orderBy('diameter')
+        ->get();
+
+        $stokBelumTerpakai = [
+            'reject_130' => 0,
+            'super_130'  => 0,
+            'super_260'  => 0,
+        ];
+
+        foreach ($stockGrouped as $detail) {
+            if ($detail->quality == "Afkir" && $detail->length == 130) {
+                $stokBelumTerpakai["reject_130"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
+            } elseif ($detail->quality == "Super") {
+                if ($detail->length == 130) {
+                    $stokBelumTerpakai["super_130"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
+                } elseif ($detail->length == 260) {
+                    $stokBelumTerpakai["super_260"] += kubikasi($detail->diameter, $detail->length, $detail->total_qty);
+                }
+            }
+        }
+        
+
+        return response()->json([
+            'stok_terpakai' => $stokTerpakai,
+            'stok_belum_terpakai' => $stokBelumTerpakai,
+        ]);
+    }
 
 }

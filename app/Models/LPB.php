@@ -41,6 +41,10 @@ class LPB extends Model
         return $this->hasMany(LPBDetail::class, 'lpb_id');
     }
 
+    public function PO(){
+        return $this->belongsTo(PO::class, 'po_id');
+    }
+
     public function roadPermit(){
         return $this->belongsTo(RoadPermit::class, 'road_permit_id');
     }

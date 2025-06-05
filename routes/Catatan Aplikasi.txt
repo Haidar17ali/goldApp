@@ -1,0 +1,24 @@
+1. detail Po persetujuan tampilkan detail po yang bisa di setujui    ----- SELESAI -----
+2. tambahkan muatan di surat jalan jika surat jalan sengon makan isian hanya reject, 130, 260 ----- SELESAI -----
+3. buat flowchart dan tata cara penggunaan aplikasi
+4. penuhi data karyawan ----- SELESAI -----
+5. isi role user
+6. buat notifikasi jika ada PO Baru yang dibuat  ----- SELESAI -----
+7. untuk po tambahkan catatan untuk mengetahui lokasi ----- SELESAI -----
+8. ubah code po yang ada di lpb agar ada lokasinya ----- SELESAI -----
+9. menampilkan data tally dan grade di buat dan edit lpb ----- SELESAI -----
+
+=============================================================================
+				DASHBOARD
+=============================================================================
+1. Info user
+	-Total User Yang Sudah dibuat
+	-Total user yang login
+	-info total karyawan laki-laki dan perempuan
+2. info total surat jalan yang masuk hari ini
+3. info total truk yang masih di bongkar
+4. info total surat jalan yang belum di grading
+5. info total surat jalan yang sudah di lpb/ sudah di grade
+6. info total 7 npwp dengan pembayaran terbanyak
+7. info stock sengon yang belum terpakai
+8. info stock terpakai hari ini

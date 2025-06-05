@@ -1,0 +1,332 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Employee;
+use App\Models\RoadPermit;
+use App\Models\RoadPermitDetail;
+use App\Models\Supplier;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Js;
+
+class RoadPermitController extends BaseController
+{
+    public function index($type){
+        $road_permits = RoadPermit::orderBy('id', 'desc')->with(['details', 'handyman', 'createdBy', 'editedBy'])->get();
+        return view('pages.road-permits.index', compact(['road_permits', 'type']));
+    }
+
+    public function create($type){
+        $handymans = Employee::whereHas('position', function ($query) {
+            $query->where('name', 'tukang batu');
+        })->get();
+        $suppliers = Supplier::where("supplier_type", "Sengon")->get();
+        $trucks = ['Pickup', 'Truk Engkel', 'Dump Truk', 'Truk Gandeng', 'Truk Fuso', 'Container'];
+        $locations = [
+            'Mekanik',
+            'Utara Mekanik',
+            'Merbau',
+            'TOB',
+            'Sosoran Dalam',
+            'Tembok',
+            'Depan Barker',
+            'Gudang Baru',
+            'Lap Merbau',
+            'Tembok Depan Mesin',
+            'Kolam',
+            'Tembok Bensaw',
+        ];
+        $item_types = ['Sengon', 'Merbau', 'Pembantu'];
+        return view('pages.road-permits.create', compact(['type', 'trucks', 'item_types', 'locations', 'handymans', "suppliers"]));
+    }
+    
+    public function store(Request $request, $type){
+        DB::beginTransaction();
+
+        try{
+            // Set time zone
+            date_default_timezone_set('Asia/Jakarta');
+                    
+            // Validasi road permit utama
+            $validatedData = $request->validate([
+                'from' => 'required|string',
+                'nopol' => 'required|string',
+                'driver' => 'required|string',
+                'in' => 'required|date',
+                'out' => 'required|date|after:in',
+            ]);
+
+            $destination = "CV. Jati Makmur";
+            if($type == "out"){
+                $destination = $request->destination;
+                $request->validate([
+                    'destination' => 'required|string',
+                ]);
+            }
+
+            // ambil data stringify yang dikirim fe dan decode menjadi json
+            $details = json_decode($request->road_permit_details[0], true);
+
+            // Validasi road permit details jika ada
+            if(count($details)){
+
+                $detailErrors = [];
+                foreach ($details as $index => $detail) {
+                    $validator = Validator::make($detail, [
+                        'load' => 'required|string',
+                        // 'amount' => 'required|numeric|min:1',
+                    ]);
+
+                    if ($validator->fails()) {
+                        $detailErrors["details.$index"] = $validator->errors()->all();
+                    }
+                }            
+                
+                if (!empty($detailErrors)) {
+                    return response()->json(['errors' => $detailErrors], 422);
+                }
+            }
+
+            // Simpan data utama
+            $data = [
+                'code' => generateCode('SJ', 'road_permits', 'date'),
+                'date' => $request->in,
+                "in" => $request->in,
+                "out" => $request->out,
+                'from' => $request->from,
+                'destination' => $destination,
+                'vehicle' => $request->vehicle,
+                'type_item' => $request->item_type,
+                'nopol' => $request->nopol,
+                'driver' => $request->driver,
+                'handyman_id' => $request->handyman,
+                'unpack_location' => $request->location .'-'. $request->sub_number,
+                'sill_number' => $request->sill_number,
+                'container_number' => $request->container_number,
+                'description' => $request->description,
+                'type' => $type,
+                'status' => 'Proses Bongkar',
+                'created_by' => Auth::user()->id,
+            ];
+
+            $permit = RoadPermit::create($data);
+
+            if(count($details)){
+                // Simpan detail data jika ada
+                foreach ($details as $detail) {
+                    RoadPermitDetail::create([
+                        'road_permit_id' => $permit->id,
+                        'load' => $detail['load'],
+                        'amount' => $detail['amount'],
+                        'unit' => $detail['unit']?? "Batang",
+                        'size' => $detail['size'] ?? null,
+                        'cubication' => $detail['cubication'] ?? null,
+                    ]);
+                }
+            }
+
+            DB::commit();
+            session()->flash('status', 'saved');
+            return response()->json(['message' => 'Surat jalan berhasil disimpan'], 200);  
+        }catch(\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Gagal Simpan Surat Jalan', 'error' => $e->getMessage()], 500);
+        }      
+    }
+
+    public function showDetail($id)
+    {
+        $roadPermit = RoadPermit::with(['lpb.details'])->findOrFail($id);
+
+        $groupedByKitir = $roadPermit->lpb->mapWithKeys(function ($lpb) {
+            $details = $lpb->details;
+
+            // Group by quality, then by category
+            $groupedByQuality = $details->groupBy('quality')->map(function ($group) {
+                return $group->groupBy('category');
+            });
+
+            return [$lpb->no_kitir => [
+                'lpb' => $lpb,
+                'grouped' => $groupedByQuality
+            ]];
+        });
+        
+
+        return view('pages.road-permits.modal-detail', compact('roadPermit', 'groupedByKitir'));
+    }
+
+    public function LPBToSupplier($id)
+    {
+        $roadPermit = RoadPermit::with(['lpb.details'])->findOrFail($id);
+
+        // Kumpulkan semua detail dari LPB yang berelasi
+        $allDetails = $roadPermit->lpb
+        ->flatMap(fn ($lpb) => $lpb->details)
+        ->sortBy('quality');
+
+        // Grouping berdasarkan kategori
+        $grouped = $allDetails->groupBy('category');
+
+        return view('pages.road-permits.lpb-supplier', compact('roadPermit', 'grouped'));
+    }
+
+
+
+    public function edit($id,$type){
+        $handymans = Employee::whereHas('position', function ($query) {
+            $query->where('name', 'tukang batu');
+        })->get();
+        $suppliers = Supplier::where("supplier_type", "Sengon")->get();
+        $road_permit = RoadPermit::with(['details'])->findOrFail($id);
+        $trucks = ['Pickup', 'Truk Engkel', 'Dump Truk', 'Truk Gandeng', 'Truk Fuso', 'Container'];
+        $locations = [
+            'Mekanik',
+            'Utara Mekanik',
+            'Merbau',
+            'TOB',
+            'Sosoran Dalam',
+            'Tembok',
+            'Depan Barker',
+            'Gudang Baru',
+            'Lap Merbau',
+            'Tembok Depan Mesin',
+            'Kolam',
+            'Tembok Bensaw',
+        ];
+        $item_types = ['Sengon', 'Merbau', 'Pembantu'];
+
+        return view('pages.road-permits.edit', compact(['type', 'trucks', 'item_types', 'road_permit', 'locations', 'handymans', "suppliers"]));
+    }
+
+    public function update(Request $request, $id, $type){
+        DB::beginTransaction();
+
+        try{
+            $road_permit = RoadPermit::with(['details'])->findOrFail($id);
+            $road_permit->details()->delete();
+
+            $details = json_decode($request->road_permit_details[0], true);
+            // filter nilai null
+            $filteredDetails = array_filter($details, function ($detail) {
+                return !is_null($detail['load']) && !is_null($detail['amount']) && !is_null($detail['unit']);
+            });
+
+            $request->merge(['road_permit_details' => json_encode($filteredDetails)]);
+            
+            $details = json_decode($request->road_permit_details, true);
+            
+            // Validasi road permit utama
+            $validatedData = $request->validate([
+                'from' => 'required|string',
+                'nopol' => 'required|string',
+                'driver' => 'required|string',
+                'in' => 'required|date',
+                'out' => 'required|date|after:in',
+            ]);
+
+            $destination = "CV. Jati Makmur";
+            if($type == "out"){
+                $destination = $request->destination;
+                $request->validate([
+                    'destination' => 'required|string',
+                ]);
+            }
+
+            // ambil data stringify yang dikirim fe dan decode menjadi json
+
+            // Validasi road permit details jika ada
+            if(count($details)){   
+                $detailErrors = [];
+                foreach ($details as $index => $detail) {
+                    $validator = Validator::make($detail, [
+                        'load' => 'required|string',
+                    ]);
+            
+                    if ($validator->fails()) {
+                        $detailErrors["details.$index"] = $validator->errors()->all();
+                    }
+                }            
+                
+                if (!empty($detailErrors)) {
+                    return response()->json(['errors' => $detailErrors], 422);
+                }
+            }
+        
+            // Simpan data utama
+                $road_permit->date = $request->in;
+                $road_permit->in = $request->in;
+                $road_permit->out = $request->out;
+                $road_permit->from = $request->from;
+                $road_permit->destination = $destination;
+                $road_permit->vehicle = $request->vehicle;
+                $road_permit->type_item = $request->item_type;
+                $road_permit->nopol = $request->nopol;
+                $road_permit->driver = $request->driver;
+                $road_permit->handyman_id = $request->handyman;
+                $road_permit->unpack_location = $request->location .'-'. $request->sub_number;
+                $road_permit->sill_number = $request->sill_number;
+                $road_permit->container_number = $request->container_number;
+                $road_permit->description = $request->description;
+                $road_permit->type = $type;
+                $road_permit->edited_by = Auth::user()->id;
+                $road_permit->save();
+        
+            // Simpan detail data jika ada
+            if(count($details)){
+                foreach ($details as $detail) {
+                    RoadPermitDetail::updateOrCreate(
+                        [
+                            'id' => $detail['id'] ?? null, // Cari berdasarkan id jika ada
+                            'road_permit_id' => $road_permit->id, // Pastikan road_permit_id sesuai
+                        ],
+                        [
+                            'load' => $detail['load'],
+                            'amount' => $detail['amount'],
+                            'unit' => $detail['unit'],
+                            'size' => $detail['size'] ?? null,
+                            'cubication' => $detail['cubication'] ?? null,
+                        ]
+                    );
+                }
+            }
+        
+            DB::commit();
+            session()->flash('status', 'edited');
+            return response()->json(['message' => 'Surat jalan berhasil disimpan'], 200);
+        }catch(\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Gagal update Surat Jalan', 'error' => $e->getMessage()], 500);
+        }
+        
+    }
+
+    public function destroy($id){
+        $road_permit = RoadPermit::with(['details'])->findOrFail($id);
+
+        $road_permit->details()->delete();
+        $road_permit->delete();
+        return redirect()->back()->with('status', 'saved');
+    }
+
+    public function out($id){
+        // Set time zone
+        date_default_timezone_set('Asia/Jakarta');
+        $road_permit = RoadPermit::findOrFail($id);
+
+        $road_permit->out = date('Y-m-d H;i:s', time());
+        $road_permit->status = 'Sudah Dibongkar';
+        $road_permit->issued_by = Auth::user()->id;
+        $road_permit->save();
+        return redirect()->back()->with('status', 'edited');
+    }
+
+    public function setHandyman($id,$type){
+        $road_permit = RoadPermit::findOrFail($id);
+
+        return view('pages.road-permits.set-handyman', compact(['road_permit', 'type']));
+    }
+}

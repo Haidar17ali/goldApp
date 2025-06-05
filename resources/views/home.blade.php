@@ -108,12 +108,35 @@
                         <h3 class="card-title">Stok Sengon</h3>
                     </div>
                     <div class="card-body">
+                        <form id="filter-form">
+                            <div class="row align-items-end">
+                                <div class="col-md-5">
+                                    <label for="start_date" class="form-label">Dari:</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="last_date" class="form-label">Sampai:</label>
+                                    <input type="date" class="form-control" id="last_date" name="last_date">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                                </div>
+                            </div>
+                        </form>
                         <div class="chart-container">
                             <canvas id="stokSengonChart" width="10" height="10"></canvas>
                         </div>
                         <hr>
 
-                        <h5>Belum Terpakai:</h5>
+                        <div id="result-stok">
+                            <h3>Stok Terpakai</h3>
+                            <div id="stok-terpakai"></div>
+
+                            <h3>Stok Belum Terpakai</h3>
+                            <div id="stok-belum-terpakai"></div>
+                        </div>
+
+                        {{-- <h5>Belum Terpakai:</h5>
                         <ul>
                             <li>Reject 130: {{ $stokBelumTerpakai['reject_130'] }} m³</li>
                             <li>Super 130: {{ $stokBelumTerpakai['super_130'] }} m³</li>
@@ -125,7 +148,7 @@
                             <li>Reject 130: {{ $stokTerpakaiHariIni['reject_130'] }} m³</li>
                             <li>Super 130: {{ $stokTerpakaiHariIni['super_130'] }} m³</li>
                             <li>Super 260: {{ $stokTerpakaiHariIni['super_260'] }} m³</li>
-                        </ul>
+                        </ul> --}}
                     </div>
                 </div>
             </div>
@@ -254,6 +277,69 @@
                     }
                 }
             }
+        });
+    </script>
+    <script>
+        function getTodayDate() {
+            let today = new Date();
+            let yyyy = today.getFullYear();
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function loadStockData(startDate, lastDate) {
+            $.ajax({
+                url: "{{ route('filter-stock') }}",
+                data: {
+                    start_date: startDate,
+                    last_date: lastDate
+                },
+                success: function(data) {
+                    let terpakai = data.stok_terpakai;
+                    let belum = data.stok_belum_terpakai;
+                    let totalTerpakai = terpakai.reject_130 + terpakai.super_130 + terpakai.super_260
+                    let totalBelumTerpakai = belum.reject_130 + belum.super_130 + belum.super_260
+
+                    $('#stok-terpakai').html(`
+                    <p>Afkir 130: ${terpakai.reject_130.toFixed(4)} m³</p>
+                    <p>Super 130: ${terpakai.super_130.toFixed(4)} m³</p>
+                    <p>Super 260: ${terpakai.super_260.toFixed(4)} m³</p>
+                    <p>Total: ${totalTerpakai.toFixed(4)} m³</p>
+                `);
+
+                    $('#stok-belum-terpakai').html(`
+                    <p>Afkir 130: ${belum.reject_130.toFixed(4)} m³</p>
+                    <p>Super 130: ${belum.super_130.toFixed(4)} m³</p>
+                    <p>Super 260: ${belum.super_260.toFixed(4)} m³</p>
+                    <p>Total: ${totalBelumTerpakai.toFixed(4)} m³</p>
+                `);
+                },
+                error: function() {
+                    $('#stok-terpakai').html('<p>Gagal memuat data</p>');
+                    $('#stok-belum-terpakai').html('<p>Gagal memuat data</p>');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            let today = getTodayDate();
+            $('#start_date').val(today);
+            $('#last_date').val(today);
+
+            // Muat data stok otomatis saat halaman dibuka
+            loadStockData(today, today);
+        });
+
+        $('#filter-form').on('submit', function(e) {
+            e.preventDefault();
+
+            let startDate = $('#start_date').val();
+            let lastDate = $('#last_date').val();
+            console.log(startDate);
+
+
+            loadStockData(startDate, lastDate);
         });
     </script>
 @stop

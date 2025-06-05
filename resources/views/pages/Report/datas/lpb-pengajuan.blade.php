@@ -1,7 +1,14 @@
 <div id="print-preview">
     @foreach ($grouped as $nopol => $lpbs)
         <div class="print-section" style="page-break-after: always;">
-            <h4>Nopol: {{ $nopol }}</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Supplier: {{ $lpbs->first()->npwp->name ?? '-' }}</h6>
+                </div>
+                <div class="col-md-6">
+                    <h6>Nopol: {{ $nopol }}</h6>
+                </div>
+            </div>
 
             @php
                 $grandTotalNopol = 0;
@@ -10,7 +17,14 @@
             @endphp
 
             @foreach ($lpbs as $lpb)
-                <h5>No Kitir: {{ $lpb->no_kitir }} | Tanggal: {{ date('d-m-Y', strtotime($lpb->date)) }}</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><strong>Tanggal Kirim: {{ date('d-m-Y', strtotime($lpb->arrival_date)) }}</strong></h6>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>No Kitir: {{ $lpb->no_kitir }} | Tanggal: {{ date('d-m-Y', strtotime($lpb->date)) }}</h6>
+                    </div>
+                </div>
                 @php
                     $qualityLengthGroups = $lpb->details->groupBy(function ($item) {
                         return $item->quality . '-' . $item->length;
@@ -30,7 +44,7 @@
                                 <th>Diameter</th>
                                 <th>Qty</th>
                                 <th>Kubikasi</th>
-                                <th>Harga</th>
+                                {{-- <th>Harga</th> --}}
                                 <th>Subtotal</th>
                             </tr>
                         </thead>
@@ -52,7 +66,7 @@
                                     <td>{{ $detail->diameter }}</td>
                                     <td>{{ $detail->qty }}</td>
                                     <td>{{ number_format($kubikasi, 3, ',', '.') }}</td>
-                                    <td>Rp.{{ money_format($detail->price) }}</td>
+                                    {{-- <td>Rp.{{ money_format($detail->price) }}</td> --}}
                                     <td>Rp.{{ money_format($subtotal) }}</td>
                                 </tr>
                             @endforeach
@@ -62,10 +76,22 @@
                                 $totalLpbKubikasi += $totalKubikasi;
                             @endphp
                             <tr>
-                                <td class="text-end" colspan="1"><strong>Total</strong></td>
-                                <td><strong>{{ $totalQty }}</strong></td>
-                                <td><strong>{{ number_format($totalKubikasi, 3, ',', '.') }}</strong></td>
-                                <td colspan="2"><strong>Rp.{{ money_format($totalQuality) }}</strong></td>
+                                <td class="text-end" colspan="1">
+                                    <h6><strong>Total</strong></h6>
+                                </td>
+                                <td>
+                                    <h6>
+                                        <strong>
+                                            {{ $totalQty }}
+                                        </strong>
+                                    </h6>
+                                </td>
+                                <td>
+                                    <h6><strong>{{ number_format($totalKubikasi, 4, ',', '.') }}</strong></h6>
+                                </td>
+                                <td colspan="2">
+                                    <h6><strong>Rp.{{ money_format($totalQuality) }}</strong></h6>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -118,9 +144,13 @@
                     </tbody>
                 </table> --}}
                 <table class="table table-bordered table-sm mt-3" style="width: 300px; float: right;">
-                    <tr class="table-light">
-                        <td class="text-right"><strong>Total LPB:</strong></td>
-                        <td class="text-right"><strong>{{ money_format($totalLpb) }}</strong></td>
+                    <tr class="table-light" style="margin-top:-80px;">
+                        <td class="text-right">
+                            <h6><strong>Total LPB:</strong></h6>
+                        </td>
+                        <td class="text-right">
+                            <h6><strong>{{ money_format($totalLpb) }}</strong></h6>
+                        </td>
                     </tr>
                 </table>
                 <div class="clearfix"></div>
@@ -141,15 +171,19 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="font-weight: 500;">Total Qty</td>
-                            <td class="text-end">{{ number_format($grandTotalQty, 0, ',', '.') }}</td>
+                            <td>
+                                Total Qty
+                            </td>
+                            <td class="text-end">
+                                {{ number_format($grandTotalQty, 0, ',', '.') }}
+                            </td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 500;">Total Kubikasi</td>
+                            <td>Total Kubikasi</td>
                             <td class="text-end">{{ number_format($grandTotalKubikasi, 3, ',', '.') }}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 500;">Total Uang</td>
+                            <td>Total Uang</td>
                             <td class="text-end">Rp {{ number_format($grandTotalNopol, 0, ',', '.') }}</td>
                         </tr>
                     </tbody>
@@ -184,9 +218,17 @@
     @endforeach
 </div>
 <style>
+    th {
+        font-weight: 900;
+    }
+
+    td {
+        font-weight: 700;
+    }
+
     .print-section {
         page-break-after: always;
-        padding: 20px;
+        padding: 10px;
         font-family: Arial, sans-serif;
         font-size: 13px;
         color: #333;
@@ -196,28 +238,30 @@
         page-break-after: avoid;
     }
 
-    .lpb-header {
-        margin-bottom: 10px;
-        padding-bottom: 5px;
-        border-bottom: 2px solid #666;
+    .row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2px;
     }
 
-    .lpb-header h4 {
-        margin: 0;
-        font-size: 16px;
-        color: #000;
+    .col-md-6 {
+        width: 48%;
     }
 
-    .lpb-header h5 {
-        margin: 5px 0 0 0;
+    h6 {
         font-size: 14px;
-        color: #555;
+        margin: 0 0 5px 0;
+        font-weight: normal;
+    }
+
+    h6 strong {
+        font-weight: bold;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 15px;
+        margin-bottom: 2px;
     }
 
     table,
@@ -229,12 +273,13 @@
     th {
         background-color: #f2f2f2;
         font-weight: bold;
-        padding: 8px;
-        text-align: center;
+        padding: 4px;
+        font-size: 12px;
     }
 
     td {
-        padding: 6px;
+        padding: 4px;
+        font-size: 12px;
         text-align: center;
     }
 
@@ -243,9 +288,9 @@
         background-color: #e6f7ff;
     }
 
-    .grand-total-table {
-        margin-top: 20px;
-    }
+    /* .grand-total-table {
+                                    margin-top: 5px;
+                                } */
 
     .grand-total-table th {
         background-color: #d9ead3;

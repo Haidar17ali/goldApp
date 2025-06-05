@@ -45,16 +45,15 @@
                 @endforeach
 
                 <tr class="sub-total">
-                    <td>Total {{ $length }}</td>
+                    <td colspan="2">Total {{ $length }}</td>
                     <td>{{ array_sum(array_column($lengthGroups[$length], 'qty')) }}</td>
                     <td>{{ number_format(array_sum(array_column($lengthGroups[$length], 'm3')), 4, ',', '.') }}</td>
-                    <td></td>
                     <td>Rp {{ number_format(array_sum(array_column($lengthGroups[$length], 'nilai')), 0, ',', '.') }}
                     </td>
                 </tr>
             @endforeach
         </tbody>
-        <tfoot>
+        {{-- <tfoot>
             <tr class="sub-total">
                 <td>{{ strtoupper($quality) }} Total</td>
                 <td>{{ $totalQty }}</td>
@@ -62,12 +61,27 @@
                 <td></td>
                 <td>Rp {{ number_format($totalNilai, 0, ',', '.') }}</td>
             </tr>
-        </tfoot>
+        </tfoot> --}}
     </table>
 @endforeach
 
+<tr>
+    <td colspan="2">Grant Total : </td>
+    <td>{{ $grandTotalQty }}</td>
+    <td>{{ number_format($grandTotalM3, 4, ',', '.') }}</td>
+    <td>Rp {{ number_format($grandTotalNilai, 0, ',', '.') }}</td>
+</tr>
+<tr>
+    <td colspan="4">Total PPh</td>
+    <td>Rp {{ number_format($grandTotalPph, 0, ',', '.') }}</td>
+</tr>
+<tr>
+    <td colspan="4">Total Transfer</td>
+    <td>Rp {{ number_format($grandTotalNilai - $grandTotalPph, 0, ',', '.') }}</td>
+</tr>
+
 {{-- Grand Total Section --}}
-<table>
+{{-- <table>
     <thead>
         <tr class="group-header">
             <th>QTY</th>
@@ -84,4 +98,4 @@
             <td>Rp {{ number_format($grandTotalNilai - $grandTotalPph, 0, ',', '.') }}</td>
         </tr>
     </tfoot>
-</table>
+</table> --}}

@@ -1,0 +1,204 @@
+@extends('adminlte::page')
+
+@section('title', 'Karyawan')
+
+@section('content_header')
+    <h1>Karyawan</h1>
+@stop
+
+@section('content')
+    <div class="card">
+        <div class="card-header">
+            @if (session('import_errors'))
+                <div class="alert alert-danger">
+                    <h4>Kesalahan File Excel:</h4>
+                    <ul>
+                        @foreach (session('import_errors') as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-success ml-2 float-right" data-toggle="modal" data-target="#importKaryawan">
+                <i class="fas fa-file-import"></i> Import Data Karyawan
+            </button>
+
+            <a href="{{ route('karyawan.buat') }}" class="btn btn-primary float-right" type="submit"><i
+                    class="fas fa-plus"></i>
+                Karyawan</a>
+        </div>
+        <div class="card-body row">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">NIP</th>
+                        <th scope="col">Pin</th>
+                        <th scope="col">NIK</th>
+                        <th scope="col">Nama KTP</th>
+                        <th scope="col">Nama Alias</th>
+                        <th scope="col">Tanggal Masuk</th>
+                        <th scope="col">Upah/Hari</th>
+                        <th scope="col">Premi</th>
+                        <th scope="col">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (count($employees))
+                        @foreach ($employees as $employee)
+                            <tr>
+                                <th scope="row">{{ $loop->iteration }}</th>
+                                <td>{{ $employee->nip }}</td>
+                                <td>{{ $employee->pin }}</td>
+                                <td>{{ $employee->nik }}</td>
+                                <td>{{ $employee->fullname }}</td>
+                                <td>{{ $employee->alias_name }}</td>
+                                <td>{{ $employee->entry_date }}</td>
+                                <td>Rp.{{ money_format($employee->salary != null ? $employee->salary->salary : 0) }}</td>
+                                <td>Rp.{{ money_format($employee->premi) }}</td>
+                                <td>
+                                    <a href="{{ route('karyawan.ubah', $employee->id) }}" class="badge badge-success"><i
+                                            class="fas fa-pencil-alt"></i></a>
+                                    <form action="{{ route('karyawan.hapus', $employee->id) }}" class="d-inline"
+                                        id="delete{{ $employee->id }}" method="post">
+                                        @csrf
+                                        @method('DELETE')
+                                        <a href="#" data-id="{{ $employee->id }}"
+                                            class="badge badge-pill badge-delete badge-danger d-inline">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="10" class="text-center"><b>Data Karyawan tidak ditemukan!</b></td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+            <div class="mt-2">
+                {{ $employees->links() }}
+            </div>
+        </div>
+    </div>
+
+    {{-- modal box untuk import karyawan --}}
+    <!-- Modal -->
+    <div class="modal fade" id="importKaryawan" tabindex="-1" aria-labelledby="importKaryawan" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('karyawan.import') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Import Karyawan</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        @csrf
+                        @method('post')
+                        <div class="row">
+                            <label for="file" class="col-sm-2 col-form-label">Excel</label>
+                            <div class="col-sm-10">
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" name="file" id="file">
+                                    <label class="custom-file-label" for="file">Choose file</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-download"></i> Import</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+@stop
+
+@section('css')
+    {{-- Add here extra stylesheets --}}
+    {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
+@stop
+
+@section('js')
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            bsCustomFileInput.init()
+        })
+        // toast
+        @section('plugins.Toast', true)
+            var status = "{{ session('status') }}";
+            if (status == "saved") {
+                Toastify({
+                    text: "Data baru berhasil ditambahkan!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
+            } else if (status == 'edited') {
+                Toastify({
+                    text: "Data berhasil diubah!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
+            } else if (status == 'deleted') {
+                Toastify({
+                    text: "Data berhasil dihapus!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
+            } else if (status == "importSuccess") {
+                Toastify({
+                    text: "Data karyawan berhasil diimport!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#17a2b8",
+                    }
+                }).showToast();
+            }
+
+            // delete 
+            $(document).on('click', ".badge-delete", function(e) {
+                e.preventDefault();
+                var form = $(this).closest("form");
+                Swal.fire({
+                    title: 'Hapus Data!',
+                    text: "Apakah anda yakin akan menghapus data ini?",
+                    icon: 'warning',
+                    confirmButtonColor: '#3085d6',
+                    showCancelButton: true,
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Hapus!!'
+                }).then((result) => {
+                    if (result.value === true) {
+                        form.closest("form").submit();
+                    }
+                })
+            });
+    </script>
+@stop

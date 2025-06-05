@@ -20,26 +20,47 @@
             @endif
         </div>
         <div class="card-body">
-            <div class="row justify-content-center">
+            <div class="row justify-content-center g-2 align-items-end">
                 <div class="col-md-2">
-                    <input type="date" class="form-control" id="startDate" name="start_date" value="{{ old('start_date') }}"
-                        placeholder="filter tanggal awal">
-                    <span class="text-danger error-text" id="start_date_error"></span>
+                    <label for="startDate"><small>Tanggal Awal</small></label>
+                    <input type="date" class="form-control" id="startDate" name="start_date"
+                        value="{{ old('start_date') }}">
                 </div>
-                <div class="col-md-1 text-center">
-                    S.D
-                </div>
+
                 <div class="col-md-2">
+                    <label for="lastDate"><small>Tanggal Akhir</small></label>
                     <input type="date" class="form-control" id="lastDate" name="last_date"
-                        value="{{ old('last_date') }}" placeholder="filter tanggal awal">
-                    <span class="text-danger error-text" id="last_date_error"></span>
+                        value="{{ old('last_date') }}">
                 </div>
+
                 <div class="col-md-2">
-                    <input type="text" class="form-control" id="nopol" name="nopol" value="{{ old('nopol') }}"
-                        placeholder="Nopol...">
-                    <span class="text-danger error-text" id="nopol_error"></span>
+                    <label for="supplier_id"><small>Supplier</small></label>
+                    <select class="form-control" name="supplier_id" id="supplier_id">
+                        <option value="">Pilih Supplier</option>
+                        @foreach ($suppliers as $supplier)
+                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
-                <button class="btn btn-primary search-data" id="searchData"><i class="fas fa-search"></i></button>
+
+                <div class="col-md-2">
+                    <label for="nopol"><small>Nopol</small></label>
+                    <input type="text" class="form-control" id="nopol" name="nopol" value="{{ old('nopol') }}"
+                        placeholder="Masukkan nopol">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="status"><small>Status</small></label>
+                    <select class="form-control" name="status" id="status">
+                        <option value="">Pilih Status</option>
+                        @foreach ($statuses as $status)
+                            <option value="{{ $status }}">{{ $status }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex justify-content-end mt-3">
+                    <button class="btn btn-primary search-data" id="searchData"><i class="fas fa-search"></i></button>
+                </div>
             </div>
             <hr>
 
@@ -65,10 +86,12 @@
     <script src="{{ asset('assets/JS/myHelper.js') }}"></script>
     <script>
         $(document).ready(function() {
+                    $('#supplier_id').select2({
+                        theme: "bootstrap4",
+                    });
 
-                    function fetchData(start_date, last_date, supplier, nopol, page = 1, model) {
+                    function fetchData(start_date, last_date, supplier, nopol, page = 1, model, status) {
                         let search = "";
-
 
                         $.ajax({
                                 url: "{{ route('laporan.data-surat-jalan') }}",
@@ -79,6 +102,7 @@
                                     last_date: last_date,
                                     supplier: supplier,
                                     nopol: nopol,
+                                    status: status,
                                     relations: {
                                         'createdBy': ["username"],
                                         'editedBy': ["username"],
@@ -125,16 +149,18 @@
                         }
                         let start_date = $("#startDate").val();
                         let last_date = $("#lastDate").val();
-                        let supplier = $("#supplier").val();
+                        let supplier = $("#supplier_id").val();
                         let nopol = $("#nopol").val();
-                        fetchData(start_date, last_date, supplier, nopol, 1, "road_permits");
+                        let status = $("#status").val();
+                        fetchData(start_date, last_date, supplier, nopol, 1, "road_permits", status);
 
                         $('#searchData').on('click', function() {
                             let start_date = $("#startDate").val();
                             let last_date = $("#lastDate").val();
-                            let supplier = $("#supplier").val();
+                            let supplier = $("#supplier_id").val();
                             let nopol = $("#nopol").val();
-                            fetchData(start_date, last_date, supplier, nopol, 1, "road_permits");
+                            let status = $("#status").val();
+                            fetchData(start_date, last_date, supplier, nopol, 1, "road_permits", status);
 
                         });
 
@@ -146,9 +172,10 @@
 
                             let start_date = $("#startDate").val();
                             let last_date = $("#lastDate").val();
-                            let supplier = $("#supplier").val();
+                            let supplier = $("#supplier_id").val();
                             let nopol = $("#nopol").val();
-                            fetchData(start_date, last_date, supplier, nopol, page, "road_permits");
+                            let status = $("#status").val();
+                            fetchData(start_date, last_date, supplier, nopol, page, "road_permits", status);
                         });
 
                         // $('#searchBox').each(function() {
@@ -165,9 +192,16 @@
                     scanStyles: true,
                     style: `
                             @media print {
+                                th {
+                                    font-weight: 900;
+                                }
+
+                                td {
+                                    font-weight: 700;
+                                }
                                 .print-section {
                                     page-break-after: always;
-                                    padding: 20px;
+                                    padding: 10px;
                                     font-family: Arial, sans-serif;
                                     font-size: 13px;
                                     color: #333;
@@ -177,28 +211,30 @@
                                     page-break-after: avoid;
                                 }
 
-                                .lpb-header {
-                                    margin-bottom: 10px;
-                                    padding-bottom: 5px;
-                                    border-bottom: 2px solid #666;
+                                .row {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    margin-bottom: 2px;
                                 }
 
-                                .lpb-header h4 {
-                                    margin: 0;
-                                    font-size: 16px;
-                                    color: #000;
+                                .col-md-6 {
+                                    width: 48%;
                                 }
 
-                                .lpb-header h5 {
-                                    margin: 5px 0 0 0;
+                                h6 {
                                     font-size: 14px;
-                                    color: #555;
+                                    margin: 0 0 5px 0;
+                                    font-weight: normal;
+                                }
+
+                                h6 strong {
+                                    font-weight: bold;
                                 }
 
                                 table {
                                     width: 100%;
                                     border-collapse: collapse;
-                                    margin-bottom: 15px;
+                                    margin-bottom: 2px;
                                 }
 
                                 table,
@@ -210,12 +246,13 @@
                                 th {
                                     background-color: #f2f2f2;
                                     font-weight: bold;
-                                    padding: 8px;
-                                    text-align: center;
+                                    padding: 4px;
+                                    font-size: 12px;
                                 }
 
                                 td {
-                                    padding: 6px;
+                                    padding: 4px;
+                                    font-size: 12px;
                                     text-align: center;
                                 }
 
@@ -224,9 +261,9 @@
                                     background-color: #e6f7ff;
                                 }
 
-                                .grand-total-table {
-                                    margin-top: 20px;
-                                }
+                                /* .grand-total-table {
+                                    margin-top: 5px;
+                                } */
 
                                 .grand-total-table th {
                                     background-color: #d9ead3;

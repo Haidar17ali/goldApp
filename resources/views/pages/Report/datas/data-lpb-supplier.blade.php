@@ -50,6 +50,17 @@
                                     'start_date' => $start_date,
                                     'end_date' => $end_date,
                                     'date_by' => $dateBy,
+                                    'type' => 'BKL',
+                                ]) }}"
+                                    id="printLpbExcel" class="badge badge-success ">
+                                    <i class="fas fa-file-excel"></i> BKL
+                                </a>
+                                <a href="{{ route('laporan.lpb-supplier-export-excel', [
+                                    'nopol' => $row['nopol'],
+                                    'supplier' => $row['supplierId'],
+                                    'start_date' => $start_date,
+                                    'end_date' => $end_date,
+                                    'date_by' => $dateBy,
                                 ]) }}"
                                     id="printLpbExcel" class="badge badge-success ">
                                     <i class="fas fa-file-excel"></i>
@@ -80,7 +91,7 @@
 
                     {{-- Group Total --}}
                     <tr class="table-success font-weight-bold">
-                        <td colspan="3">{{ $supplier }} Total</td>
+                        <td colspan="4">{{ $supplier }} Total</td>
                         <td class="text-end">{{ number_format($groupQty) }}</td>
                         <td class="text-end">{{ number_format($groupM3, 4) }}</td>
                         <td class="text-end">{{ number_format($groupNilai, 2) }}</td>
@@ -91,7 +102,7 @@
             </tbody>
             <tfoot>
                 <tr class="table-secondary font-weight-bold">
-                    <td colspan="3">Grand Total</td>
+                    <td colspan="4">Grand Total</td>
                     <td class="text-end">{{ number_format($grandTotal['qty']) }}</td>
                     <td class="text-end">{{ number_format($grandTotal['m3'], 4) }}</td>
                     <td class="text-end">{{ number_format($grandTotal['nilai'], 2) }}</td>

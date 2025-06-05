@@ -11,6 +11,7 @@ use App\Models\PODetails;
 use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 function money_format($money){
     return number_format($money,0, ',','.');
@@ -78,10 +79,26 @@ function generateCode($prefix, $table, $dateColumn)
 
 function generateCodeImport($prefix, $table, $dateColumn, $offset = 1)
 {
-    $tanggal = Carbon::now()->format('Ymd');
-    $count = DB::table($table)->whereDate($dateColumn, Carbon::today())->count() + $offset;
-    $noUrut = str_pad($count, 3, '0', STR_PAD_LEFT);
-    return strtoupper($prefix) . $tanggal . $noUrut;
+     $tanggal = Carbon::now()->format('Ymd');
+    $count = DB::table($table)->whereDate($dateColumn, Carbon::today())->count();
+    
+    while (true) {
+        $count++;
+        $noUrut = str_pad($count, 3, '0', STR_PAD_LEFT);
+        $code = strtoupper($prefix) . $tanggal . $noUrut;
+
+        // Hindari error jika 'code' kolom tidak ada
+        if (!Schema::hasColumn($table, 'code')) {
+            throw new \Exception("Kolom 'code' tidak ditemukan di tabel {$table}");
+        }
+
+        // Periksa apakah code ini sudah ada
+        $exists = DB::table($table)->where('code', '=', $code)->exists();
+
+        if (!$exists) {
+            return $code;
+        }
+    }
 }
 
 
@@ -360,29 +377,28 @@ function getLPBSupplierDetail(Request $request)
         ? 'PERIODE ' . date('d/m/Y', strtotime($start_date)) . ' - ' . date('d/m/Y', strtotime($end_date))
         : ($start_date ? 'PERIODE ' . date('d/m/Y', strtotime($start_date)) : null);
 
-    $query = Lpb::with(['details', 'roadPermit', 'supplier']);
+    $query = Lpb::with(['details', 'roadPermit', 'supplier', 'PO']);
 
     if ($start_date && $end_date) {
         $query->whereBetween($date_by, [$start_date, $end_date]);
     } elseif ($start_date) {
         $query->whereDate($date_by, $start_date);
     }
-
+    
     if ($supplier && $supplier != 'Pilih Supplier') {
         $query->where('supplier_id', $supplier);
     }
-
+    
     if ($nopol) {
-        $query->whereHas('roadPermit', function ($q) use ($nopol) {
-            $q->where('nopol', 'LIKE', "%$nopol%");
-        });
+        $query->where('nopol', 'LIKE', "%$nopol%");
     }
 
     $lpbs = $query->get();
 
     $firstLpb = $lpbs->first();
-    $nopolResult = $firstLpb?->roadPermit?->nopol ?? '-';
+    $nopolResult = $firstLpb->nopol ?? '-';
     $pemilik = $firstLpb?->supplier?->name ?? '-';
+    $po = $firstLpb->PO;
 
     $details = $lpbs->pluck('details')->flatten();
 
@@ -398,6 +414,23 @@ function getLPBSupplierDetail(Request $request)
         $qty = $items->sum('qty');
         $m3 = kubikasi((float)$diameter, (float)$length, $qty);
         $price = $items->first()->price ?? 0;
+
+        // proses export BAKUL
+        if($request->type == "BKL"){
+            // ambil harga bakul
+            $bakulPrice = PO::orderBy('id', 'desc')
+                    ->where('activation_date', $po->activation_date)->where('description', "Bakul")->first();
+            if($bakulPrice){
+                // Cari harga dari PO detail
+                $poDetail = PODetails::where('po_id', $bakulPrice->id)
+                    ->where('diameter_start', '<=', $diameter)
+                    ->where('diameter_to', '>=', $diameter)
+                    ->where('quality', $quality)
+                    ->where('length', (string)$length)
+                    ->first();
+                $price = $poDetail->price ??0;
+            }
+        }
         $nilai = $m3 * $price;
 
         $keyLabel = strtolower($quality . ' ' . $length);
@@ -429,11 +462,28 @@ function getLPBSupplierDetail(Request $request)
 
     // Grand Total
     $grandTotalQty = $details->sum('qty');
+    // dd($grandTotalQty);
     $grandTotalM3 = $details->sum(function ($item) {
         return kubikasi((float)$item->diameter, (float)$item->length, $item->qty);
     });
-    $grandTotalNilai = $details->sum(function ($item) {
-        return kubikasi((float)$item->diameter, (float)$item->length, $item->qty) * $item->price;
+    $grandTotalNilai = $details->sum(function ($item) use($request, $po) {
+        // ambil harga bakul
+        $price =0;
+        $BP = PO::orderBy('id', 'desc')
+                ->where('activation_date', $po->activation_date)->where('description', "Bakul")->first();
+        if($BP){
+            // Cari harga dari PO detail
+            $poDetail = PODetails::where('po_id', $BP->id)
+                ->where('diameter_start', '<=', $item->diameter)
+                ->where('diameter_to', '>=', $item->diameter)
+                ->where('quality', $item->quality)
+                ->where('length', (string)$item->length)
+                ->first();
+                $price = $poDetail->price ??0;
+            }
+            // end ambil harga po bakul
+            $harga = $request->type == "BKL" ? (float)$price : (float)$item->price;
+        return kubikasi((float)$item->diameter, (float)$item->length, $item->qty) * $harga;
     });
 
     // Grand Total PPh22 (dari semua LPB)
@@ -443,9 +493,26 @@ function getLPBSupplierDetail(Request $request)
     foreach ($lpbs as $lpb) {
         $lpbTotal = 0;
 
+        // ambil harga bakul
+        $BP = PO::orderBy('id', 'desc')
+                ->with(["details"])
+                ->where('activation_date', $po->activation_date)->where('description', "Bakul")->first();
+        if($BP){
+            // Cari harga dari PO detail
+            $poDetail = PODetails::where('po_id', $BP->id)
+                ->where('diameter_start', '<=', $diameter)
+                ->where('diameter_to', '>=', $diameter)
+                ->where('quality', $quality)
+                ->where('length', (string)$length)
+                ->first();
+            $price = $poDetail->price ??0;
+        }
+        // end ambil harga po bakul
+
         foreach ($lpb->details as $detail) {
             $m3 = kubikasi((float)$detail->diameter, (float)$detail->length, $detail->qty);
-            $nilai = $m3 * $detail->price;
+            $harga = $request->type == "BKL" ? (float) $price : (float) $detail->price;
+            $nilai = $m3 * $harga;
             $lpbTotal += $nilai;
         }
         
@@ -455,6 +522,7 @@ function getLPBSupplierDetail(Request $request)
     }
 
     return compact(
+        'po',
         'sortedResults',
         'periode',
         'nopolResult',

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DownPaymentController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\LPBController;
 use App\Http\Controllers\NPWPController;
@@ -24,6 +25,7 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/dashboard/stok/filter', [HomeController::class, 'filterStok'])->name('filter-stock');
 
 
 Route::prefix('JM')

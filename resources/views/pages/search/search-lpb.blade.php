@@ -1,11 +1,16 @@
-<div class="d-flex mb-3 justify-content-end">
-    <select id="status-action" class="form-control w-auto mr-2">
-        <option value="">-- Pilih Status --</option>
-        <option value="Terpakai">Terpakai</option>
-        <option value="Setujui">Setujui</option>
-        <option value="Terbayar">Terbayar</option>
-        <option value="Ditolak">Ditolak</option>
-    </select>
+<div class="d-flex mb-3 justify-content-end row">
+    <div class="col-md-2">
+        <select id="status-action" class="form-control mr-2">
+            <option value="">-- Pilih Status --</option>
+            <option value="Terpakai">Terpakai</option>
+            <option value="Setujui">Setujui</option>
+            <option value="Terbayar">Terbayar</option>
+            <option value="Ditolak">Ditolak</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="date" class="form-control" id="date" required name="date" value="{{ old('date') }}">
+    </div>
     <button type="button" class="btn btn-primary" onclick="updateStatus()">Ubah Status</button>
 </div>
 <div class="mb-2">
@@ -175,6 +180,9 @@
     function updateStatus() {
         let selected = getSelectedLPBs();
         let status = $('#status-action').val();
+        let date = $('#date').val();
+        console.log(date);
+
 
         if (selected.length === 0) {
             alert('Pilih data terlebih dahulu!');
@@ -189,7 +197,8 @@
         $.post("{{ route('lpb.update-status-masal') }}", {
             _token: "{{ csrf_token() }}",
             selected: selected,
-            status: status
+            status: status,
+            date: date
         }, function(response) {
             alert(response.message || 'Status berhasil diubah!');
             localStorage.removeItem(STORAGE_KEY);
