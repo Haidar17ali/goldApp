@@ -14,11 +14,14 @@ return new class extends Migration
         Schema::create('down_payments', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('supplier_id');
-            $table->bigInteger('pj_id')->nullable();
-            $table->bigInteger('nominal');
             $table->date('date');
-            $table->enum('type', ['In', 'Out']);
-            $table->enum('status', ['Pending', 'Menunggu Pembayaran', 'Gagal', 'Sukses', 'Selesai']);
+            $table->date('nota_date');
+            $table->date('arrival_date')->nullable();
+            $table->enum('type', ['Sengon', 'Merbau', 'Pembantu']);
+            $table->enum('dp_type', ['DP', 'Pelunasan']);
+            $table->bigInteger('nominal');
+            $table->bigInteger('parent_id')->nullable();
+            // $table->enum('status', ['Pending', 'Menunggu Pembayaran', 'Gagal', 'Sukses', 'Selesai']);
             $table->timestamps();
         });
     }

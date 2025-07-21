@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\DownPaymentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HomeController;
@@ -146,11 +147,11 @@ Route::prefix('JM')
         Route::delete('/purchase-jurnal/{id}/hapus', [PurchaseJurnalController::class, 'destroy'])->name('purchase-jurnal.hapus');
 
         // DP
-        Route::get('/down-payment', [DownPaymentController::class, 'index'])->name('down-payment.index');
-        Route::get('/down-payment/buat', [DownPaymentController::class, 'create'])->name('down-payment.buat');
-        Route::post('/down-payment/buat', [DownPaymentController::class, 'store'])->name('down-payment.simpan');
-        Route::get('/down-payment/{id}/ubah', [DownPaymentController::class, 'edit'])->name('down-payment.ubah');
-        Route::patch('/down-payment/{id}/ubah', [DownPaymentController::class, 'update'])->name('down-payment.update');
+        Route::get('/down-payment/{type}', [DownPaymentController::class, 'index'])->name('down-payment.index');
+        Route::get('/down-payment/buat/{type}', [DownPaymentController::class, 'create'])->name('down-payment.buat');
+        Route::post('/down-payment/buat/{type}', [DownPaymentController::class, 'store'])->name('down-payment.simpan');
+        Route::get('/down-payment/{id}/ubah/{type}', [DownPaymentController::class, 'edit'])->name('down-payment.ubah');
+        Route::patch('/down-payment/{id}/ubah/{type}', [DownPaymentController::class, 'update'])->name('down-payment.update');
         Route::delete('/down-payment/{id}/hapus', [DownPaymentController::class, 'destroy'])->name('down-payment.hapus');
 
         // utility
@@ -181,9 +182,17 @@ Route::prefix('JM')
         Route::get('data-surat-jalan', [ReportController::class, 'getRoadPermitReport'])->name('laporan.data-surat-jalan');
         Route::get('report/lpb', [ReportController::class, 'reportLpb'])->name('laporan.lpb');
         Route::get('data-lpb', [ReportController::class, 'getLpbReport'])->name('laporan.data-lpb');
+        Route::get('/export-lpb-npwp', [ReportController::class, 'exportLpbByNpwp'])->name('laporan.export-Lpb-Npwp');
         Route::get('report/lpb-supplier', [ReportController::class, 'reportLpbSupplier'])->name('laporan.lpb-supplier');
         Route::get('data-lpb-supplier', [ReportController::class, 'getLpbSupplierReport'])->name('laporan.data-lpb-supplier');
         Route::get('/lpb-supplier/export-pdf', [ReportController::class, 'exportLpbSupplierPdf'])->name('laporan.lpb-supplier-export-pdf');
         Route::get('/lpb-supplier/export-excel', [ReportController::class, 'exportLpbSupplierExcel'])->name('laporan.lpb-supplier-export-excel');
         Route::get('/lpb-supplier/export-excel/all', [ReportController::class, 'exportAllLpbSupplierExcel'])->name('laporan.all-lpb-supplier-export-excel');
+
+        // report dp
+        Route::get('/report/dp', [ReportController::class, "reportDp"])->name("laporan.dp");
+        Route::get('/report/data-dp', [ReportController::class, "getDpReport"])->name("laporan.data-dp");
+        Route::get('/report/dp/{supplier_id}/detail', [ReportController::class, "DPDetail"])->name("laporan.dp-detail");
+
+        Route::post('/backup/export', [BackupController::class, 'export'])->name('backup.export');
     });

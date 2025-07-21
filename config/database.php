@@ -60,6 +60,13 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+
+            // Tambahkan konfigurasi ini
+            'dump' => [
+                'dump_binary_path' => 'C:/xampp/mysql/bin', // Tanpa slash di akhir
+                'use_single_transaction' => true,
+                'timeout' => 60,
+            ],
         ],
 
         'mariadb' => [

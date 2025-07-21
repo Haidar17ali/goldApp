@@ -24,12 +24,11 @@ class AllLPBSupplierReportExport implements FromView, WithEvents
     protected $endDate;
     protected $dateBy;
 
-    public function __construct($groupedLpbs, $grandTotal, $periode, $headerDate, $startDate, $endDate, $dateBy)
+    public function __construct($groupedLpbs, $grandTotal, $periode, $startDate, $endDate, $dateBy)
     {
         $this->groupedLpbs = $groupedLpbs;
         $this->grandTotal = $grandTotal;
         $this->periode = $periode;
-        $this->headerDate = $headerDate;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->dateBy = $dateBy;
@@ -41,7 +40,6 @@ class AllLPBSupplierReportExport implements FromView, WithEvents
             'groupedLpbs' => $this->groupedLpbs,
             'grandTotal' => $this->grandTotal,
             'periode' => $this->periode,
-            'headerDate' => $this->headerDate,
             'start_date' => $this->startDate,
             'end_date' => $this->endDate,
             'dateBy' => $this->dateBy,
@@ -98,9 +96,9 @@ class AllLPBSupplierReportExport implements FromView, WithEvents
                     ],
                 ]);
 
-                // Warnai semua isi kolom H (PPh) dengan warna merah
+                // Warnai semua isi kolom I (PPh) dengan warna merah
                 for ($row = 3; $row <= $highestRow; $row++) {
-                    $sheet->getStyle("H{$row}")->applyFromArray([
+                    $sheet->getStyle("I{$row}")->applyFromArray([
                         'font' => ['color' => ['argb' => Color::COLOR_RED]],
                     ]);
                 }

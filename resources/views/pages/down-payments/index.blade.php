@@ -28,7 +28,7 @@
                     </ul>
                 </div>
             @endif
-            <a href="{{ route('down-payment.buat') }}" class="btn btn-primary float-right" type="submit"><i
+            <a href="{{ route('down-payment.buat', $type) }}" class="btn btn-primary float-right" type="submit"><i
                     class="fas fa-plus"></i>
                 DP</a>
             <div class="float-left">
@@ -40,62 +40,6 @@
             {{-- test seach --}}
             <div class="search-results"></div>
             <div class="search-pagination d-flex justify-content-end"></div>
-            {{-- <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Tanggal</th>
-                        <th scope="col">Supplier</th>
-                        <th scope="col">Nominal</th>
-                        <th scope="col">Tipe</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (count($down_payments))
-                        @foreach ($down_payments as $down_payment)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <th scope="row">{{ date('d-m-Y', strtotime($down_payment->date)) }}</th>
-                                <td>{{ $down_payment->supplier != null ? $down_payment->supplier->name : 'supplier tidak ditemukan' }}
-                                </td>
-                                <td>Rp.{{ money_format($down_payment->nominal) }}</td>
-                                <td style="color:{{ $down_payment->type == 'In' ? 'green' : 'red' }}"><i
-                                        class="fas fa-arrow-{{ $down_payment->type == 'In' ? 'up' : 'down' }}"></i>{{ $down_payment->type }}
-                                </td>
-                                <td><span
-                                        class="badge badge-{{ $down_payment->status == 'Pending' ? 'warning' : ($down_payment->status == 'Gagal' ? 'danger' : 'success') }}">{{ $down_payment->status }}</span>
-                                </td>
-                                <td>
-                                    @if ($down_payment->status == 'Pending')
-                                        <a href="{{ route('utility.activation-dp', ['modelType' => 'Down_payment', 'id' => $down_payment->id, 'status' => 'Menunggu Pembayaran']) }}"
-                                            class="badge badge-success"><i class="fas fa-check"></i></a>
-                                        <a href="{{ route('utility.activation-dp', ['modelType' => 'down_payment', 'id' => $down_payment->id, 'status' => 'Gagal']) }}"
-                                            class="badge badge-danger"><i class="fas fa-times"></i></a>
-                                        ||
-                                        <a href="{{ route('down-payment.ubah', $down_payment->id) }}"
-                                            class="badge badge-success"><i class="fas fa-pencil-alt"></i></a>
-                                        <form action="{{ route('down-payment.hapus', $down_payment->id) }}"
-                                            class="d-inline" id="delete{{ $down_payment->id }}" method="post">
-                                            @csrf
-                                            @method('DELETE')
-                                            <a href="#" data-id="{{ $down_payment->id }}"
-                                                class="badge badge-pill badge-delete badge-danger d-inline">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
-                        <tr>
-                            <td colspan="7" class="text-center"><b>Data down-payment tidak ditemukan!</b></td>
-                        </tr>
-                    @endif
-                </tbody>
-            </table> --}}
         </div>
     </div>
 
@@ -191,7 +135,6 @@
                         page: page
                     },
                     success: function(response) {
-                        console.log(response.pagination);
 
                         $('.search-results').html(response.table);
                         $('.search-pagination').html(response.pagination);

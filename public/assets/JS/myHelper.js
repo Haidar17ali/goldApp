@@ -79,19 +79,19 @@ function getDetailLpb(url, data){
             </tr>
             <tr>
                 <td colspan="7" class="text-right">Pot Konversi:</td>
-                <td>${money_format(lpbDetail.conversion*3000,0,',','.')}</td>
+                <td>${money_format(lpbDetail.conversion,0,',','.')}</td>
             </tr>
             <tr>
                 <td colspan="7" class="text-right">Nilai:</td>
-                <td>${money_format(totalLPB-lpbDetail.conversion*3000,0,',','.')}</td>
+                <td>${money_format(totalLPB+lpbDetail.conversion,0,',','.')}</td>
             </tr>
             <tr>
             <td colspan="7" class="text-right">PPH 22:</td>
-            <td>${money_format((totalLPB-(lpbDetail.conversion*3000))*0.0025,0,',','.')}</td>
+            <td>${money_format((totalLPB+(lpbDetail.conversion))*0.0025,0,',','.')}</td>
             </tr>
             <tr>
                 <td colspan="7" class="text-right">Total Yang Ditransfer:</td>
-                <td>${money_format((totalLPB-(lpbDetail.conversion*3000))-(totalLPB-(lpbDetail.conversion*3000))*0.0025,0,',','.')}</td>
+                <td>${money_format((totalLPB+(lpbDetail.conversion))-(totalLPB+(lpbDetail.conversion))*0.0025,0,',','.')}</td>
             </tr>
         `;
 

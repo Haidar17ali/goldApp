@@ -1,6 +1,6 @@
 <div class="section-info" style="margin-bottom: 20px;">
     <h4><strong>PEMILIK:</strong> {{ $pemilik }}</h4>
-    <h4><strong>TGL KIRIM:</strong> {{ $periode }}</h4>
+    <h4><strong>TGL KIRIM:</strong> {{ date('d-m-Y', strtotime($periode)) }}</h4>
     <h4><strong>NOPOL:</strong> {{ $nopolResult }}</h4>
 </div>
 

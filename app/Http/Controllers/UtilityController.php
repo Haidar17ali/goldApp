@@ -131,11 +131,15 @@ class UtilityController extends Controller
                 'supplier_id',
                 'nominal',
                 'date',
+                'nota_date',
                 'type',
-                'status'
+                'dp_type',
+                'parent_id',
             ],
             'relations' => [
-                'supplier' => ['name']
+                'supplier' => ['name'],
+                'details' => ['qty', 'price'],
+                'children' => ['parent_id', "nota_date"],
             ]
         ],
         'purchase_orders' => [
@@ -337,11 +341,15 @@ class UtilityController extends Controller
 
         $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations) {
             return App::make($modelClass)::select($columns)->with($withRelations)
+            ->when(in_array('parent_id', $columns), function ($query) {
+                $query->whereNull('parent_id');
+            })
             ->where(function($q) use($columns, $relations, $search){
                 foreach($columns as $column){
+
                     if ($column === 'date' || $column === 'datetime') {
                         $q->orWhereRaw("DATE_FORMAT($column, '%d-%m-%Y') LIKE ?", ["%$search%"]);
-                    } else {
+                    }else {
                         $q->orWhere($column, 'like', "%$search%");
                     }
                 }

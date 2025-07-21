@@ -150,6 +150,10 @@ class LPBController extends BaseController
                     'status' => 'Selesai'
                 ]);
             }
+
+            if ($request->cekDp) {
+                handleConversion($lpb->arrival_date, $lpb, $request);
+            }
     
             DB::commit();
             session()->flash('status', 'saved');
@@ -329,6 +333,13 @@ class LPBController extends BaseController
                 $getRP->status = "Selesai";
                 $getRP->save();
             }
+            
+            if ($request->cekDp) {
+                handleConversion($lpb->arrival_date, $lpb, $request);
+            }
+            
+            // $cekData = LPB::where("supplier_id", $request->supplier_id)->where("nopol", $request->nopol)->where("arrival_date", $request->arrival_date)->get();
+            // dd($cekData);
 
             DB::commit();
             session()->flash('status', 'updated');

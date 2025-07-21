@@ -54,22 +54,40 @@ class HomeController extends BaseController
 
         // LPB belum dipakai → hanya ambil tgl kirim, no_kitir, dan total kubikasi
         $lpbsBelumTerpakai = LPB::with('details')
-        ->whereNull('used')
-        ->orWhere("used", 0)
-        ->orderByDesc('date')
-        ->get()
-        ->map(function ($lpb) {
-            $totalKubikasi = 0;
-            foreach ($lpb->details as $detail) {
-                $totalKubikasi += kubikasi($detail->diameter, $detail->length, $detail->qty);
-            }
+            ->where(function ($query) {
+                $query->whereNull('used')
+                    ->orWhere('used', 0);
+            })
+            ->orderByDesc('date')
+            ->get()
+            ->map(function ($lpb) {
+                $totalKubikasi = 0;
+                $stock130Afkir = 0;
+                $stock130Super = 0;
+                $stock260Super = 0;
 
-            return (object) [
-                'no_kitir' => $lpb->no_kitir,
-                'date' => $lpb->date,
-                'total_kubikasi' => $totalKubikasi,
-            ];
-        });
+                foreach ($lpb->details as $detail) {
+                    $kubik = kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    $totalKubikasi += $kubik;
+
+                    if ($detail->length == 130 && strtolower($detail->quality) == 'afkir') {
+                        $stock130Afkir += $kubik;
+                    } elseif ($detail->length == 130 && strtolower($detail->quality) == 'super') {
+                        $stock130Super += $kubik;
+                    } elseif ($detail->length == 260 && strtolower($detail->quality) == 'super') {
+                        $stock260Super += $kubik;
+                    }
+                }
+
+                return (object) [
+                    'no_kitir' => $lpb->no_kitir,
+                    'date' => $lpb->date,
+                    'total_kubikasi' => $totalKubikasi,
+                    'stock_130_afkir' => $stock130Afkir,
+                    'stock_130_super' => $stock130Super,
+                    'stock_260_super' => $stock260Super,
+                ];
+            });
 
         $totalKubikasiLpbBelumTerpakai = $lpbsBelumTerpakai->sum('total_kubikasi');
 

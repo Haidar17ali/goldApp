@@ -4,6 +4,19 @@
 
 @section('content_header')
     <h1>Dashboard</h1>
+    @can('backup.export')
+        <div class="row">
+            <div class="col-md-12">
+                <form method="POST" class="float-right" action="{{ route('backup.export') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-database"></i> Export Database Sekarang
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endcan
+
     <small class="text-muted">Last Updated: {{ now()->format('H:i') }}</small>
 
     <div class="float-right">
@@ -160,42 +173,62 @@
                 <div class="card-header bg-primary">
                     <h3 class="card-title text-white">Ringkasan LPB Belum Terpakai</h3>
                 </div>
-                <div class="card-body table-responsive">
-                    <table class="table table-sm table-bordered table-striped">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>No</th>
-                                <th>Tanggal</th>
-                                <th>No Kitir</th>
-                                <th>Total Kubikasi (m³)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($lpbsBelumTerpakai as $index => $lpb)
+                <div class="card-body p-0">
+                    <div style="max-height: 400px; overflow-y: auto; overflow-x: auto;">
+                        <table class="table table-sm table-bordered table-striped m-0">
+                            <thead style="position: sticky; top: 0; z-index: 1;" class="bg-light text-center">
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($lpb->date)->format('d-m-Y') }}</td>
-                                    <td>{{ $lpb->no_kitir }}</td>
-                                    <td>{{ number_format($lpb->total_kubikasi, 4, ',', '.') }}</td>
+                                    <th>No</th>
+                                    <th>Tanggal</th>
+                                    <th>No Kitir</th>
+                                    <th>130 Afkir (m³)</th>
+                                    <th>130 Super (m³)</th>
+                                    <th>260 Super (m³)</th>
+                                    <th>Total Kubikasi (m³)</th>
                                 </tr>
-                            @empty
+                            </thead>
+                            <tbody>
+                                @php
+                                    $totalAfkir130 = 0;
+                                    $totalSuper130 = 0;
+                                    $totalSuper260 = 0;
+                                @endphp
+                                @forelse ($lpbsBelumTerpakai as $index => $lpb)
+                                    @php
+                                        $totalAfkir130 += $lpb->stock_130_afkir;
+                                        $totalSuper130 += $lpb->stock_130_super;
+                                        $totalSuper260 += $lpb->stock_260_super;
+                                    @endphp
+                                    <tr class="text-center">
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($lpb->date)->format('d-m-Y') }}</td>
+                                        <td>{{ $lpb->no_kitir }}</td>
+                                        <td>{{ number_format($lpb->stock_130_afkir, 4, ',', '.') }}</td>
+                                        <td>{{ number_format($lpb->stock_130_super, 4, ',', '.') }}</td>
+                                        <td>{{ number_format($lpb->stock_260_super, 4, ',', '.') }}</td>
+                                        <td>{{ number_format($lpb->total_kubikasi, 4, ',', '.') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="text-center">Tidak ada LPB belum terpakai.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                            <tfoot class="font-weight-bold text-center table-secondary">
                                 <tr>
-                                    <td colspan="4" class="text-center">Tidak ada LPB belum terpakai.</td>
+                                    <th colspan="3">Total</th>
+                                    <th>{{ number_format($totalAfkir130, 4, ',', '.') }}</th>
+                                    <th>{{ number_format($totalSuper130, 4, ',', '.') }}</th>
+                                    <th>{{ number_format($totalSuper260, 4, ',', '.') }}</th>
+                                    <th>{{ number_format($totalKubikasiLpbBelumTerpakai, 4, ',', '.') }} m³</th>
                                 </tr>
-                            @endforelse
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="3">Total</th>
-                                <th>{{ number_format($totalKubikasiLpbBelumTerpakai, 4, ',', '.') }} m³</th>
-                            </tr>
-                        </tfoot>
-                    </table>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
 
 @stop
 <style>

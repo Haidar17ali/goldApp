@@ -41,7 +41,7 @@
                             </div>
                             <label for="no_kitir" class="col-sm-2 col-form-label">No Kitir</label>
                             <div class="col-sm-4">
-                                <input type="numeric" class="form-control" id="no_kitir" name="no_kitir"
+                                <input type="number" class="form-control" id="no_kitir" name="no_kitir"
                                     value="{{ old('no_kitir', $lpb->no_kitir) }}">
                                 <span class="text-danger error-text" id="no_kitir_error"></span>
                             </div>
@@ -155,9 +155,17 @@
                         <div class="form-group row">
                             <label for="conversion" class="col-sm-2 col-form-label">Total Konversi</label>
                             <div class="col-sm-4">
-                                <input type="numeric" class="form-control" id="conversion" name="conversion"
+                                <input type="number" class="form-control" id="conversion" name="conversion"
                                     value="{{ old('conversion', $lpb->conversion) }}">
+                                <small class="text-info">untuk konver tambahkan "-" didepan</small>
                                 <span class="text-danger error-text" id="conversion_error"></span>
+                            </div>
+                            <label for="nota_conversion" class="col-sm-2 col-form-label">Total Konversi</label>
+                            <div class="col-sm-4">
+                                <input type="number" readonly class="form-control" id="nota_conversion"
+                                    name="nota_conversion" value="{{ old('nota_conversion', $lpb->nota_conversion) }}">
+                                <small class="text-info">Nilai ini akan terisi secara otomatis</small>
+                                <span class="text-danger error-text" id="nota_conversion_error"></span>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -167,6 +175,14 @@
                                 <label class="switch">
                                     <input type="checkbox" {{ $lpb->perhutani == true ? 'checked' : '' }} value="true"
                                         id="perhutani" name="perhutani">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <label for="cek-dp" class="offset-1 col-sm-2 col-form-label">Cek Down Payment</label>
+                            <div class="toggle-container col-md-3">
+                                <!-- Tombol Toggle -->
+                                <label class="switch">
+                                    <input type="checkbox" value="true" id="cek-dp" name="cekDp">
                                     <span class="slider round"></span>
                                 </label>
                             </div>

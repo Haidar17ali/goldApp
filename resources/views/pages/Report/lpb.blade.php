@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Laporan Surat Jalan ')
+@section('title', 'Laporan Penerimaan Barang ')
 
 @section('content_header')
-    <h1>Laporan Surat Jalan</h1>
+    <h1>Laporan Penerimaan Barang</h1>
 @stop
 
 @section('content')
@@ -82,14 +82,19 @@
 
             <hr>
 
-            <div class="search-results"></div>
-            <div class="search-pagination d-flex justify-content-end"></div>
-
             <div class="d-flex justify-content-end mt-3">
                 <button id="printLpb" class="btn btn-success" onclick="printLpb()">
                     <i class="fas fa-print"></i> Cetak LPB
                 </button>
+                @can('laporan.export-Lpb-Npwp')
+                    <a href="#" id="exportExcel" class="btn btn-success ml-1"><i class="fas fa-file-excel"></i> Export
+                        NPWP</a>
+                @endcan
             </div>
+
+            <div class="search-results"></div>
+            <div class="search-pagination d-flex justify-content-end"></div>
+
         </div>
 
     </div>
@@ -100,6 +105,32 @@
 @stop
 
 @section('css')
+    <style>
+        .compact-table {
+            font-size: 12px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .compact-table th,
+        .compact-table td {
+            border: 1px solid #ccc;
+            padding: 4px 6px;
+            text-align: left;
+        }
+
+        .compact-table th {
+            background-color: #f2f2f2;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+    </style>
     {{-- Add here extra stylesheets --}}
     {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
 @stop

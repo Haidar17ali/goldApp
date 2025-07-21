@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Down_payment;
 use App\Models\LPB;
 use App\Models\PO;
 use Carbon\Carbon;
@@ -256,7 +257,7 @@ function getLPBSupplier(Request $request)
 
     $periode = $start_date ? 'PERIODE ' . date('d/m/Y', strtotime($start_date)) : null;
 
-    $query = Lpb::with(['details', 'supplier']);
+    $query = Lpb::with(['details', 'supplier', 'npwp'])->orderBy("paid_at");
 
     if ($start_date && $end) {
         $query->whereBetween($date_by, [$start_date, $end]);
@@ -284,53 +285,52 @@ function getLPBSupplier(Request $request)
     ];
 
     foreach ($lpbs as $lpb) {
-        $supplierName = $lpb->supplier->name ?? '-';
-        $supplierId = $lpb->supplier->id ?? '-';
         $nopol = $lpb->nopol ?? '-';
-        // Dinamis tanggal sesuai kolom yang dipilih user
-        $tglKirim = '-';
-        if (!empty($date_by) && !empty($lpb->$date_by)) {
-            $tglKirim = $lpb->$date_by;
-        }
+        $supplierName = $lpb->supplier->name ?? '-';
 
+        // Gunakan kolom tanggal sesuai pilihan
+        $tglKirim = $lpb->date;
+        if($date_by == "arrival_date"){
+            $tglKirim = $lpb->arrival_date;            
+        }elseif($date_by == "paid_at"){
+            $tglKirim = $lpb->paid_at;
+        }
         $groupKey = "{$nopol}_{$tglKirim}";
 
-        // Siapkan grup supplier
-        if (!isset($groupedLpbs[$supplierName])) {
-            $groupedLpbs[$supplierName] = [];
+        // Gunakan tglKirim sebagai key utama
+        if (!isset($groupedLpbs[$tglKirim])) {
+            $groupedLpbs[$tglKirim] = [];
         }
 
-        // Siapkan grup berdasarkan nopol + tanggal
-        if (!isset($groupedLpbs[$supplierName][$groupKey])) {
-            $groupedLpbs[$supplierName][$groupKey] = [
-                'kitir' =>$lpb->no_kitir ?? '-',
-                'supplier' =>$lpb->supplier->name ?? '-',
-                'npwp' =>$lpb->npwp->name ?? '-',
-                'supplierId' =>$lpb->supplier->id ?? '-',
-                'nopol' => $nopol,
-                'tgl_kirim' => $tglKirim,
-                'qty' => 0,
-                'm3' => 0,
-                'nilai' => 0,
-                'pph' => 0,
-                'transfer' => 0,
+        if (!isset($groupedLpbs[$tglKirim][$groupKey])) {
+            $groupedLpbs[$tglKirim][$groupKey] = [
+                'kitir'     => $lpb->no_kitir ?? '-',
+                'supplier'  => $supplierName,
+                'npwp'      => $lpb->npwp->name ?? '-',
+                'supplierId'=> $lpb->supplier->id ?? '-',
+                'nopol'     => $nopol,
+                'tgl_transfer' => $lpb->paid_at,
+                'tgl_kirim' => $lpb->arrival_date,
+                'qty'       => 0,
+                'm3'        => 0,
+                'nilai'     => 0,
+                'pph'       => 0,
+                'transfer'  => 0,
             ];
         }
 
-        // Hitung total dari semua detail
         foreach ($lpb->details as $detail) {
             $detailQty = $detail->qty;
             $detailM3 = kubikasi((float)$detail->diameter, (float)$detail->length, $detailQty);
             $detailNilai = $detailM3 * $detail->price;
 
-            $groupedLpbs[$supplierName][$groupKey]['qty'] += $detailQty;
-            $groupedLpbs[$supplierName][$groupKey]['m3'] += $detailM3;
-            $groupedLpbs[$supplierName][$groupKey]['nilai'] += $detailNilai;
+            $groupedLpbs[$tglKirim][$groupKey]['qty'] += $detailQty;
+            $groupedLpbs[$tglKirim][$groupKey]['m3'] += $detailM3;
+            $groupedLpbs[$tglKirim][$groupKey]['nilai'] += $detailNilai;
         }
     }
 
-    // Hitung PPh dan transfer sekaligus, serta grand total
-    foreach ($groupedLpbs as $supplierName => &$groups) {
+    foreach ($groupedLpbs as $tglKirim => &$groups) {
         foreach ($groups as &$row) {
             $row['pph'] = $row['nilai'] * 0.0025;
             $row['transfer'] = $row['nilai'] - $row['pph'];
@@ -343,26 +343,24 @@ function getLPBSupplier(Request $request)
         }
     }
 
-    // set header view date
     $dateByLabelMap = [
         'arrival_date' => 'TGL KIRIM',
         'date' => 'TGL LPB',
         'paid_at' => 'TGL BAYAR',
-        // Tambahkan jika ada pilihan tanggal lain
     ];
 
-    $headerDate = $dateByLabelMap[$date_by] ?? strtoupper(str_replace('_', ' ', $date_by));
+    // $headerDate = $dateByLabelMap[$date_by] ?? strtoupper(str_replace('_', ' ', $date_by));
 
     return [
         'groupedLpbs' => $groupedLpbs,
         'grandTotal' => $grandTotal,
         'periode' => $periode,
-        'headerDate' => $headerDate,  // ini yang baru
-        'dateBy' => $date_by,          // opsional, jika ingin pakai di view
+        'dateBy' => $date_by,
         'start_date' => $start_date,
         'end_date' => $end,
-    ];        // opsional, jika ingin pakai di view);
+    ];
 }
+
 
 
 function getLPBSupplierDetail(Request $request)
@@ -377,7 +375,14 @@ function getLPBSupplierDetail(Request $request)
         ? 'PERIODE ' . date('d/m/Y', strtotime($start_date)) . ' - ' . date('d/m/Y', strtotime($end_date))
         : ($start_date ? 'PERIODE ' . date('d/m/Y', strtotime($start_date)) : null);
 
-    $query = Lpb::with(['details', 'roadPermit', 'supplier', 'PO']);
+    $query = Lpb::with([
+        'details' => function ($q) {
+            $q->orderBy('diameter');
+        },
+        'roadPermit',
+        'supplier',
+        'PO'
+    ]);
 
     if ($start_date && $end_date) {
         $query->whereBetween($date_by, [$start_date, $end_date]);
@@ -394,10 +399,11 @@ function getLPBSupplierDetail(Request $request)
     }
 
     $lpbs = $query->get();
-
+    
     $firstLpb = $lpbs->first();
     $nopolResult = $firstLpb->nopol ?? '-';
     $pemilik = $firstLpb?->supplier?->name ?? '-';
+    $tglKirim = $firstLpb->arrival_date ?? '-';
     $po = $firstLpb->PO;
 
     $details = $lpbs->pluck('details')->flatten();
@@ -441,6 +447,15 @@ function getLPBSupplierDetail(Request $request)
             'm3' => $m3,
             'nilai' => $nilai,
         ];
+    }
+
+    // Urutkan diameter
+    foreach ($results as $keyLabel => &$panjangGroup) {
+        foreach ($panjangGroup as $panjang => &$diameterGroup) {
+            usort($diameterGroup, function ($a, $b) {
+                return $a['diameter'] <=> $b['diameter'];
+            });
+        }
     }
 
     // Urutkan berdasarkan urutan kualitas tertentu
@@ -524,6 +539,7 @@ function getLPBSupplierDetail(Request $request)
     return compact(
         'po',
         'sortedResults',
+        'tglKirim',
         'periode',
         'nopolResult',
         'pemilik',
@@ -532,4 +548,111 @@ function getLPBSupplierDetail(Request $request)
         'grandTotalNilai',
         'grandTotalPph'
     );
+}
+
+function handleConversion($arrival_date, $lpbReq, $request)
+{
+    $nopol = $lpbReq->nopol;
+    $supplier_id = $lpbReq->supplier_id;
+    // $req_nota_conversion = $request->nota_conversion;
+    $lpbs = LPB::with('details')
+    ->where('arrival_date', $arrival_date)
+    ->where('nopol', $nopol)
+    ->where('supplier_id', $supplier_id)
+    ->get();
+    $req_conversion = $lpbs->sum("conversion");
+    
+    if ($lpbs->isEmpty()) return;
+
+    $totalLpb = 0;
+    $lpbMax = null;
+    $maxValue = 0;
+
+    foreach ($lpbs as $lpb) {
+        $lpbValue = 0;
+        foreach ($lpb->details as $detail) {
+            $kubik = kubikasi($detail->diameter, $detail->length, $detail->qty);
+            $lpbValue += $kubik * $detail->price;
+        }
+
+        // $lpb->total_kalkulasi = $lpbValue;
+        $totalLpb += $lpbValue;
+
+        if ($lpbValue > $maxValue) {
+            $maxValue = $lpbValue;
+            $lpbMax = $lpb;
+        }
+    }
+
+    // Ambil total nota (DP dan pelunasan)
+    $pelunasanList = Down_payment::with(['details','children.details', 'parent.details'])
+            ->where('supplier_id', $supplier_id)
+            ->whereHas("details", function($q) use ($nopol){
+                $q->where("nopol", $nopol);
+            })
+            ->where("arrival_date", $arrival_date)
+            ->where("parent_id", null)
+            ->get();
+            
+        if(count($pelunasanList) >1){
+            $pelunasanList = Down_payment::with(['details','children.details', 'parent.details'])
+                    ->where('supplier_id', $supplier_id)
+                    ->whereHas("children", function($q) use ($arrival_date){
+                        $q->where("arrival_date", $arrival_date);
+                    })
+                    ->whereHas("details", function($q) use ($nopol){
+                        $q->where("nopol", $nopol);
+                    })
+                    // ->orWhere("arrival_date", $arrival_date)
+                    ->where("parent_id", null)
+                    ->get();
+        }
+
+    $totalNota = 0;
+    $usedParentIds = [];
+
+    foreach ($pelunasanList as $pelunasan) {
+        $totalNota += $pelunasan->details?->sum("price")??0;
+
+        // Cek parent (DP)
+        if ($pelunasan->parent_id && !in_array($pelunasan->parent_id, $usedParentIds)) {
+            $dp = Down_payment::find($pelunasan->parent_id);
+            if ($dp) {
+                $totalNota += $dp->details?->sum("price")??0;
+                $usedParentIds[] = $pelunasan->parent_id;
+            }
+        }
+    }
+    $selisih = $totalNota - $totalLpb;
+    
+    if($req_conversion != null){
+        $gradeResult = $totalLpb+$req_conversion;
+        $selisih = $totalNota-$gradeResult;
+    }
+    
+    // if((int)$req_nota_conversion != (int)$selisih){
+    //     // old selisih berfungsi untuk mendapatkan nilai potongannya
+    //     $potVal = (int)($selisih)-(int)$req_nota_conversion;
+    //     $lpbReq->conversion = $potVal;
+    //     $lpbReq->save();
+    // }
+    
+    // Reset semua LPB terkait
+    if($selisih != $lpbMax->nota_conversion){
+        LPB::where('arrival_date', $arrival_date)
+            ->where('nopol', $nopol)
+            ->where('supplier_id', $supplier_id)
+            ->where("is_conversion_holder", true)
+            ->update([
+                'is_conversion_holder' => false,
+                'nota_conversion' => null
+            ]);
+            
+            // Simpan selisih konversi hanya di LPB dengan nilai terbesar
+        if ($lpbMax) {
+            $lpbMax->is_conversion_holder = true;
+            $lpbMax->nota_conversion = (int)$selisih;
+            $lpbMax->save();
+        }
+    }
 }

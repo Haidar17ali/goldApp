@@ -32,6 +32,8 @@ class LPB extends Model
         'approved_by',
         'approved_at',
         'conversion',
+        'nota_conversion',
+        'is_conversion_holder',
         'paid_at',
         'status',
         'address_id',

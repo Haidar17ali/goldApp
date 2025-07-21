@@ -427,8 +427,24 @@ return [
                 [
                     'text' => 'DP (Down Payment)',
                     'icon' => 'fas fa-money-bill-wave-alt',
-                    'url' => 'JM/down-payment',
                     'can' => 'down-payment.index',
+                    'submenu' => [
+                        [
+                            'text' => 'Barang Pembantu',
+                            'url' => 'JM/down-payment/Bahan-Pembantu',
+                            'can' => 'purchase-order.index',
+                        ],
+                        [
+                            'text' => 'Merbau',
+                            'url' => 'JM/down-payment/Merbau',
+                            'can' => 'purchase-order.index',
+                        ],
+                        [
+                            'text' => 'Sengon',
+                            'url' => 'JM/down-payment/Sengon',
+                            'can' => 'purchase-order.index',
+                        ],
+                    ]
                 ],
             ],
         ],
@@ -458,8 +474,8 @@ return [
                 ],
                 [
                     'text' => 'Laporan DP (Down Payment)',
-                    'url' => 'JM/down-payment',
-                    'can' => 'down-payment.index',
+                    'url' => 'JM/report/dp',
+                    'can' => 'laporan.dp',
                 ],
             ],
         ],
@@ -494,6 +510,16 @@ return [
                     'can' => 'pengguna.index',
                 ],
             ],
+        ],
+        [
+            'header' => 'Pengaturan Aplikasi',
+            'can' => 'backup.index',
+        ],
+        [
+            'text' => 'Database',
+            'icon' => 'fas fa-database',
+            'url' => 'JM/backup',
+            'can' => 'backup.index',
         ],
     ],
 
