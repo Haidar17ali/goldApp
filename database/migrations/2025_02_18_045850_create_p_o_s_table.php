@@ -17,7 +17,8 @@ return new class extends Migration
             $table->dateTime('arrival_date')->nullable();
             $table->dateTime('payment_date')->nullable();
             $table->text('po_code');
-            $table->enum('po_type', ['Sengon', 'Bahan-Pembantu', 'SPK']);
+            $table->enum('type', ['Sengon', 'Bahan-Pembantu', 'SPK']);
+            $table->enum('wood_type', ['Sengon', 'Kayu Keras', 'Merbau']);
             $table->bigInteger('supplier_id')->nullable();
             $table->enum('supplier_type', ['Umum', 'Khusus']);
             $table->double('dp')->nullable();

@@ -80,6 +80,23 @@ class UtilityController extends Controller
         return response()->json($response);
     }
 
+    public function getMultipleData(Request $request){
+        $modelClass = 'App\Models\\' . ucfirst($request->model);
+        if (!class_exists($modelClass)) {
+            return redirect()->back()->with('error', 'Model tidak ditemukan');
+        }
+        
+        $response = $modelClass::whereIn('id', $request->id ?? [])->get();
+        
+        if($request->relation){
+            $response = $modelClass::with($request->relation ?? [])
+            ->whereIn('id', $request->id ?? [])
+            ->get();
+        }
+
+        return response()->json($response);
+    }
+
     // get npwp
     public function getByID(Request $request){
         $modelClass = 'App\Models\\' . ucfirst($request->model);
@@ -149,7 +166,7 @@ class UtilityController extends Controller
                 'arrival_date',
                 'payment_date',
                 'po_code',
-                'po_type',
+                'type',
                 'supplier_id',
                 'supplier_type',
                 'ppn',
@@ -240,6 +257,39 @@ class UtilityController extends Controller
                 'employee'=> ["fullname", "alias_name", "nik"],
             ]
         ],
+        'rotary' => [
+            'model' => 'App\\Models\\Rotary',
+            'columns' => [
+                        'id',
+                        'date',
+                        'shift',
+                        'wood_type',
+                        'tally_id',
+                        "created_by",
+                        "edited_by"
+                    ],
+            'relations' => [
+                'createdBy' => ['username'],
+                'editedBy' => ['username'],
+                'details' => ['no_kitir'],
+            ]
+        ],
+        'wood-management' => [
+            'model' => 'App\\Models\\WoodManagement',
+            'columns' => [
+                        'id',
+                        "date",
+                        "no_kitir",
+                        "grade",
+                        "type",
+                        "from",
+                        "to",
+                        "tally_id",
+                        "created_by",
+                        "edited_by"
+                    ],
+            'relations' => []
+        ],
         'purchase_jurnals' => [
             'model' => 'App\\Models\\PurchaseJurnal',
             'columns' => [
@@ -260,6 +310,7 @@ class UtilityController extends Controller
         $search = $request->input('search');
         $from = $request->input('from');
         $modelKey = $request->input('model');
+        $type = $request->input('type');
         $isEdit = $request->edit;
         $page = $request->page ?? 1;
 
@@ -339,7 +390,7 @@ class UtilityController extends Controller
 
         Cache::forget($cacheKey); // Hapus cache agar query tidak tersimpan
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations) {
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type) {
             return App::make($modelClass)::select($columns)->with($withRelations)
             ->when(in_array('parent_id', $columns), function ($query) {
                 $query->whereNull('parent_id');
@@ -363,7 +414,11 @@ class UtilityController extends Controller
                     });
                 }
             })
+            ->when($type, function ($query) use ($type) {
+                $query->where('type', $type);
+            })
             ->orderBy("id", "desc")->paginate(10);
+
         });
 
         if($modelKey  == "down_payments"){
@@ -414,6 +469,16 @@ class UtilityController extends Controller
         }elseif($modelKey == "users"){
             return response()->json([
                 'table' => view('pages.search.search-user', compact(['data']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "rotary"){
+            return response()->json([
+                'table' => view('pages.search.search-rotary', compact(['data', 'type']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "wood-management"){
+            return response()->json([
+                'table' => view('pages.search.search-wood-Management', compact(['data', "type"]))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }

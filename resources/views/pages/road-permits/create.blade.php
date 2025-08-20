@@ -460,14 +460,32 @@
     <script>
         $(document).ready(function() {
                     $('#location').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#handyman').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#from').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
 
                     @section('plugins.Toast', true)
                         var status = "{{ session('status') }}";

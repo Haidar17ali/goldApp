@@ -321,29 +321,77 @@
     <script>
         $(document).ready(function() {
                     $('#supplier_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#po_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#road_permit_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#grader_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#tally_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#supplier_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#npwp').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#road_permit_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     // handsontable
                     let columnType = [{
                             data: 'diameter',
@@ -552,6 +600,7 @@
                         } else {
                             // Jika tidak ada data di localStorage, gunakan data awal dari database
                             const initialData = {!! $initialData !!}
+
 
                             hot.loadData(initialData);
                             localStorage.setItem('editLpb', JSON.stringify(initialData));

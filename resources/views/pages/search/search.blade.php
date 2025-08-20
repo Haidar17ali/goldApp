@@ -87,18 +87,20 @@
                             </a>
                             || --}}
                         <a href="#" class="badge badge-primary"><i class="fas fa-eye"></i></a>
-                        @if (auth()->user()->hasRole('Super Admin') || $item->date > date('Y-m-d'))
+                        @can('down-payment.ubah')
                             <a href="{{ route('down-payment.ubah', ['id' => $item->id, 'type' => $item->type]) }}"
                                 class="badge badge-success">
                                 <i class="fas fa-pencil-alt"></i>
                             </a>
-                        @endif
+                        @endcan
                         @if (count($item->children) > 0)
-                            @if (auth()->user()->hasRole('Super Admin') || $item->children->first()->date > date('Y-m-d'))
-                                <a href="{{ route('down-payment.ubah', ['id' => $item->children->first()?->id ? $item->children->first()->id : $item->id, 'type' => $item->type]) }}"
-                                    class="badge badge-success">
-                                    <i class="fas fa-pencil-alt"></i> Pelunasan
-                                </a>
+                            @if (auth()->user()->hasRole('Super Admin'))
+                                @can('down-payment.ubah')
+                                    <a href="{{ route('down-payment.ubah', ['id' => $item->children->first()?->id ? $item->children->first()->id : $item->id, 'type' => $item->type]) }}"
+                                        class="badge badge-success">
+                                        <i class="fas fa-pencil-alt"></i> Pelunasan
+                                    </a>
+                                @endcan
                                 <form
                                     action="{{ route('down-payment.hapus', $item->children->first()?->id ? $item->children->first()->id : $item->id) }}"
                                     class="d-inline" method="post">

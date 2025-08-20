@@ -67,6 +67,18 @@
                                     <input type="text" class="form-control" id="description" name="description"
                                         value="{{ old('description', $po->description) }}">
                                     <span class="text-danger error-text" id="description_error"></span>
+                                </div><label for="wood_type" class="col-sm-2 col-form-label">Jenis Kayu</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control" name="wood_type" id="wood_type">
+                                        <option>Silahkan Pilih Tipe Kayu</option>
+                                        @if (count($wood_types))
+                                            @foreach ($wood_types as $wood_type)
+                                                <option {{ $po->wood_type == $wood_type ? 'selected' : '' }}
+                                                    value="{{ $wood_type }}">{{ $wood_type }}</option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                    <span class="text-danger error-text" id="wood_type_error"></span>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -233,8 +245,14 @@
     <script>
         $(document).ready(function() {
                     $('#supplier_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     // handsontable
                     let type = "{{ $type }}";
                     let colHeadersType = ['Nama Barang', 'Jumlah', 'Harga', 'Total'];

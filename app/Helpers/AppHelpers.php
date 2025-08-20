@@ -295,7 +295,7 @@ function getLPBSupplier(Request $request)
         }elseif($date_by == "paid_at"){
             $tglKirim = $lpb->paid_at;
         }
-        $groupKey = "{$nopol}_{$tglKirim}";
+        $groupKey = "{$nopol}_{$lpb->arrival_date}";
 
         // Gunakan tglKirim sebagai key utama
         if (!isset($groupedLpbs[$tglKirim])) {
@@ -406,26 +406,38 @@ function getLPBSupplierDetail(Request $request)
     $tglKirim = $firstLpb->arrival_date ?? '-';
     $po = $firstLpb->PO;
 
+
     $details = $lpbs->pluck('details')->flatten();
+
+    // mapping PO
+    $details = $lpbs->flatMap(function ($lpb) {
+        return $lpb->details->map(function ($detail) use ($lpb) {
+            $detail->po_id = $lpb->po_id; // inject nilai po_id dari induknya ke detail
+            return $detail;
+        });
+    });
+
 
     // Grouping berdasarkan kualitas|panjang|diameter
     $grouped = $details->groupBy(function ($item) {
-        return "{$item->quality}|{$item->length}|{$item->diameter}";
+        return "{$item->quality}|{$item->length}|{$item->diameter}|{$item->po_id}";
     });
 
     $results = [];
-
     foreach ($grouped as $key => $items) {
-        [$quality, $length, $diameter] = explode('|', $key);
+        [$quality, $length, $diameter, $poId] = explode('|', $key);
+        $poWoodType = PO::find($poId)?->wood_type ?? '-';
         $qty = $items->sum('qty');
         $m3 = kubikasi((float)$diameter, (float)$length, $qty);
         $price = $items->first()->price ?? 0;
-
+        
         // proses export BAKUL
+        $getPOActivationCode = PO::where("id", $poId)->first()->activation_date;
         if($request->type == "BKL"){
+            $getPOActivationCode = PO::where("id", $poId)->first()->activation_date;
             // ambil harga bakul
             $bakulPrice = PO::orderBy('id', 'desc')
-                    ->where('activation_date', $po->activation_date)->where('description', "Bakul")->first();
+            ->where('activation_date', $getPOActivationCode)->where("wood_type", $poWoodType)->where('description', "Bakul")->first();
             if($bakulPrice){
                 // Cari harga dari PO detail
                 $poDetail = PODetails::where('po_id', $bakulPrice->id)
@@ -439,7 +451,7 @@ function getLPBSupplierDetail(Request $request)
         }
         $nilai = $m3 * $price;
 
-        $keyLabel = strtolower($quality . ' ' . $length);
+        $keyLabel = strtolower("{$quality} {$length} (PO ID: {$poWoodType})");
         $results[$keyLabel][$length][] = [
             'diameter' => $diameter,
             'harga' => $price,
@@ -477,16 +489,16 @@ function getLPBSupplierDetail(Request $request)
 
     // Grand Total
     $grandTotalQty = $details->sum('qty');
-    // dd($grandTotalQty);
     $grandTotalM3 = $details->sum(function ($item) {
         return kubikasi((float)$item->diameter, (float)$item->length, $item->qty);
     });
-    $grandTotalNilai = $details->sum(function ($item) use($request, $po) {
+
+    $grandTotalNilai = $details->sum(function ($item) use($request, $getPOActivationCode, $poWoodType) {
         // ambil harga bakul
         $price =0;
         $BP = PO::orderBy('id', 'desc')
-                ->where('activation_date', $po->activation_date)->where('description', "Bakul")->first();
-        if($BP){
+                ->where('activation_date', $getPOActivationCode)->where("wood_type", $poWoodType)->where('description', "Bakul")->first();
+        if($BP != null){
             // Cari harga dari PO detail
             $poDetail = PODetails::where('po_id', $BP->id)
                 ->where('diameter_start', '<=', $item->diameter)
@@ -497,21 +509,21 @@ function getLPBSupplierDetail(Request $request)
                 $price = $poDetail->price ??0;
             }
             // end ambil harga po bakul
-            $harga = $request->type == "BKL" ? (float)$price : (float)$item->price;
-        return kubikasi((float)$item->diameter, (float)$item->length, $item->qty) * $harga;
+        $harga = $request->type == "BKL" ? (float)$price : (float)$item->price;
+        return kubikasi($item->diameter, $item->length, $item->qty) * $harga;
     });
 
-    // Grand Total PPh22 (dari semua LPB)
     // Hitung total PPh22 manual
-    $grandTotalPph = 0;
+    $grandTotalPph = 0;    
+    $totalUang = 0;
 
-    foreach ($lpbs as $lpb) {
+    foreach ($lpbs as $key => $lpb) {
         $lpbTotal = 0;
 
         // ambil harga bakul
         $BP = PO::orderBy('id', 'desc')
                 ->with(["details"])
-                ->where('activation_date', $po->activation_date)->where('description', "Bakul")->first();
+                ->where('activation_date', $getPOActivationCode)->where("wood_type", $poWoodType)->where('description', "Bakul")->first();
         if($BP){
             // Cari harga dari PO detail
             $poDetail = PODetails::where('po_id', $BP->id)
@@ -531,7 +543,7 @@ function getLPBSupplierDetail(Request $request)
             $lpbTotal += $nilai;
         }
         
-
+        $totalUang += $lpbTotal;
         $pph = $lpbTotal * 0.0025;
         $grandTotalPph += $pph;
     }
@@ -565,19 +577,20 @@ function handleConversion($arrival_date, $lpbReq, $request)
     if ($lpbs->isEmpty()) return;
 
     $totalLpb = 0;
+    $totalpph = 0;
     $lpbMax = null;
     $maxValue = 0;
 
-    foreach ($lpbs as $lpb) {
+    foreach ($lpbs as$index => $lpb) {
         $lpbValue = 0;
-        foreach ($lpb->details as $detail) {
+        foreach ($lpb->details as  $detail) {
             $kubik = kubikasi($detail->diameter, $detail->length, $detail->qty);
             $lpbValue += $kubik * $detail->price;
         }
-
+        
         // $lpb->total_kalkulasi = $lpbValue;
         $totalLpb += $lpbValue;
-
+        
         if ($lpbValue > $maxValue) {
             $maxValue = $lpbValue;
             $lpbMax = $lpb;
@@ -608,11 +621,25 @@ function handleConversion($arrival_date, $lpbReq, $request)
                     ->get();
         }
 
+        if(count($pelunasanList) <=0){
+            $pelunasanList = Down_payment::with(['details','children.details', 'parent.details'])
+            ->where('supplier_id', $supplier_id)
+            ->whereHas("details", function($q) use ($nopol){
+                $q->where("nopol", $nopol);
+            })
+            ->where("arrival_date", $arrival_date)
+            ->where("parent_id", null)
+            ->get();
+        }
+
     $totalNota = 0;
     $usedParentIds = [];
+    $pphNota = 0;
 
     foreach ($pelunasanList as $pelunasan) {
-        $totalNota += $pelunasan->details?->sum("price")??0;
+        $pphNota = $pelunasan->details->sum("price")*0.0025;
+        $totalNota += $pelunasan->nominal+$pelunasan->children->sum("nominal")??0;
+        // dd($totalNota);
 
         // Cek parent (DP)
         if ($pelunasan->parent_id && !in_array($pelunasan->parent_id, $usedParentIds)) {
@@ -623,6 +650,7 @@ function handleConversion($arrival_date, $lpbReq, $request)
             }
         }
     }
+    $totalNota += $pphNota;
     $selisih = $totalNota - $totalLpb;
     
     if($req_conversion != null){

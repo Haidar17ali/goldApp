@@ -284,17 +284,17 @@
     <script>
         $(document).ready(function() {
             $('#address').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
                 tags: true
             });
 
             $('#number_account').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
                 tags: true
             });
 
             $('#position').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
             });
 
             $("#payment_type").on("change", function() {

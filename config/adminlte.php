@@ -449,6 +449,53 @@ return [
             ],
         ],
         [
+            'text' => 'Produksi',
+            'icon' => 'fas fa-pallet',
+            'submenu' => [
+                
+                [
+                    'text' => 'Pengeloalaan Kayu',
+                    // 'can' => 'laporan.surat-jalan',
+                    "submenu" => [
+                        [
+                            "text" => "Afkir",
+                            "url" => "JM/produksi/pengelolaan-kayu/Afkir"
+                        ],
+                        [
+                            "text" => "Pending-Kitir",
+                            "url" => "JM/produksi/pengelolaan-kayu/Pending"
+                        ],
+                        [
+                            "text" => "Upgrade",
+                            "url" => "JM/produksi/pengelolaan-kayu/Upgrade"
+                        ],
+                        [
+                            "text" => "Downgrade",
+                            "url" => "JM/produksi/pengelolaan-kayu/Downgrade"
+                        ]
+                    ]
+                ],
+                [
+                    'text' => 'Rotari & Bensaw',
+                    // 'can' => 'laporan.surat-jalan',
+                    "submenu" => [
+                        [
+                            "text" => "Core/ 5 Feet",
+                            "url" => "JM/produksi/rotari/5-feet"
+                        ],
+                        [
+                            "text" => "Veneer/ 8 Feet",
+                            "url" => "JM/produksi/rotari/8-feet"
+                        ],
+                        [
+                            "text" => "Bensaw",
+                            "url" => "JM/produksi/rotari/Bensaw"
+                        ],
+                    ]
+                ],
+            ],
+        ],
+        [
             'text' => 'Laporan',
             'icon' => 'fas fa-book',
             'submenu' => [
@@ -583,18 +630,18 @@ return [
             'files' => [
                 [
                     'type' => 'js',
-                    'asset' => true,
+                    'asset' => false,
                     'location' => '//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
                 ],
                 [
                     'type' => 'css',
-                    'asset' => true,
+                    'asset' => false,
                     'location' => '//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
                 ],
                 [
                     'type' => 'css',
-                    'asset' => true,
-                    'location' => '//cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.0.0/dist/select2-bootstrap4.min.css',
+                    'asset' => false,
+                    'location' => '//cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.2.0/dist/select2-bootstrap-5-theme.min.css',
                 ],
             ],
         ],

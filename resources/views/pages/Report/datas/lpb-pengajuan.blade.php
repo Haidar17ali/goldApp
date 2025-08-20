@@ -22,7 +22,8 @@
                         <h6><strong>Tanggal Kirim: {{ date('d-m-Y', strtotime($lpb->arrival_date)) }}</strong></h6>
                     </div>
                     <div class="col-md-6">
-                        <h6>No Kitir: {{ $lpb->no_kitir }} | Tanggal: {{ date('d-m-Y', strtotime($lpb->date)) }}</h6>
+                        <h5><strong>No Kitir: {{ $lpb->no_kitir }}</strong>| Tanggal:
+                            {{ date('d-m-Y', strtotime($lpb->date)) }}</h5>
                     </div>
                 </div>
                 @php

@@ -2,6 +2,14 @@ function kubikasi(diameter,length,qty){
     return parseFloat(diameter*diameter*length*0.7854/1000000*qty).toFixed(4);
 }
 
+function kubikasiCore(lenght,width,height, qty){
+    return parseFloat(lenght*width*height*qty/1000).toFixed(4);
+}
+
+function kubikasi(diameter,length,qty){
+    return parseFloat(diameter*diameter*length*0.7854/1000000*qty).toFixed(4);
+}
+
 function totalKubikasi(details){
     let total = 0;
     if (details.length > 0) {

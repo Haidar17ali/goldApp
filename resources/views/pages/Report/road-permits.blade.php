@@ -87,8 +87,14 @@
     <script>
         $(document).ready(function() {
                     $('#supplier_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
 
                     function fetchData(start_date, last_date, supplier, nopol, page = 1, model, status) {
                         let search = "";

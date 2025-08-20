@@ -181,11 +181,36 @@ class HomeController extends BaseController
             ->with('details')
             ->get();
 
+        $paidLpbs = LPB::where("paid_at", "!=", null)
+            ->whereBetween('paid_at', [$startDate, $lastDate])
+            ->with('details')
+            ->get();
+
+        $paidLpbData = [
+            'reject_130' => 0,
+            'super_130'  => 0,
+            'super_260'  => 0,
+        ];
+
         $stokTerpakai = [
             'reject_130' => 0,
             'super_130'  => 0,
             'super_260'  => 0,
         ];
+
+        foreach ($paidLpbs as $index => $paidLpb) {
+            foreach ($paidLpb->details as $detail) {
+                if ($detail->quality == "Afkir" && $detail->length == 130) {
+                    $paidLpbData["reject_130"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                } elseif ($detail->quality == "Super") {
+                    if ($detail->length == 130) {
+                        $paidLpbData["super_130"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    } elseif ($detail->length == 260) {
+                        $paidLpbData["super_260"] += kubikasi($detail->diameter, $detail->length, $detail->qty);
+                    }
+                }
+            }
+        }
 
         foreach ($lpbsTerpakai as $index => $lpb) {
             foreach ($lpb->details as $detail) {
@@ -240,6 +265,7 @@ class HomeController extends BaseController
         return response()->json([
             'stok_terpakai' => $stokTerpakai,
             'stok_belum_terpakai' => $stokBelumTerpakai,
+            'paidLpbData' => $paidLpbData,
         ]);
     }
 

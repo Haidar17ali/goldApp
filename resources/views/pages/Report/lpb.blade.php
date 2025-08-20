@@ -25,7 +25,7 @@
 
                     <div class="col-md-2">
                         <label for="dateBy"><small>Tanggal Berdasarkan</small></label>
-                        <select class="form-control" name="date_by" id="dateBy">
+                        <select class="form-control" name="dateBy" id="dateBy">
                             <option value="">Pilih...</option>
                             <option value="paid_at">Pembayaran</option>
                             <option value="date1">LPB</option>
@@ -140,8 +140,14 @@
     <script>
         $(document).ready(function() {
                     $('#supplier_id').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
 
                     function fetchData(page = 1) {
                         let dateBy = $("#dateBy").val();
@@ -218,6 +224,28 @@
                             let page = $(this).attr('href').split('page=')[1];
                             fetchData(page);
                         });
+                        $('#exportExcel').on('click', function(e) {
+                            e.preventDefault();
+
+                            let dateBy = $("#dateBy").val();
+                            let start_date = $("#startDate").val();
+                            let last_date = $("#lastDate").val();
+                            let supplier = $("#supplier_id").val();
+                            let nopol = $("#nopol").val();
+                            let status = $("#status").val();
+
+                            let url = new URL("{{ route('laporan.export-Lpb-Npwp') }}", window.location.origin);
+
+                            if (dateBy) url.searchParams.append('dateBy', dateBy);
+                            if (start_date) url.searchParams.append('start_date', start_date);
+                            if (last_date) url.searchParams.append('last_date', last_date);
+                            if (supplier) url.searchParams.append('supplier', supplier);
+                            if (nopol) url.searchParams.append('nopol', nopol);
+                            if (status) url.searchParams.append('status', status);
+
+                            window.location.href = url.toString(); // Redirect untuk download file
+                        });
+
                     });
     </script>
     <script>

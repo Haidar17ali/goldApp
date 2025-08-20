@@ -5,9 +5,11 @@
             <th scope="col">Tanggal PO</th>
             <th scope="col">Kode PO</th>
             <th scope="col">Supplier</th>
+            <th scope="col">Keterangan</th>
             @if ($type == 'Sengon')
                 <th scope="col">Jenis Supplier</th>
             @endif
+            <th scope="col">Jenis Kayu</th>
             <th scope="col">Status</th>
             @if ($type != 'Sengon')
                 <th scope="col">PPN</th>
@@ -29,9 +31,11 @@
                     <td>{{ date('d-m-Y', strtotime($po->date)) }}</td>
                     <td>{{ $po->po_code }}</td>
                     <td>{{ $po->supplier != null ? $po->supplier->name : '' }}</td>
+                    <td>{{ $po->description }}</td>
                     @if ($type == 'Sengon')
                         <td>{{ $po->supplier_type }}</td>
                     @endif
+                    <td>{{ $po->wood_type }}</td>
                     <td>
                         <span
                             class="badge {{ $po->status == 'Aktif' ? 'badge-success' : ($po->status == 'Pending' ? 'badge-warning' : 'badge-danger') }}">{{ $po->status }}</span>

@@ -16,4 +16,8 @@ class PODetails extends Model
         'quantity',
         'price',
     ];
+
+    public function PO(){
+        return $this->belongsTo(PO::class, "po_id");
+    }
 }

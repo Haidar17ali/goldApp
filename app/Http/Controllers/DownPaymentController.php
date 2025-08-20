@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Down_payment;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class DownPaymentController extends BaseController
@@ -21,8 +22,11 @@ class DownPaymentController extends BaseController
         ];
         $down_payments = Down_payment::with('supplier')
         ->where('dp_type', 'DP')
+        ->orWhere("arrival_date", null)
         ->whereDoesntHave('children')
+        ->orderBy("id", "desc")
         ->get();
+
         $detail_inputs = [
             ['length' => 130, 'quality' => 'super'],
             ['length' => 260, 'quality' => 'super'],
@@ -43,30 +47,43 @@ class DownPaymentController extends BaseController
             'dp_type' => 'required|in:DP,Pelunasan',
             ]);
 
-            if($request->dp_type == "Pelunasan"){
-                $this->validate($request, [
-                'arrival_date' => 'required|date',
-                ]);
-                Down_payment::where("id", $request->dp_id)->update([
+            if ($request->dp_type == "Pelunasan") {
+        // Validasi untuk Pelunasan: arrival_date wajib, dp_id wajib minimal 1
+        // $this->validate($request, [
+        //     'arrival_date' => 'required|date',
+        //     'dp_id'        => 'required|array|min:1',
+        // ]);
+
+        // Update arrival_date pada semua DP yang dipilih
+        if (!empty($request->dp_id)) {
+                Down_payment::whereIn("id", $request->dp_id)->update([
                     "arrival_date" => $request->arrival_date
                 ]);
             }
+        } else {
+            // Validasi umum kalau bukan Pelunasan
+            $this->validate($request, [
+                'arrival_date' => 'nullable|date',
+            ]);
+        }
 
-            $data = [
-                'date' => $request->date,
-                'nota_date' => $request->nota_date,
-                'supplier_id' => $request->supplier,
-                'arrival_date' => $request->arrival_date,
-                'nominal' => $request->nominal,
-                'type' => $type,
-                'dp_type' => $request->dp_type,
-                'parent_id' => $request->dp_id,
-            ];
-            
-            $dp = Down_payment::create($data);
-
-            // Loop data detail
-            if($request->dp_id == null){
+        // Data untuk create DP baru
+        $data = [
+            'date'         => $request->date,
+            'nota_date'    => $request->nota_date,
+            'supplier_id'  => $request->supplier,
+            'arrival_date' => $request->arrival_date,
+            'nominal'      => $request->nominal,
+            'type'         => $type,
+            'dp_type'      => $request->dp_type,
+            'parent_id'    => Arr::first($request->dp_id), // null jika kosong
+        ];
+        
+        // Simpan data
+        $dp = Down_payment::create($data);
+        
+        // Loop data detail
+        if(count($request->dp_id) <= 1){
                 foreach ($request->length as $i => $length) {
     
                     $qty = $request->qty[$i];
@@ -110,6 +127,7 @@ class DownPaymentController extends BaseController
 
         $down_payments = Down_payment::with(['supplier', "details"])
         ->where('dp_type', 'DP')
+        ->orWhere("arrival_date", null)
         ->where(function ($query) use ($down_payment) {
             $query->whereDoesntHave('children');
             
@@ -121,6 +139,10 @@ class DownPaymentController extends BaseController
         ->get();
 
         $availableLengths = [130, 260]; // panjang yang selalu ditampilkan
+
+        $selectedDp = Down_payment::where("arrival_date", $down_payment->arrival_date)->where("supplier_id", $down_payment->supplier_id)->with(["details" => function($q) use ($down_payment){
+            $q->where("nopol", $down_payment->details[0]->nopol);
+        }])->where("id", "!=", $down_payment->id)->pluck("id")->toArray();
 
         $detailSource = $down_payment->dp_type === 'Pelunasan' && $down_payment->parent_id != null ? $down_payment->parent : $down_payment;   
         
@@ -134,7 +156,7 @@ class DownPaymentController extends BaseController
             ];
         })->toArray();
 
-        return view('pages.down-payments.edit', compact(['suppliers', 'down_payment', 'type', 'down_payments', 'detail_inputs', 'dp_types']));        
+        return view('pages.down-payments.edit', compact(['suppliers', 'down_payment', 'type', "selectedDp", 'down_payments', 'detail_inputs', 'dp_types']));        
     }
 
     public function update(Request $request, $id, $type){
@@ -157,9 +179,11 @@ class DownPaymentController extends BaseController
                 $this->validate($request, [
                 'arrival_date' => 'required|date',
                 ]);
-                Down_payment::where("id", $request->dp_id)->update([
-                    "arrival_date" => $request->arrival_date
-                ]);
+                Down_payment::where("arrival_date", $dp->arrival_date)->where("supplier_id", $dp->supplier_id)->with(["details" => function($q)use ($dp){
+                            $q->where("nopol", $dp->details[0]->nopol);
+                        }])->update([
+                                    "arrival_date" => $request->arrival_date
+                        ]);
             }
 
             $dp->update([
@@ -213,6 +237,14 @@ class DownPaymentController extends BaseController
 
     public function destroy($id){
         $down_payment = Down_payment::with("children")->findOrFail($id);
+
+        if($down_payment->dp_type == "Pelunasan"){
+                Down_payment::where("arrival_date", $down_payment->arrival_date)->where("supplier_id", $down_payment->supplier_id)->with(["details" => function($q) use ($down_payment){
+                $q->where("nopol", $down_payment->details[0]->nopol);
+                }])->update([
+                        "arrival_date" => null
+                ]);
+        }
 
         if(count($down_payment->children )> 0){
             foreach($down_payment->children as $children){

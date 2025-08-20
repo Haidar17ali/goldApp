@@ -68,10 +68,10 @@
         // select2
         $(document).ready(function() {
             $('#type').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
             });
             $('#parent').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
             });
 
             // ajax data select parent

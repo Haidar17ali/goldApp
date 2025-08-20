@@ -14,9 +14,11 @@ use App\Http\Controllers\PurchaseJurnalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoadPermitController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RotariController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
+use App\Http\Controllers\WoodManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -154,10 +156,28 @@ Route::prefix('JM')
         Route::patch('/down-payment/{id}/ubah/{type}', [DownPaymentController::class, 'update'])->name('down-payment.update');
         Route::delete('/down-payment/{id}/hapus', [DownPaymentController::class, 'destroy'])->name('down-payment.hapus');
 
+        // Production
+            // wood-management
+        Route::get("/produksi/pengelolaan-kayu/{type}", [WoodManagementController::class, "index"])->name("pengelolaan-kayu.index");
+        Route::get("/produksi/pengelolaan-kayu/buat/{type}", [WoodManagementController::class, "create"])->name("pengelolaan-kayu.buat");
+        Route::post("/produksi/pengelolaan-kayu/buat/{type}", [WoodManagementController::class, "store"])->name("pengelolaan-kayu.simpan");
+        Route::get("/produksi/pengelolaan-kayu/ubah/{id}/{type}", [WoodManagementController::class, "edit"])->name("pengelolaan-kayu.ubah");
+        Route::patch("/produksi/pengelolaan-kayu/ubah/{id}/{type}", [WoodManagementController::class, "update"])->name("pengelolaan-kayu.update");
+        Route::delete("/produksi/pengelolaan-kayu/hapus/{id}", [WoodManagementController::class, "destroy"])->name("pengelolaan-kayu.hapus");
+            
+            // Rotari
+        Route::get("/produksi/rotari/{type}", [RotariController::class, "index"])->name("rotari.index");
+        Route::get("/produksi/rotari/buat/{type}", [RotariController::class, "create"])->name("rotari.buat");
+        Route::post("/produksi/rotari/buat/{type}", [RotariController::class, "store"])->name("rotari.simpan");
+        Route::get("/produksi/rotari/ubah/{id}/{type}", [RotariController::class, "edit"])->name("rotari.ubah");
+        Route::patch("/produksi/rotari/ubah/{id}/{type}", [RotariController::class, "update"])->name("rotari.update");
+        Route::delete("/produksi/rotari/hapus/{id}", [RotariController::class, "destroy"])->name("rotari.hapus");
+
         // utility
             // ajax
         Route::get('no-rek-id/ajax', [UtilityController::class, 'getNumberAccount'])->name('utility.ajax-no-rek');
         Route::get('npwp-id/ajax', [UtilityController::class, 'getByID'])->name('utility.npwpId');
+        Route::get('npwp-id/ajax/multiple-data', [UtilityController::class, 'getMultipleData'])->name('utility.getMultipleData');
         Route::get('surat-jalan-id/ajax', [UtilityController::class, 'getByID'])->name('utility.suratJalanId');
             // po
         Route::get('/persetujuan-po/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-po');
@@ -170,6 +190,7 @@ Route::prefix('JM')
             // LPB
         Route::get('/persetujuan-LPB/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-lpb');
         Route::get('/get-lpb-detail/detail', [UtilityController::class, 'getById'])->name('utility.lpb-ajax-detail');
+
 
         // search data
         Route::get('data/search',[UtilityController::class, 'search'])->name('search');

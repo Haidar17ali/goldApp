@@ -85,8 +85,10 @@
                             $supplierTotalNominal += $nominalKubikasi;
                             $supplierTotalPph22 += $pph22;
                             $supplierTotal += $result - $pph22;
-                            $supplierTotalTF =
-                                $supplierTotal - $supplierDPRincian[$items->first()->supplier_id]['total'];
+                            if (array_key_exists($items->first()->supplier_id, $supplierDPRincian)) {
+                                $supplierTotalTF =
+                                    $supplierTotal - $supplierDPRincian[$items->first()->supplier_id]['total'];
+                            }
 
                             $grantTotalQty += $data->details != '' ? $data->details->sum('qty') : 0;
                             $grantTotalKubikasi += $totalKubikasi;

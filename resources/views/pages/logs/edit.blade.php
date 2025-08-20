@@ -100,14 +100,14 @@
     <script>
         $(document).ready(function() {
             $('#address').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
                 tags: true
             });
             $('#position').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
             });
             $('#number_account').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
                 tags: true
             });
 

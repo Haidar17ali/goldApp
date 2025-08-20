@@ -223,10 +223,10 @@
     <script>
         $(document).ready(function() {
             $('#role_id').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
             });
             $('#employee_id').select2({
-                theme: "bootstrap4",
+                theme: "bootstrap-5",
             });
         });
     </script>

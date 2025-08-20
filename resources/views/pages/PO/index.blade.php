@@ -151,7 +151,7 @@
                         columns: [
                             'id',
                             'date',
-                            'po_type',
+                            'type',
                             'supplier_id',
                             'supplier_type',
                             'created_by',
@@ -160,7 +160,9 @@
                             'order_by',
                             'po_code',
                             'status',
-                            'po_type',
+                            'type',
+                            'description',
+                            'wood_type',
                         ],
                         relations: {
                             'supplier': ["name"],

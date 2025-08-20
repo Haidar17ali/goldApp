@@ -4,6 +4,9 @@
     <h4><strong>NOPOL:</strong> {{ $nopolResult }}</h4>
 </div>
 
+@php
+    $totalBayar = 0;
+@endphp
 @foreach ($sortedResults as $quality => $lengthGroups)
     <table>
         <thead>
@@ -27,14 +30,18 @@
             @endphp
 
             @foreach ($lengthGroups as $length => $items)
+                @php
+                    $totalBayar += array_sum(array_column($lengthGroups[$length], 'nilai'));
+                    // dd($lengthGroups);
+                @endphp
                 @foreach ($items as $item)
                     <tr>
                         <td>{{ $length }}</td>
                         <td>{{ $item['diameter'] }}</td>
                         <td>{{ $item['qty'] }}</td>
                         <td>{{ number_format($item['m3'], 4, ',', '.') }}</td>
-                        {{-- <td>Rp {{ number_format($item['harga'], 0, ',', '.') }}</td> --}}
-                        <td>Rp {{ number_format($item['nilai'], 0, ',', '.') }}</td>
+                        {{-- <td>{{ $item['harga']) }}</td> --}}
+                        <td>{{ $item['nilai'] }}</td>
                     </tr>
 
                     @php
@@ -48,7 +55,7 @@
                     <td colspan="2">Total {{ $length }}</td>
                     <td>{{ array_sum(array_column($lengthGroups[$length], 'qty')) }}</td>
                     <td>{{ number_format(array_sum(array_column($lengthGroups[$length], 'm3')), 4, ',', '.') }}</td>
-                    <td>Rp {{ number_format(array_sum(array_column($lengthGroups[$length], 'nilai')), 0, ',', '.') }}
+                    <td>{{ array_sum(array_column($lengthGroups[$length], 'nilai')) }}
                     </td>
                 </tr>
             @endforeach
@@ -59,7 +66,7 @@
                 <td>{{ $totalQty }}</td>
                 <td>{{ number_format($totalM3, 4, ',', '.') }}</td>
                 <td></td>
-                <td>Rp {{ number_format($totalNilai, 0, ',', '.') }}</td>
+                <td>{{ $totalNilai) }}</td>
             </tr>
         </tfoot> --}}
     </table>
@@ -69,15 +76,15 @@
     <td colspan="2">Grant Total : </td>
     <td>{{ $grandTotalQty }}</td>
     <td>{{ number_format($grandTotalM3, 4, ',', '.') }}</td>
-    <td>Rp {{ number_format($grandTotalNilai, 0, ',', '.') }}</td>
+    <td>{{ $totalBayar }}</td>
 </tr>
 <tr>
     <td colspan="4">Total PPh</td>
-    <td>Rp {{ number_format($grandTotalPph, 0, ',', '.') }}</td>
+    <td>{{ $grandTotalPph }}</td>
 </tr>
 <tr>
     <td colspan="4">Total Transfer</td>
-    <td>Rp {{ number_format($grandTotalNilai - $grandTotalPph, 0, ',', '.') }}</td>
+    <td>{{ $totalBayar - $grandTotalPph }}</td>
 </tr>
 
 {{-- Grand Total Section --}}
@@ -94,8 +101,8 @@
         <tr class="grand-total">
             <td>{{ $grandTotalQty }}</td>
             <td>{{ number_format($grandTotalM3, 4, ',', '.') }}</td>
-            <td>Rp {{ number_format($grandTotalPph, 0, ',', '.') }}</td>
-            <td>Rp {{ number_format($grandTotalNilai - $grandTotalPph, 0, ',', '.') }}</td>
+            <td>{{ $grandTotalPph) }}</td>
+            <td>{{ $grandTotalNilai - $grandTotalPph) }}</td>
         </tr>
     </tfoot>
 </table> --}}

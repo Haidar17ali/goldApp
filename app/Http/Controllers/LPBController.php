@@ -32,7 +32,7 @@ class LPBController extends BaseController
 
     public function create(){
         $road_permits = RoadPermit::where('type_item', 'Sengon')->where('status', 'Sudah dibongkar')->get();
-        $purchase_orders = PO::with(['supplier'])->where('po_type', 'Sengon')->where('status','Aktif')->get();
+        $purchase_orders = PO::with(['supplier'])->where('type', 'Sengon')->where('status','Aktif')->get();
         $npwps = npwp::all();
         $graderTallies = Employee::whereHas('position', function ($query) {
             $query->where('name', 'Grader')->orWhere("name","Tally");
@@ -91,6 +91,7 @@ class LPBController extends BaseController
                 if ($validator->fails()) {
                     $detailErrors["details.$index"] = $validator->errors()->all();
                 }
+
             }
     
             if (!empty($detailErrors)) {
@@ -218,7 +219,7 @@ class LPBController extends BaseController
 
         $road_permits = RoadPermit::where('type_item', 'Sengon')->where('status', 'Sudah dibongkar')->orWhere('id', $lpb->road_permit_id) // Pastikan surat jalan yang sudah dipilih tetap muncul
         ->get();
-        $purchase_orders = PO::where('po_type', 'Sengon')->where('status','Aktif')->get();
+        $purchase_orders = PO::where('type', 'Sengon')->where('status','Aktif')->get();
         $npwps = npwp::all();
         $suppliers = Supplier::where('supplier_type', 'Sengon')->get();
         $graderTallies = Employee::whereHas('position', function ($query) {

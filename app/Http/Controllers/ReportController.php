@@ -68,7 +68,7 @@ class ReportController extends BaseController
             $query->where('supplier_id', $supplier);
         }
     
-        $lpbs = $query->orderBy('date', 'asc')->get();
+        $lpbs = $query->orderBy('nopol', 'asc')->orderBy('no_kitir', 'asc')->get();
     
         // Grouping by nopol
         $grouped = $lpbs->groupBy('nopol');
@@ -165,7 +165,7 @@ class ReportController extends BaseController
             $query->where('status', $status);
         }
 
-        $datas = $query->orderBy('id', 'desc')->get();
+        $datas = $query->orderBy('nopol', 'asc')->orderBy('no_kitir', 'asc')->get();
 
         $dataUniqueLpbs = $query->orderBy('id', 'desc')->get()
                 ->unique(function ($item) {
@@ -179,7 +179,7 @@ class ReportController extends BaseController
             foreach ($dataUniqueLpbs as $lpb) {
                 $supplierId = $lpb->supplier_id;
                 $arrivalDate = $lpb->arrival_date;
-            $nopol = $lpb->nopol;
+                $nopol = $lpb->nopol;
             
             // Ambil semua DP (parent & child) berdasarkan supplier dan arrival_date
             $dpList = Down_payment::with(['details','children.details', 'parent.details'])
@@ -191,7 +191,7 @@ class ReportController extends BaseController
             ->where("parent_id", null)
             ->get();
             
-            if(count($dpList) > 1){
+            if(count($dpList) >= 1){
                 // Ambil semua DP (parent & child) berdasarkan supplier dan arrival_date
                 $dpList = Down_payment::with(['details','children.details', 'parent.details'])
                 ->where('supplier_id', $supplierId)
@@ -208,7 +208,7 @@ class ReportController extends BaseController
             $supplierId = $lpb->supplier_id;
 
             // Inisialisasi array jika belum ada
-            if (!isset($supplierDPRincian[$supplierId])) {
+            if (!isset($supplierDPRincian[$supplierId]) && count($dpList)>= 1) {
                 $supplierDPRincian[$supplierId] = [
                     'supplier_name' => $lpb->supplier->name ?? 'Unknown',
                     'total' => 0,
@@ -283,7 +283,7 @@ class ReportController extends BaseController
         $data = getLPBSupplier($request);
         
         return Excel::download(new AllLPBSupplierReportExport(
-             $data['groupedLpbs'],
+            $data['groupedLpbs'],
             $data['grandTotal'],
             $data['periode'],
             $data['start_date'],  // Kirim ke view
@@ -292,7 +292,7 @@ class ReportController extends BaseController
         ), 'laporan-lpb-'.$request->start_date.'-'.$request->end_date.'-'.'.xlsx'); 
         
     }
-
+    
     public function getLpbSupplierReportDetail(Request $request)
     {
         $data = getLPBSupplierDetail($request);
@@ -321,7 +321,6 @@ class ReportController extends BaseController
             $data['sortedResults'],
             $data['pemilik'],
             $data['tglKirim'],
-            $data['periode'],
             $data['nopolResult'],
             $data['grandTotalQty'],
             $data['grandTotalM3'],
@@ -464,7 +463,7 @@ public function DPDetail(Request $request){
                         $totalNilaiLpb = $totalNilaiLpb+$lpb->conversion+$lpb->nota_conversion;
                         $pph = $totalNilaiLpb*0.0025;
                     }
-                    $totalNilaiLpb = round($totalNilaiLpb)-round($pph);
+                    $totalNilaiLpb = $dpTotal; //round($totalNilaiLpb)-round($pph);
                     $allLpbNominal += $totalNilaiLpb;
                     
                     $selisihDpLpb =$dpTotal-$totalNilaiLpb;
@@ -505,8 +504,8 @@ public function exportLpbByNpwp(Request $request)
 
     // Tambahkan filter sesuai kebutuhan Anda seperti start_date, nopol, dll.
     $start_date = $request->start_date;
-        $last_date = $request->last_date;
-        $date_by = $request->dateBy ?? 'date1';
+    $last_date = $request->last_date;
+    $date_by = $request->dateBy ?? 'date1';
         
         if($start_date == null && $last_date == null){
             $start_date = date('Y-m-d');
@@ -519,7 +518,6 @@ public function exportLpbByNpwp(Request $request)
 
         // Filter tanggal (jika ada dan valid)
         if ($start_date && $last_date) {
-
             if ($date_by === 'date1') {
                 $query->whereBetween('date', [$start_date, $last_date]);
             } elseif ($date_by === 'paid_at') {
@@ -532,7 +530,6 @@ public function exportLpbByNpwp(Request $request)
                 });
             }
         } elseif ($start_date) {
-
             if ($date_by === 'date1') {
                 $query->whereDate('date', $start_date);
             } elseif ($date_by === 'paid_at') {
@@ -562,9 +559,9 @@ public function exportLpbByNpwp(Request $request)
         if ($status && $status != "Pilih Status") {
             $query->where('status', $status);
         }
-
-    $datas = $query->get();
-
+        
+        $datas = $query->get();
+    
     $grouped = $datas->groupBy(function ($item) {
         return $item->npwp->npwp ?? 'Tidak Ada NPWP';
     });
@@ -573,16 +570,16 @@ public function exportLpbByNpwp(Request $request)
 
     foreach ($grouped as $npwp => $items) {
         $first = $items->first();
-        $namaLpb = $first->npwp->name ?? 'Tidak Diketahui'; // Ganti dengan field nama LPB Anda
-
+        $namaLpb = $first->npwp->name ?? 'Tidak Diketahui'; // Ganti dengan field nama LPB Anda        
         $totalQty = 0;
         $totalKubikasi = 0;
         $totalNilaiLpb = 0;
         $totalKonversi = 0;
+        $totalNotaKonversi = 0;
         $totalNilai = 0;
         $totalPph22 = 0;
         $totalGrandTotal = 0;
-
+        
         foreach ($items as $lpb) {
             $lpbKubikasi = 0;
             $lpbNilaiLpb = 0;
@@ -605,18 +602,19 @@ public function exportLpbByNpwp(Request $request)
             // $conversion = $lpb->conversion+$lpb->nota_conversion ?? 0;
             // $nilai = $lpbNilaiLpb + $lpb->conversion -abs($lpb->nota_conversion);
             $conversion = $lpb->conversion ?? 0;
-            $nilai = $lpbNilaiLpb + $lpb->conversion;
+            $nota_conversion = $lpb->nota_conversion ?? 0;
+            $nilai = $lpbNilaiLpb + $lpb->conversion+$nota_conversion;
             $pph22 = $nilai * 0.0025;
             $grandTotal = $nilai - $pph22;
-
+            
             $totalKubikasi += $lpbKubikasi;
             $totalNilaiLpb += $lpbNilaiLpb;
-            $totalKonversi += $conversion;
+            $totalKonversi += $conversion + $nota_conversion;
             $totalNilai += $nilai;
             $totalPph22 += $pph22;
             $totalGrandTotal += $grandTotal;
         }
-
+        
         $summary->push([
             'npwp' => $npwp,
             'nama_lpb' => $namaLpb,
@@ -628,6 +626,7 @@ public function exportLpbByNpwp(Request $request)
             'pph22' => $totalPph22,
             'grand_total' => $totalGrandTotal,
         ]);
+        
     }
 
 

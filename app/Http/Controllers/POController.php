@@ -14,16 +14,17 @@ use Illuminate\Support\Facades\Validator;
 class POController extends BaseController
 {
     public function index($type){
-        $pos = PO::where('po_type', $type)->with(['createdBy', "edit_by", 'approvedBy'])->orderBy('id', 'desc')->paginate(20);
+        $pos = PO::where('type', $type)->with(['createdBy', "edit_by", 'approvedBy'])->orderBy('id', 'desc')->paginate(20);
         return view('pages.PO.index', compact(['pos', 'type']));
     }
 
     public function create($type){
         $suppliers = Supplier::where('supplier_type', $type)->get();
         $supplier_types = ["Umum", "Khusus"];
+        $wood_types = ["Sengon", "Kayu Keras", "Merbau"];
         $employees = Employee::all();
 
-        return view('pages.PO.create', compact(['type', 'suppliers', 'employees', "supplier_types"]));
+        return view('pages.PO.create', compact(['type', 'suppliers', 'employees', "supplier_types", "wood_types"]));
     }
 
     public function store(Request $request, $type){
@@ -86,11 +87,12 @@ class POController extends BaseController
             $data = [
                 'date' => date('Y-m-d'),
                 'po_code' => $POCode,
-                'po_type' => $type,
+                'type' => $type,
                 'supplier_id' => $request->supplier_id,
                 'supplier_type' => $request->supplier_type,
                 'description' => $request->description,
                 'activation_date' => $request->activation_date,
+                'wood_type' => $request->wood_type,
                 'status' => 'Pending',
                 'created_by' => Auth::user()->id,
             ];
@@ -135,8 +137,9 @@ class POController extends BaseController
         $suppliers = Supplier::where('supplier_type', $type)->get();
         $po = PO::with(['details'])->findOrFail($id);
         $supplier_types = ["Umum", "Khusus"];
+        $wood_types = ["Sengon", "Kayu Keras", "Merbau"];
         $employees = Employee::all();
-        return view('pages.PO.edit', compact(['po', 'type','suppliers', 'employees', 'supplier_types']));
+        return view('pages.PO.edit', compact(['po', 'type','suppliers', 'employees', 'supplier_types', "wood_types"]));
     }
 
     public function update(Request $request, $id, $type){
@@ -193,12 +196,13 @@ class POController extends BaseController
         }
     
         // Simpan data utama
-            $po->po_type = $type;
+            $po->type = $type;
             $po->supplier_id = $request->supplier_id;
             $po->supplier_type = $request->supplier_type;
             $po->description = $request->description;
             $po->activation_date = $request->activation_date;
             $po->status = 'Pending';
+            $po->wood_type = $request->wood_type;
             $po->edited_by = Auth::user()->id;
             $po->save();
     

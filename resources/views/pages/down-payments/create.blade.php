@@ -91,7 +91,7 @@
                             <div class="form-group row">
                                 <label for="dp_select" class="col-sm-2 col-form-label">DP</label>
                                 <div class="col-sm-4">
-                                    <select class="form-control" name="dp_id" id="dp_select">
+                                    <select class="form-control" name="dp_id[]" id="dp_select" multiple>
                                         <option value="">Silahkan Pilih DP</option>
                                         @foreach ($down_payments as $down_payment)
                                             <option value="{{ $down_payment->id }}">
@@ -253,82 +253,91 @@
 
 
         function setData(url, data, value, idVal) {
-            let jsonData = loadWithData(url, data);
+            let jsonDatas = loadWithData(url, data);
 
-            if (!jsonData) {
+
+            if (!jsonDatas) {
                 console.error("jsonData is undefined or null", jsonData);
                 return;
             }
 
-            // set data
-            $("#arrival_date").val(jsonData.arrival_date);
-            $("#date").val(jsonData.date);
-            $("#nota_date").val(jsonData.nota_date);
-            $("#nopol").val(jsonData.details[0].nopol);
+            let nominalDP = 0;
+            let sisaDP = 0;
+            jsonDatas.forEach(function(jsonData) {
+                // set data
+                $("#arrival_date").val(jsonData.arrival_date);
+                $("#date").val(jsonData.date);
+                $("#nota_date").val(jsonData.nota_date);
+                $("#nopol").val(jsonData.details[0].nopol);
+                nominalDP += jsonData.nominal;
 
-            if (jsonData.details.length == 2) {
-                let pph = Math.floor((jsonData.details[0].price + jsonData.details[1].price) * 0.0025);
 
-                $("#pph").val(pph);
-                $("#nominal").val(jsonData.details[0].price + jsonData.details[1].price - pph - jsonData
-                    .nominal)
-            } else {
-                let pph = Math.floor((jsonData.details[0].price) * 0.0025);
+                if (jsonData.details.length == 2) {
+                    let pph = Math.floor((jsonData.details[0].price + jsonData.details[1].price) *
+                        0.0025);
 
-                $("#pph").val(pph);
-                $("#nominal").val(jsonData.details[0].price - pph - jsonData.nominal)
-            }
+                    $("#pph").val(pph);
+                    sisaDp = jsonData.details[0].price + jsonData.details[1].price - pph -
+                        nominalDP
+                } else {
+                    let pph = Math.floor((jsonData.details[0].price) * 0.0025);
 
-            // Kosongkan form detail lama
-            $("#form-dp").empty();
+                    $("#pph").val(pph);
+                    sisaDp = jsonData.details[0].price - pph - nominalDP
+                }
 
-            if (jsonData.details.length > 0) {
-                jsonData.details.forEach(function(detail, index) {
-                    let html = `
-                                    <div class="form-group row">
-                                        <label class="col-sm-2 col-form-label">Panjang (${detail.length})</label>
-                                        <div class="col-sm-4">
-                                            <input type="number" readonly class="form-control" name="length[]" value="${detail.length}">
+                // Kosongkan form detail lama
+                $("#form-dp").empty();
+
+                if (jsonData.details.length > 0) {
+                    jsonData.details.forEach(function(detail, index) {
+                        let html = `
+                                        <div class="form-group row">
+                                            <label class="col-sm-2 col-form-label">Panjang (${detail.length})</label>
+                                            <div class="col-sm-4">
+                                                <input type="number" readonly class="form-control" name="length[]" value="${detail.length}">
+                                            </div>
+                                            <label class="col-sm-2 col-form-label">Jumlah</label>
+                                            <div class="col-sm-4">
+                                                <input type="number" class="form-control" name="qty[]" value="${detail.qty}">
+                                            </div>
                                         </div>
-                                        <label class="col-sm-2 col-form-label">Jumlah</label>
-                                        <div class="col-sm-4">
-                                            <input type="number" class="form-control" name="qty[]" value="${detail.qty}">
+                                        <div class="form-group row">
+                                            <label class="col-sm-2 col-form-label">Kubikasi</label>
+                                            <div class="col-sm-4">
+                                                <input type="text" class="form-control" name="cubication[]" value="${detail.cubication ?? ''}">
+                                            </div>
+                                            <label class="col-sm-2 col-form-label">Harga</label>
+                                            <div class="col-sm-4">
+                                                <input type="number" class="form-control" name="price[]" value="${detail.price}">
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label class="col-sm-2 col-form-label">Kubikasi</label>
-                                        <div class="col-sm-4">
-                                            <input type="text" class="form-control" name="cubication[]" value="${detail.cubication ?? ''}">
-                                        </div>
-                                        <label class="col-sm-2 col-form-label">Harga</label>
-                                        <div class="col-sm-4">
-                                            <input type="number" class="form-control" name="price[]" value="${detail.price}">
-                                        </div>
-                                    </div>
-                                    <hr>
-                                    `;
+                                        <hr>
+                                        `;
 
-                    $("#form-dp").append(html);
-                });
-            }
+                        $("#form-dp").append(html);
+                    });
+                }
 
-            if (value == 'Pelunasan') {
-                disableForPelunasan()
-            }
+                if (value == 'Pelunasan') {
+                    disableForPelunasan()
+                }
 
-            // Set value supplier_id secara otomatis
-            if (jsonData.supplier_id) {
-                $('#supplier_hidden').val(jsonData.supplier_id); // agar tetap terkirim
-                $('#supplier').prop('disabled', true);
-            }
+                // Set value supplier_id secara otomatis
+                if (jsonData.supplier_id) {
+                    $('#supplier_hidden').val(jsonData.supplier_id); // agar tetap terkirim
+                    $('#supplier').prop('disabled', true);
+                }
+            })
+            $("#nominal").val(sisaDp)
         }
 
         $('#supplier').select2({
-            theme: "bootstrap4",
+            theme: "bootstrap-5",
             tags: true
         });
         $('#dp_select').select2({
-            theme: "bootstrap4",
+            theme: "bootstrap-5",
             tags: true
         });
 
@@ -355,7 +364,8 @@
         $("#dp_select").on('change', function() {
             let value = $('#dp_type').val();
             let idVal = $(this).val();
-            let url = "{{ route('utility.npwpId') }}"
+
+            let url = "{{ route('utility.getMultipleData') }}"
             let data = {
                 id: idVal,
                 model: 'Down_payment',
@@ -379,7 +389,7 @@
                     model: 'Down_payment',
                     relation: ['supplier', "details"],
                 };
-                let url = "{{ route('utility.npwpId') }}"
+                let url = "{{ route('utility.getMultipleData') }}"
                 setData(url, data, value, idVal);
                 disableForPelunasan();
             }

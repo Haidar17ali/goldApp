@@ -162,18 +162,24 @@
     <script>
         $(document).ready(function() {
                     $('#address').select2({
-                        theme: "bootstrap4",
+                        theme: "bootstrap-5",
                         tags: true
                     });
                     $('#position').select2({
-                        theme: "bootstrap4",
-                    });
+                        theme: "bootstrap-5",
+                    }).on('select2:open', function() {
+                        // Fokuskan ke input search
+                        setTimeout(() => {
+                            document.querySelector('.select2-container--open .select2-search__field')
+                                ?.focus();
+                        }, 10);
+                    });;
                     $('#number_account').select2({
-                        theme: "bootstrap4",
+                        theme: "bootstrap-5",
                         tags: true
                     });
                     $('#npwp_id').select2({
-                        theme: "bootstrap4",
+                        theme: "bootstrap-5",
                         tags: true
                     });
 

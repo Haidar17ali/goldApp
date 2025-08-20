@@ -147,6 +147,9 @@
 
                             <h3>Stok Belum Terpakai</h3>
                             <div id="stok-belum-terpakai"></div>
+
+                            <h3>Pembelian</h3>
+                            <div id="pembelian"></div>
                         </div>
 
                         {{-- <h5>Belum Terpakai:</h5>
@@ -331,6 +334,8 @@
                 success: function(data) {
                     let terpakai = data.stok_terpakai;
                     let belum = data.stok_belum_terpakai;
+                    let pembelian = data.paidLpbData;
+                    let totalPembelian = pembelian.reject_130 + pembelian.super_130 + pembelian.super_260;
                     let totalTerpakai = terpakai.reject_130 + terpakai.super_130 + terpakai.super_260
                     let totalBelumTerpakai = belum.reject_130 + belum.super_130 + belum.super_260
 
@@ -347,10 +352,17 @@
                     <p>Super 260: ${belum.super_260.toFixed(4)} m³</p>
                     <p>Total: ${totalBelumTerpakai.toFixed(4)} m³</p>
                 `);
+                    $('#pembelian').html(`
+                    <p>Afkir 130: ${pembelian.reject_130.toFixed(4)} m³</p>
+                    <p>Super 130: ${pembelian.super_130.toFixed(4)} m³</p>
+                    <p>Super 260: ${pembelian.super_260.toFixed(4)} m³</p>
+                    <p>Total: ${totalPembelian.toFixed(4)} m³</p>
+                `);
                 },
                 error: function() {
                     $('#stok-terpakai').html('<p>Gagal memuat data</p>');
                     $('#stok-belum-terpakai').html('<p>Gagal memuat data</p>');
+                    $('#pembelian').html('<p>Gagal memuat data</p>');
                 }
             });
         }
