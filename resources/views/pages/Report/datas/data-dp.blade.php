@@ -42,8 +42,12 @@
                         <td>Rp.{{ money_format($row['total_dp']) ?? '-' }}</td>
                         <td>Rp.{{ money_format($row['used_dp']) }}</td>
                         <td>Rp.{{ money_format($row['saldo']) }}</td>
-                        <td><a href="{{ route('laporan.dp-detail', $row['supplier_id']) }}" class="badge badge-primary"><i
-                                    class="fas fa-eye"></i></a></td>
+                        <td>
+                            <a href="{{ route('laporan.dp-detail', $row['supplier_id']) }}" class="badge badge-primary"><i
+                                    class="fas fa-eye"></i></a>
+                            <a href="{{ route('laporan.dp-detail-nopol', $row['supplier_id']) }}"
+                                class="badge badge-primary"><i class="fas fa-eye"></i> Nopol</a>
+                        </td>
                     </tr>
                     {{-- <tr>
                         <td>{{ \Carbon\Carbon::parse($row['nota_date'])->format('Y-m-d') }}</td>

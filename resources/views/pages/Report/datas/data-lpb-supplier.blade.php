@@ -53,6 +53,7 @@
                                     'end_date' => $end_date,
                                     'date_by' => $dateBy,
                                     'type' => 'BKL',
+                                    'arrival_date' => $row['tgl_kirim'],
                                 ]) }}"
                                     class="badge badge-success">
                                     <i class="fas fa-file-excel"></i> BKL
@@ -63,6 +64,7 @@
                                     'start_date' => $start_date,
                                     'end_date' => $end_date,
                                     'date_by' => $dateBy,
+                                    'arrival_date' => $row['tgl_kirim'],
                                 ]) }}"
                                     class="badge badge-success">
                                     <i class="fas fa-file-excel"></i>

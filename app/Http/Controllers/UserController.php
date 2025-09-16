@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +18,7 @@ class UserController extends BaseController
 
     public function create(){
         $roles = Role::all();
-        $employees = Employee::all();
-        return view("pages.users.create", compact(['roles', 'employees']));
+        return view("pages.users.create", compact(['roles']));
     }
 
     public function store(Request $request){
@@ -38,7 +36,6 @@ class UserController extends BaseController
                 "email" => $request->email,
                 "password" => Hash::make($request->password),
                 "is_active" => true,
-                "employee_id" => $request->employee_id?? null,
             ];
     
             $user = User::create($data);
@@ -55,8 +52,7 @@ class UserController extends BaseController
     public function edit($id){
         $user = User::findOrFail($id);
         $roles = Role::all();
-        $employees = Employee::all();
-        return view("pages.users.edit", compact(['user', 'roles', 'employees']));
+        return view("pages.users.edit", compact(['user', 'roles']));
     }
 
     public function update(Request $request, $id){
@@ -75,7 +71,6 @@ class UserController extends BaseController
             $user->username = $request->username;
             $user->email = $request->email;
             $user->is_active = $request->has('activation') ? true : false;
-            $user->employee_id = $request->employee_id ?? null;
 
             // Jika password diisi, update
             if ($request->filled('password')) {

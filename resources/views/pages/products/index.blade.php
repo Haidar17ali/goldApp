@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Pengguna')
+@section('title', 'Produk')
 
 @section('content_header')
-    <h1>Pengguna</h1>
+    <h1>Produk</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('pengguna.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Pengguna</a>
+            <a href="{{ route('produk.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
+                Produk</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="users" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="products" class="form-control mb-3 float-right"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -125,10 +125,8 @@
                         search: search,
                         columns: [
                             'id',
-                            'username',
-                            'email',
-                            'is_active',
-                            'employee_id',
+                            'code',
+                            'name',
 
                         ],
                         relations: {
@@ -143,7 +141,7 @@
                     }
                 });
             }
-            fetchData("", 1, "users");
+            fetchData("", 1, "products");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -157,11 +155,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'users');
+                fetchData(inputElement, page, 'products');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'users');
+                fetchData(this, 1, 'products');
             });
         });
     </script>

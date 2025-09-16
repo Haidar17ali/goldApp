@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'title' => 'Jati Makmur',
+    'title' => 'By Zara',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'logo' => '<b>Jati Makmur</b>',
+    'logo' => '<b>By Zara</b>',
     'logo_img' => 'assets/images/LogoJM.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -334,164 +334,37 @@ return [
             'icon' => 'fas fa-database',
             'submenu' => [
                 [
-                    'text' => 'Bagian',
-                    'url' => 'JM/bagian',
-                    'can' => 'bagian.index',
+                    'text' => 'Produk',
+                    'url' => 'by-zara/produk',
+                    'can' => 'produk.index',
                 ],
                 [
-                    'text' => 'Karyawan',
-                    'url' => 'JM/karyawan',
-                    'can' => 'karyawan.index',
+                    'text' => 'Warna',
+                    'url' => 'by-zara/warna',
+                    'can' => 'warna.index',
                 ],
                 [
-                    'text' => 'Supplier',
-                    'url' => 'JM/supplier',
-                    'can' => 'supplier.index',
-                ],
-                [
-                    'text' => 'NPWP',
-                    'url' => 'JM/NPWP',
-                    'can' => 'npwp.index',
-                ],
-                [
-                    'text' => 'Stok',
-                    'icon' => 'fas fa-warehouse',
-                    'submenu' => [
-                        [
-                            'text' => 'Sengon',
-                            'url' => 'JM/log/Sengon',
-                            'can' => 'log.index',
-                        ],
-                        [
-                            'text' => 'Merbau',
-                            'url' => 'JM/log/Merbau',
-                            'can' => 'log.index',
-                        ]
-                    ],
+                    'text' => 'Ukuran',
+                    'url' => 'by-zara/size',
+                    'can' => 'size.index',
                 ]
             ],
         ],
         [
-            'text' => 'Transaksi & Operasional',
-            'icon' => 'fas fa-exchange-alt',
-            'submenu' => [
-                [
-                    'text' => 'Surat Jalan',
-                    'icon' => 'fas fa-truck',
-                    'submenu' => [
-                        [
-                            'text' => 'Barang Masuk',
-                            'url' => 'JM/surat-jalan/In',
-                            'can' => 'surat-jalan.index',
-                        ],
-                        [
-                            'text' => 'Barang Keluar',
-                            'url' => 'JM/Out/surat-jalan/Out',
-                            'can' => 'surat-jalan.keluar',
-                        ]
-                    ],
-                ],
-                [
-                    'text' => 'LPB (Laporan Penerimaan Barang)',
-                    'icon' => 'fas fa-shopping-cart',
-                    'url' => 'JM/lpb',
-                    'can' => 'lpb.index',
-                ],
-                [
-                    'text' => 'PO (Purchase Order)',
-                    'icon' => 'fas fa-money-bill-wave-alt',
-                    'submenu' => [
-                        [
-                            'text' => 'Barang Pembantu',
-                            'url' => 'JM/purchase-order/Bahan-Pembantu',
-                            'can' => 'purchase-order.index',
-                        ],
-                        [
-                            'text' => 'SPK',
-                            'url' => 'JM/purchase-order/SPK',
-                            'can' => 'purchase-order.index',
-                        ],
-                        [
-                            'text' => 'Sengon',
-                            'url' => 'JM/purchase-order/Sengon',
-                            'can' => 'purchase-order.index',
-                        ],
-                    ],
-                ],
-                [
-                    'text' => 'Purchase Jurnal',
-                    'icon' => 'fas fa-book',
-                    'url' => 'JM/purchase-jurnal',
-                    'can' => 'purchase-jurnal.index',
-                ],
-                [
-                    'text' => 'DP (Down Payment)',
-                    'icon' => 'fas fa-money-bill-wave-alt',
-                    'can' => 'down-payment.index',
-                    'submenu' => [
-                        [
-                            'text' => 'Barang Pembantu',
-                            'url' => 'JM/down-payment/Bahan-Pembantu',
-                            'can' => 'purchase-order.index',
-                        ],
-                        [
-                            'text' => 'Merbau',
-                            'url' => 'JM/down-payment/Merbau',
-                            'can' => 'purchase-order.index',
-                        ],
-                        [
-                            'text' => 'Sengon',
-                            'url' => 'JM/down-payment/Sengon',
-                            'can' => 'purchase-order.index',
-                        ],
-                    ]
-                ],
-            ],
-        ],
-        [
             'text' => 'Produksi',
-            'icon' => 'fas fa-pallet',
+            'icon' => 'fas fa-tshirt',
             'submenu' => [
-                
                 [
-                    'text' => 'Pengeloalaan Kayu',
-                    // 'can' => 'laporan.surat-jalan',
-                    "submenu" => [
-                        [
-                            "text" => "Afkir",
-                            "url" => "JM/produksi/pengelolaan-kayu/Afkir"
-                        ],
-                        [
-                            "text" => "Pending-Kitir",
-                            "url" => "JM/produksi/pengelolaan-kayu/Pending"
-                        ],
-                        [
-                            "text" => "Upgrade",
-                            "url" => "JM/produksi/pengelolaan-kayu/Upgrade"
-                        ],
-                        [
-                            "text" => "Downgrade",
-                            "url" => "JM/produksi/pengelolaan-kayu/Downgrade"
-                        ]
-                    ]
+                    'text' => 'Cutting',
+                    'icon' => 'fas fa-hand-scissors',
+                    'url' => 'by-zara/cutting',
+                    'can' => 'cutting.index',
                 ],
                 [
-                    'text' => 'Rotari & Bensaw',
-                    // 'can' => 'laporan.surat-jalan',
-                    "submenu" => [
-                        [
-                            "text" => "Core/ 5 Feet",
-                            "url" => "JM/produksi/rotari/5-feet"
-                        ],
-                        [
-                            "text" => "Veneer/ 8 Feet",
-                            "url" => "JM/produksi/rotari/8-feet"
-                        ],
-                        [
-                            "text" => "Bensaw",
-                            "url" => "JM/produksi/rotari/Bensaw"
-                        ],
-                    ]
+                    'text' => 'Pengiriman',
+                    'icon' => 'far fa-truck',
+                    'url' => 'by-zara/lpb',
+                    'can' => 'lpb.index',
                 ],
             ],
         ],
@@ -501,27 +374,27 @@ return [
             'submenu' => [
                 [
                     'text' => 'Laporan Surat Jalan',
-                    'url' => 'JM/report/surat-jalan',
+                    'url' => 'by-zara/report/surat-jalan',
                     'can' => 'laporan.surat-jalan',
                 ],
                 [
                     'text' => 'Laporan LPB',
-                    'url' => 'JM/report/lpb',
+                    'url' => 'by-zara/report/lpb',
                     'can' => 'laporan.lpb',
                 ],
                 [
                     'text' => 'Laporan LPB Supplier',
-                    'url' => 'JM/report/lpb-supplier',
+                    'url' => 'by-zara/report/lpb-supplier',
                     'can' => 'laporan.lpb-supplier',
                 ],
                 [
                     'text' => 'Laporan Purchase Jurnal',
-                    'url' => 'JM/purchase-jurnal',
+                    'url' => 'by-zara/purchase-jurnal',
                     'can' => 'purchase-jurnal.index',
                 ],
                 [
                     'text' => 'Laporan DP (Down Payment)',
-                    'url' => 'JM/report/dp',
+                    'url' => 'by-zara/report/dp',
                     'can' => 'laporan.dp',
                 ],
             ],
@@ -543,17 +416,17 @@ return [
             'submenu' => [
                 [
                     'text' => 'Role',
-                    'url' => 'JM/role',
+                    'url' => 'by-zara/role',
                     'can' => 'role.index',
                 ],
                 [
                     'text' => 'Permissions',
-                    'url' => 'JM/permission',
+                    'url' => 'by-zara/permission',
                     'can' => 'permission.index',
                 ],
                 [
                     'text' => 'Pengguna',
-                    'url' => 'JM/pengguna',
+                    'url' => 'by-zara/pengguna',
                     'can' => 'pengguna.index',
                 ],
             ],
@@ -565,7 +438,7 @@ return [
         [
             'text' => 'Database',
             'icon' => 'fas fa-database',
-            'url' => 'JM/backup',
+            'url' => 'by-zara/backup',
             'can' => 'backup.index',
         ],
     ],

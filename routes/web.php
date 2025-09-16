@@ -1,24 +1,15 @@
 <?php
 
 use App\Http\Controllers\BackupController;
-use App\Http\Controllers\DownPaymentController;
-use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ColorController;
+use App\Http\Controllers\CuttingController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\LogController;
-use App\Http\Controllers\LPBController;
-use App\Http\Controllers\NPWPController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\POController;
-use App\Http\Controllers\PositionController;
-use App\Http\Controllers\PurchaseJurnalController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\RoadPermitController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\RotariController;
-use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\SizeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
-use App\Http\Controllers\WoodManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,10 +19,10 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::get('/dashboard/stok/filter', [HomeController::class, 'filterStok'])->name('filter-stock');
+// Route::get('/dashboard/stok/filter', [HomeController::class, 'filterStok'])->name('filter-stock');
 
 
-Route::prefix('JM')
+Route::prefix('by-zara')
     ->middleware(['auth'])
     ->group(function(){
 
@@ -47,16 +38,6 @@ Route::prefix('JM')
         Route::patch("/role/{id}/ubah", [RoleController::class, "update"])->name('role.update');
         Route::delete("/role/{id}/hapus", [RoleController::class, "destroy"])->name('role.hapus');
 
-        // position
-        Route::get('/bagian', [PositionController::class, 'index'])->name('bagian.index');
-        Route::get("/bagian/buat", [PositionController::class, "create"])->name('bagian.buat');
-        Route::post("/bagian/buat", [PositionController::class, "store"])->name('bagian.simpan');
-        Route::get("/bagian/{id}/ubah", [PositionController::class, "edit"])->name('bagian.ubah');
-        Route::patch("/bagian/{id}/ubah", [PositionController::class, "update"])->name('bagian.update');
-        Route::delete("/bagian/{id}/hapus", [PositionController::class, "destroy"])->name('bagian.hapus');
-        // ajax position
-        Route::get('bagian/ajax/tipe', [PositionController::class, 'selectType'])->name('bagian.tipe');
-
         // users
         Route::get("/pengguna", [UserController::class, 'index'])->name("pengguna.index");
         Route::get('/pengguna/buat', [UserController::class, 'create'])->name('pengguna.buat');
@@ -65,113 +46,38 @@ Route::prefix('JM')
         Route::patch('/pengguna/{id}/ubah', [UserController::class, 'update'])->name('pengguna.update');
         Route::delete('/pengguna/{id}/hapus', [UserController::class, 'destroy'])->name('pengguna.hapus');
 
-        // Karyawan
-        Route::get('/karyawan', [EmployeeController::class, 'index'])->name('karyawan.index');
-        Route::get('/karyawan/buat', [EmployeeController::class, 'create'])->name('karyawan.buat');
-        Route::post('/karyawan/buat', [EmployeeController::class, 'store'])->name('karyawan.simpan');
-        Route::get('/karyawan/{id}/ubah', [EmployeeController::class, 'edit'])->name('karyawan.ubah');
-        Route::patch('/karyawan/{id}/ubah', [EmployeeController::class, 'update'])->name('karyawan.update');
-        Route::delete('/karyawan/{id}/hapus', [EmployeeController::class, 'destroy'])->name('karyawan.hapus');
-        // import dan export karyawan
-        Route::post('/import-karyawan', [EmployeeController::class, 'importEmployees'])->name('karyawan.import');
-        // ajax dapatkan alamat yang ada di db
-        Route::get('bagian/ajax', [EmployeeController::class, 'getAddress'])->name('karyawan.alamat');
+        // products
+        Route::get("/produk", [ProductController::class, 'index'])->name("produk.index");
+        Route::get('/produk/buat', [ProductController::class, 'create'])->name('produk.buat');
+        Route::post('/produk/buat', [ProductController::class, 'store'])->name('produk.simpan');
+        Route::get('/produk/{id}/ubah', [ProductController::class, 'edit'])->name('produk.ubah');
+        Route::patch('/produk/{id}/ubah', [ProductController::class, 'update'])->name('produk.update');
+        Route::delete('/produk/{id}/hapus', [ProductController::class, 'destroy'])->name('produk.hapus');
+
+        // colors
+        Route::get("/warna", [ColorController::class, 'index'])->name("warna.index");
+        Route::get('/warna/buat', [ColorController::class, 'create'])->name('warna.buat');
+        Route::post('/warna/buat', [ColorController::class, 'store'])->name('warna.simpan');
+        Route::get('/warna/{id}/ubah', [ColorController::class, 'edit'])->name('warna.ubah');
+        Route::patch('/warna/{id}/ubah', [ColorController::class, 'update'])->name('warna.update');
+        Route::delete('/warna/{id}/hapus', [ColorController::class, 'destroy'])->name('warna.hapus');
+
+        // sizes
+        Route::get("/size", [SizeController::class, 'index'])->name("size.index");
+        Route::get('/size/buat', [SizeController::class, 'create'])->name('size.buat');
+        Route::post('/size/buat', [SizeController::class, 'store'])->name('size.simpan');
+        Route::get('/size/{id}/ubah', [SizeController::class, 'edit'])->name('size.ubah');
+        Route::patch('/size/{id}/ubah', [SizeController::class, 'update'])->name('size.update');
+        Route::delete('/size/{id}/hapus', [SizeController::class, 'destroy'])->name('size.hapus');
+
+        // sizes
+        Route::get("/cutting", [CuttingController::class, 'index'])->name("cutting.index");
+        Route::get('/cutting/buat', [CuttingController::class, 'create'])->name('cutting.buat');
+        Route::post('/cutting/buat', [CuttingController::class, 'store'])->name('cutting.simpan');
+        Route::get('/cutting/{id}/ubah', [CuttingController::class, 'edit'])->name('cutting.ubah');
+        Route::patch('/cutting/{id}/ubah', [CuttingController::class, 'update'])->name('cutting.update');
+        Route::delete('/cutting/{id}/hapus', [CuttingController::class, 'destroy'])->name('cutting.hapus');
         
-        // supplier
-        Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier.index');
-        Route::get('/supplier/buat', [SupplierController::class, 'create'])->name('supplier.buat');
-        Route::post('/supplier/buat', [SupplierController::class, 'store'])->name('supplier.simpan');
-        Route::get('/supplier/{id}/ubah', [SupplierController::class, 'edit'])->name('supplier.ubah');
-        Route::patch('/supplier/{id}/ubah', [SupplierController::class, 'update'])->name('supplier.update');
-        Route::delete('/supplier/{id}/hapus', [SupplierController::class, 'destroy'])->name('supplier.hapus');
-        // import dan export supplier
-        Route::post('/import-supplier', [SupplierController::class, 'importSupplier'])->name('supplier.import');
-
-        // surat jalan
-        Route::get('/surat-jalan/{type}', [RoadPermitController::class, 'index'])->name('surat-jalan.index');
-        Route::get('/surat-jalan/{type}/buat', [RoadPermitController::class, 'create'])->name('surat-jalan.buat');
-        Route::post('/surat-jalan/{type}/buat', [RoadPermitController::class, 'store'])->name('surat-jalan.simpan');
-        Route::get('/surat-jalan/{id}/detail', [RoadPermitController::class, 'showDetail'])->name('surat-jalan.detail');
-        Route::get('/surat-jalan/{id}/lpb-supplier', [RoadPermitController::class, 'LPBToSupplier'])->name('surat-jalan.LPBToSupplier');
-        Route::get('/surat-jalan/{id}/ubah/{type}', [RoadPermitController::class, 'edit'])->name('surat-jalan.ubah');
-        Route::patch('/surat-jalan/{id}/ubah/{type}', [RoadPermitController::class, 'update'])->name('surat-jalan.update');
-        Route::delete('/surat-jalan/{id}/hapus', [RoadPermitController::class, 'destroy'])->name('surat-jalan.hapus');
-        Route::get('/surat-jalan/{id}/out', [RoadPermitController::class, 'out'])->name("surat-jalan.keluar");
-        Route::get('/surat-jalan/{id}/set-handyman/{type}', [RoadPermitController::class, 'setHandyman'])->name('surat-jalan.set-pembongkar');
-        Route::patch('/surat-jalan/{id}/set-handyman/{type}', [RoadPermitController::class, 'saveHandyman'])->name('surat-jalan.simpan-pembongkar');
-
-        // npwp
-        Route::get('/NPWP', [NPWPController::class, 'index'])->name('npwp.index');
-        Route::get('/NPWP/buat', [NPWPController::class, 'create'])->name('npwp.buat');
-        Route::post('/NPWP/buat', [NPWPController::class, 'store'])->name('npwp.simpan');
-        Route::get('/NPWP/{id}/ubah', [NPWPController::class, 'edit'])->name('npwp.ubah');
-        Route::patch('/NPWP/{id}/ubah', [NPWPController::class, 'update'])->name('npwp.update');
-        Route::delete('/NPWP/{id}/hapus', [NPWPController::class, 'destroy'])->name('npwp.hapus');
-        // import dan export NPWP
-        Route::post('/import-NPWP', [NPWPController::class, 'importNpwp'])->name('npwp.import');
-        
-        // Log
-        Route::get('/log/{type}', [LogController::class, 'index'])->name('log.index');
-        Route::get('/log/{type}/buat', [LogController::class, 'create'])->name('log.buat');
-        Route::post('/log/{type}/buat', [LogController::class, 'store'])->name('log.simpan');
-        Route::get('/log/{id}/ubah/{type}', [LogController::class, 'edit'])->name('log.ubah');
-        Route::patch('/log/{id}/ubah/{type}', [LogController::class, 'update'])->name('log.update');
-        Route::delete('/log/{id}/hapus', [LogController::class, 'destroy'])->name('log.hapus');
-        // import dan export log
-        Route::post('/import-log/{type}', [LogController::class, 'importLog'])->name('log.import');
-
-        // po
-        Route::get('/purchase-order/{type}', [POController::class, 'index'])->name('purchase-order.index');
-        Route::get('/purchase-order/{type}/buat', [POController::class, 'create'])->name('purchase-order.buat');
-        Route::post('/purchase-order/{type}/buat', [POController::class, 'store'])->name('purchase-order.simpan');
-        Route::get('/purchase-order/{id}/detail/{type}', [POController::class, 'detail'])->name('purchase-order.detail');
-        Route::get('/purchase-order/{id}/ubah/{type}', [POController::class, 'edit'])->name('purchase-order.ubah');
-        Route::patch('/purchase-order/{id}/ubah/{type}', [POController::class, 'update'])->name('purchase-order.update');
-        Route::delete('/purchase-order/{id}/hapus', [POController::class, 'destroy'])->name('purchase-order.hapus');
-
-        // lpb
-        Route::get('/lpb', [LPBController::class, 'index'])->name('lpb.index');
-        Route::get('/lpb/buat', [LPBController::class, 'create'])->name('lpb.buat');
-        Route::post('/lpb/buat', [LPBController::class, 'store'])->name('lpb.simpan');
-        Route::get('/lpb/{id}/ubah/', [LPBController::class, 'edit'])->name('lpb.ubah');
-        Route::patch('/lpb/{id}/ubah/', [LPBController::class, 'update'])->name('lpb.update');
-        Route::get('/lpb/{id}/used/', [LPBController::class, 'used'])->name('lpb.pakai');
-        Route::delete('/lpb/{id}/hapus', [LPBController::class, 'destroy'])->name('lpb.hapus');
-        Route::post('/lpb/bulk-update-status', [LPBController::class, 'bulkUpdateStatus'])->name('lpb.update-status-masal');
-        Route::post('/lpb/import', [LPBController::class, 'import'])->name('lpb.import');
-
-        // purchase-jurnal
-        Route::get('/purchase-jurnal', [PurchaseJurnalController::class, 'index'])->name('purchase-jurnal.index');
-        Route::get('/purchase-jurnal/buat', [PurchaseJurnalController::class, 'create'])->name('purchase-jurnal.buat');
-        Route::post('/purchase-jurnal/buat', [PurchaseJurnalController::class, 'store'])->name('purchase-jurnal.simpan');
-        Route::get('/purchase-jurnal/{id}/ubah/', [PurchaseJurnalController::class, 'edit'])->name('purchase-jurnal.ubah');
-        Route::patch('/purchase-jurnal/{id}/ubah/', [PurchaseJurnalController::class, 'update'])->name('purchase-jurnal.update');
-        Route::delete('/purchase-jurnal/{id}/hapus', [PurchaseJurnalController::class, 'destroy'])->name('purchase-jurnal.hapus');
-
-        // DP
-        Route::get('/down-payment/{type}', [DownPaymentController::class, 'index'])->name('down-payment.index');
-        Route::get('/down-payment/buat/{type}', [DownPaymentController::class, 'create'])->name('down-payment.buat');
-        Route::post('/down-payment/buat/{type}', [DownPaymentController::class, 'store'])->name('down-payment.simpan');
-        Route::get('/down-payment/{id}/ubah/{type}', [DownPaymentController::class, 'edit'])->name('down-payment.ubah');
-        Route::patch('/down-payment/{id}/ubah/{type}', [DownPaymentController::class, 'update'])->name('down-payment.update');
-        Route::delete('/down-payment/{id}/hapus', [DownPaymentController::class, 'destroy'])->name('down-payment.hapus');
-
-        // Production
-            // wood-management
-        Route::get("/produksi/pengelolaan-kayu/{type}", [WoodManagementController::class, "index"])->name("pengelolaan-kayu.index");
-        Route::get("/produksi/pengelolaan-kayu/buat/{type}", [WoodManagementController::class, "create"])->name("pengelolaan-kayu.buat");
-        Route::post("/produksi/pengelolaan-kayu/buat/{type}", [WoodManagementController::class, "store"])->name("pengelolaan-kayu.simpan");
-        Route::get("/produksi/pengelolaan-kayu/ubah/{id}/{type}", [WoodManagementController::class, "edit"])->name("pengelolaan-kayu.ubah");
-        Route::patch("/produksi/pengelolaan-kayu/ubah/{id}/{type}", [WoodManagementController::class, "update"])->name("pengelolaan-kayu.update");
-        Route::delete("/produksi/pengelolaan-kayu/hapus/{id}", [WoodManagementController::class, "destroy"])->name("pengelolaan-kayu.hapus");
-            
-            // Rotari
-        Route::get("/produksi/rotari/{type}", [RotariController::class, "index"])->name("rotari.index");
-        Route::get("/produksi/rotari/buat/{type}", [RotariController::class, "create"])->name("rotari.buat");
-        Route::post("/produksi/rotari/buat/{type}", [RotariController::class, "store"])->name("rotari.simpan");
-        Route::get("/produksi/rotari/ubah/{id}/{type}", [RotariController::class, "edit"])->name("rotari.ubah");
-        Route::patch("/produksi/rotari/ubah/{id}/{type}", [RotariController::class, "update"])->name("rotari.update");
-        Route::delete("/produksi/rotari/hapus/{id}", [RotariController::class, "destroy"])->name("rotari.hapus");
 
         // utility
             // ajax
@@ -198,22 +104,6 @@ Route::prefix('JM')
         // print data
         Route::get('cetak/surat-jalan', [UtilityController::class, 'getByID'])->name('utility.cetak-surat-jalan');
 
-        // report
-        Route::get('report/surat-jalan', [ReportController::class, 'reportRoadPermits'])->name('laporan.surat-jalan');
-        Route::get('data-surat-jalan', [ReportController::class, 'getRoadPermitReport'])->name('laporan.data-surat-jalan');
-        Route::get('report/lpb', [ReportController::class, 'reportLpb'])->name('laporan.lpb');
-        Route::get('data-lpb', [ReportController::class, 'getLpbReport'])->name('laporan.data-lpb');
-        Route::get('/export-lpb-npwp', [ReportController::class, 'exportLpbByNpwp'])->name('laporan.export-Lpb-Npwp');
-        Route::get('report/lpb-supplier', [ReportController::class, 'reportLpbSupplier'])->name('laporan.lpb-supplier');
-        Route::get('data-lpb-supplier', [ReportController::class, 'getLpbSupplierReport'])->name('laporan.data-lpb-supplier');
-        Route::get('/lpb-supplier/export-pdf', [ReportController::class, 'exportLpbSupplierPdf'])->name('laporan.lpb-supplier-export-pdf');
-        Route::get('/lpb-supplier/export-excel', [ReportController::class, 'exportLpbSupplierExcel'])->name('laporan.lpb-supplier-export-excel');
-        Route::get('/lpb-supplier/export-excel/all', [ReportController::class, 'exportAllLpbSupplierExcel'])->name('laporan.all-lpb-supplier-export-excel');
-
-        // report dp
-        Route::get('/report/dp', [ReportController::class, "reportDp"])->name("laporan.dp");
-        Route::get('/report/data-dp', [ReportController::class, "getDpReport"])->name("laporan.data-dp");
-        Route::get('/report/dp/{supplier_id}/detail', [ReportController::class, "DPDetail"])->name("laporan.dp-detail");
 
         Route::post('/backup/export', [BackupController::class, 'export'])->name('backup.export');
     });

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Permission;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
 
-class PermissionController extends BaseController
+class PermissionController extends Controller
 {
     public function index(){
         $permissions = Permission::all();
@@ -14,21 +16,45 @@ class PermissionController extends BaseController
     }
 
     public function generate(){
+        // 1. Ambil semua route yang dimulai dengan 'by-zara'
         $routes = Route::getRoutes()->getRoutes();
+        $routeNames = [];
 
-        foreach($routes as $route){            
-            // Periksa apakah URI rute dimulai dengan 'JM'
-            if (str_starts_with($route->uri(), 'JM')) {
-                // inisialisasi route name
+        foreach ($routes as $route) {
+            if (str_starts_with($route->uri(), 'by-zara')) {
                 $routeName = $route->getName();
 
-                // cek jika nama route tidak ada dalam database maka input route ke dalam db
-                if($routeName && !Permission::where('name', $routeName)->exists()){
-                    Permission::create(['name'=> $routeName]);
+                if ($routeName) {
+                    $routeNames[] = $routeName;
+
+                    // Jika belum ada di DB → insert
+                    if (!Permission::where('name', $routeName)->exists()) {
+                        Permission::create(['name' => $routeName]);
+                    }
                 }
             }
         }
 
-        return redirect()->back()->with('status', 'added');
+        // 2. Hapus permission lama yang tidak ada di routes
+        Permission::where('name', 'like', 'by-zara%')
+            ->whereNotIn('name', $routeNames)
+            ->delete();
+
+        // 3. Cek atau buat role super-admin
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
+
+        // 4. Assign semua permission ke super-admin
+        $allPermissions = Permission::all();
+        $superAdmin->syncPermissions($allPermissions);
+
+        // 5. Assign role super-admin ke user pertama (id=1)
+        $user = User::find(1);
+        if ($user) {
+            $user->assignRole($superAdmin);
+        }
+
+        return redirect()->back()->with('status', 'Permissions, Super Admin role, and User #1 synced');
     }
+
+
 }

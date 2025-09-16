@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Pengguna')
+@section('title', 'Size')
 
 @section('content_header')
-    <h1>Pengguna</h1>
+    <h1>Size</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('pengguna.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Pengguna</a>
+            <a href="{{ route('size.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
+                Size</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="users" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="sizes" class="form-control mb-3 float-right"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -125,10 +125,10 @@
                         search: search,
                         columns: [
                             'id',
-                            'username',
-                            'email',
-                            'is_active',
-                            'employee_id',
+                            'code',
+                            'name',
+                            'width',
+                            'length',
 
                         ],
                         relations: {
@@ -143,7 +143,7 @@
                     }
                 });
             }
-            fetchData("", 1, "users");
+            fetchData("", 1, "sizes");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -157,11 +157,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'users');
+                fetchData(inputElement, page, 'sizes');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'users');
+                fetchData(this, 1, 'sizes');
             });
         });
     </script>

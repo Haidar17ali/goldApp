@@ -190,26 +190,26 @@
         </table>
     </div>
     {{-- list dp baru --}}
-    <table class="compact-table mt-2">
-        <thead>
-            <tr>
-                <th>Supplier</th>
-                <th>Total Nominal</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($down_payments as $item)
+    @if ($down_payments->count() > 0)
+        <table class="compact-table mt-2">
+            <thead>
                 <tr>
-                    <td>{{ $item->supplier->name ?? '-' }}</td>
-                    <td class="text-end">{{ number_format($item->total_nominal, 0, ',', '.') }}</td>
+                    <th>Supplier</th>
+                    <th>Total Nominal</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="2" class="text-center">Tidak ada data hari ini.</td>
-                </tr>
-            @endforelse
-        </tbody>
-        @if ($down_payments->count())
+            </thead>
+            <tbody>
+                @forelse ($down_payments as $item)
+                    <tr>
+                        <td>{{ $item->supplier->name ?? '-' }}</td>
+                        <td class="text-end">{{ number_format($item->total_nominal, 0, ',', '.') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="2" class="text-center">Tidak ada data hari ini.</td>
+                    </tr>
+                @endforelse
+            </tbody>
             <tfoot>
                 <tr>
                     <th>Total Semua</th>
@@ -218,8 +218,8 @@
                     </th>
                 </tr>
             </tfoot>
-        @endif
-    </table>
+        </table>
+    @endif
 </div>
 
 

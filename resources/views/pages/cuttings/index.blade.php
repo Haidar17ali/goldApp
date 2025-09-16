@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Pengguna')
+@section('title', 'Pemotongan')
 
 @section('content_header')
-    <h1>Pengguna</h1>
+    <h1>Pemotongan/Cutting</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('pengguna.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Pengguna</a>
+            <a href="{{ route('cutting.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
+                Pemotongan/Cutting</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="users" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="cuttings" class="form-control mb-3 float-right"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -125,14 +125,15 @@
                         search: search,
                         columns: [
                             'id',
-                            'username',
-                            'email',
-                            'is_active',
-                            'employee_id',
+                            'code',
+                            'date',
+                            'tailor_name',
 
                         ],
                         relations: {
-                            'employee': [],
+                            'details.product': ["name", "code"],
+                            'details.color': ["name", "code"],
+                            'details.size': ["name", "code"],
                         },
                         page: page
                     },
@@ -143,7 +144,7 @@
                     }
                 });
             }
-            fetchData("", 1, "users");
+            fetchData("", 1, "cuttings");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -157,11 +158,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'users');
+                fetchData(inputElement, page, 'cuttings');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'users');
+                fetchData(this, 1, 'cuttings');
             });
         });
     </script>

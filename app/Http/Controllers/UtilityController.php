@@ -141,109 +141,6 @@ class UtilityController extends Controller
     }
 
     private $allowedModels = [
-        'down_payments' => [
-            'model' => 'App\\Models\\Down_payment',
-            'columns' => [
-                'id',
-                'supplier_id',
-                'nominal',
-                'date',
-                'nota_date',
-                'type',
-                'dp_type',
-                'parent_id',
-            ],
-            'relations' => [
-                'supplier' => ['name'],
-                'details' => ['qty', 'price'],
-                'children' => ['parent_id', "nota_date"],
-            ]
-        ],
-        'purchase_orders' => [
-            'model' => 'App\\Models\\PO',
-            'columns' => [
-                'po_date',
-                'arrival_date',
-                'payment_date',
-                'po_code',
-                'type',
-                'supplier_id',
-                'supplier_type',
-                'ppn',
-                'dp',
-                'status',
-                'order_by',
-                'created_by',
-                'edited_by',
-                'edited_by',
-                'approved_by',
-                'approved_at',
-                'activation_date',
-            ],
-            'relations' => [
-                'supplier' => ['name'],
-                'createdBy' => ['username'],
-                'order_by' => ['fullname'],
-                'approvedBy' => ['username'],
-            ]
-        ],
-        'lpbs' => [
-            'model' => 'App\\Models\\LPB',
-            'columns' => [
-                'code',
-                'po_id',
-                'road_permit_id',
-                'no_kitir',
-                'nopol',
-                'lpb_date',
-                'supplier_id',
-                'npwp_id',
-                'grader_id',
-                'tally_id',
-                'used',
-                'used_at',
-                'perhutani',
-                'created_by',
-                'edited_by',
-                'approved_by',
-                'approved_at',
-                'conversion',
-                'status',
-                'address_id',
-            ],
-            'relations' => [
-                'supplier' => ['name'],
-                'createdBy' => ['username'],
-            ]
-        ],
-        'road_permits' => [
-            'model' => 'App\\Models\\RoadPermit',
-            'columns' => [
-                'code',
-                'date',
-                'in',
-                'out',
-                'description',
-                'handyman_id',
-                'from',
-                'destination',
-                'vehicle',
-                'nopol',
-                'driver',
-                'unpack_location',
-                'sill_number',
-                'container_number',
-                'type',
-                'type_item',
-                'created_by',
-                'edited_by',
-            ],
-            'relations' => [
-                'supplier' => ['name'],
-                'createdBy' => ['username'],
-                'handyman' => ['fullname'],
-            ]
-        ],
         'users' => [
             'model' => 'App\\Models\\User',
             'columns' => [
@@ -251,10 +148,50 @@ class UtilityController extends Controller
                 'username',
                 'email',
                 'is_active',
-                'employee_id',
+            ],
+            'relations' => []
+        ],
+        'products' => [
+            'model' => 'App\\Models\\Product',
+            'columns' => [
+                'id',
+                'code',
+                'name',
+            ],
+            'relations' => []
+        ],
+        'colors' => [
+            'model' => 'App\\Models\\Color',
+            'columns' => [
+                'id',
+                'code',
+                'name',
+            ],
+            'relations' => []
+        ],
+        'sizes' => [
+            'model' => 'App\\Models\\Size',
+            'columns' => [
+                'id',
+                'code',
+                'name',
+                'width',
+                'length',
+            ],
+            'relations' => []
+        ],
+        'cuttings' => [
+            'model' => 'App\\Models\\Cutting',
+            'columns' => [
+                'id',
+                'code',
+                'date',
+                'tailor_name',
             ],
             'relations' => [
-                'employee'=> ["fullname", "alias_name", "nik"],
+                'details.product'=> ["name","code"],
+                'details.color'=> ["name","code"],
+                'details.size'=> ["name","code"],
             ]
         ],
         'rotary' => [
@@ -272,6 +209,7 @@ class UtilityController extends Controller
                 'createdBy' => ['username'],
                 'editedBy' => ['username'],
                 'details' => ['no_kitir'],
+                'rotariSources' => ['rotary_id'],
             ]
         ],
         'wood-management' => [
@@ -313,52 +251,6 @@ class UtilityController extends Controller
         $type = $request->input('type');
         $isEdit = $request->edit;
         $page = $request->page ?? 1;
-
-        if ($from === 'LPB') {
-            $lpbs = Lpb::with(['supplier', 'details'])
-            ->where('status', 'Pending') // Pindahkan kondisi status di awal
-            ->where('approved_by', '!=', null)
-            ->where(function ($query) use ($search) {
-                $query->where('code', 'like', '%' . $search . '%')
-                    ->orWhere('nopol', 'like', '%' . $search . '%')
-                    ->orWhere('no_kitir', 'like', '%' . $search . '%')
-                    ->orWhereHas('supplier', function ($q) use ($search) {
-                        $q->where('name', 'like', "%$search%");
-                    });
-            })
-            ->get();
-
-            $lpbs->each(function ($lpb) {
-                if ($lpb->supplier) {
-                    $lpb->supplier->sisaDp = $lpb->supplier->sisaDp();
-                }
-            });
-
-            if($isEdit){
-                $pj = PurchaseJurnal::with([
-                    'details.lpbs.details' // untuk ambil detail kayu
-                ])->findOrFail($request->idPurchase);
-
-                $lpbPurchases = $pj->details->pluck('lpbs')->unique('id')->values()[0];
-                $lpbPurchaseIds = $lpbPurchases->pluck('id')->toArray();
-
-                $lpbs = Lpb::with(['supplier', 'details'])
-                ->where('status', 'Pending') // Pindahkan kondisi status di awal
-                ->orWhereIn('id', $lpbPurchaseIds)
-                ->where('approved_by', '!=', null)
-                ->where(function ($query) use ($search) {
-                    $query->where('code', 'like', '%' . $search . '%')
-                        ->orWhere('nopol', 'like', '%' . $search . '%')
-                        ->orWhere('no_kitir', 'like', '%' . $search . '%')
-                        ->orWhereHas('supplier', function ($q) use ($search) {
-                            $q->where('name', 'like', "%$search%");
-                        });
-                })
-                ->get();
-            }
-
-            return response()->json($lpbs);
-        }
         
         // Validasi model
         if (!isset($this->allowedModels[$modelKey])) {
@@ -421,49 +313,14 @@ class UtilityController extends Controller
 
         });
 
-        if($modelKey  == "down_payments"){
+        if($modelKey  == "products"){
             return response()->json([
-                'table' => view('pages.search.search', compact('data'))->render(),
+                'table' => view('pages.search.search-product', compact('data'))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
-        }else if($modelKey == "purchase_orders"){
-            $type = $request->type;
+        }elseif($modelKey == "colors"){
             return response()->json([
-                'table' => view('pages.search.search-po', compact(['data',"type"]))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
-            ]);
-        }else if($modelKey == "lpbs"){
-            $type = $request->type;
-            return response()->json([
-                'table' => view('pages.search.search-lpb', compact(['data',"type"]))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
-            ]);
-        }else if($modelKey == "road_permits"){
-            $type = $request->type;
-            return response()->json([
-                'table' => view('pages.search.search-RP', compact(['data',"type"]))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
-            ]);
-        }else if($modelKey == "purchase_jurnals"){
-            $data->each(function ($purchaseJurnal) {
-                $purchaseJurnal->allLpbs = $purchaseJurnal->details->flatMap(function ($detail) {
-                    return $detail->lpbs;
-                });
-                
-                $failedLpbs = [];
-    
-                foreach ($purchaseJurnal->details as $detail) {
-                    foreach ($detail->lpbs as $lpb) {
-                        if ($lpb->pivot->status === 'Gagal') {
-                            $failedLpbs[] = $lpb;
-                        }
-                    }
-                }
-                $purchaseJurnal->failedLpbs = $failedLpbs;
-            });
-
-            return response()->json([
-                'table' => view('pages.search.search-PJ', compact(['data']))->render(),
+                'table' => view('pages.search.search-color', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "users"){
@@ -471,14 +328,14 @@ class UtilityController extends Controller
                 'table' => view('pages.search.search-user', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "rotary"){
+        }elseif($modelKey == "sizes"){
             return response()->json([
-                'table' => view('pages.search.search-rotary', compact(['data', 'type']))->render(),
+                'table' => view('pages.search.search-size', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "wood-management"){
+        }elseif($modelKey == "cuttings"){
             return response()->json([
-                'table' => view('pages.search.search-wood-Management', compact(['data', "type"]))->render(),
+                'table' => view('pages.search.search-cutting', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }

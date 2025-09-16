@@ -306,6 +306,7 @@
                                 tfoot {
                                     font-weight: bold;
                                     background-color: #e9ecef !important;
+                                    display: table-row-group;
                                 }
                             }
                         `
