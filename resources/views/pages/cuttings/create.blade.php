@@ -166,10 +166,11 @@
                 }
             ],
             rowHeaders: true,
+            autoRowSize: true,
+            height: 280,
             minSpareRows: 1,
             width: '100%',
             stretchH: 'all',
-            height: 140,
             licenseKey: 'non-commercial-and-evaluation'
         });
 
@@ -197,7 +198,7 @@
 
             data = data.map(row => {
                 let product = products.find(d => d.name.toUpperCase() === String(row.product)
-                .toUpperCase() || d.id == row.product);
+                    .toUpperCase() || d.id == row.product);
                 let color = colors.find(d => d.name.toUpperCase() === String(row.color).toUpperCase() || d
                     .id == row.color);
                 let size = sizes.find(d => d.name.toUpperCase() === String(row.size).toUpperCase() || d

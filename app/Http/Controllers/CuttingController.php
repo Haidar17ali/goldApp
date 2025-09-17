@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Models\Cutting;
 use App\Models\CuttingDetail;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CuttingController extends Controller
@@ -77,6 +78,7 @@ class CuttingController extends Controller
                 'code' => $code,
                 'date' => $request->date,
                 'tailor_name' => $request->name,
+                'create_by' => Auth::id(),
             ]);
 
             // 🔹 Simpan detail
@@ -152,6 +154,7 @@ class CuttingController extends Controller
             $cutting = Cutting::findOrFail($id);
             $cutting->date = $request->date;
             $cutting->tailor_name = $request->name;
+            $cutting->edit_by = Auth::id();
             $cutting->save();
 
             // Hapus detail lama

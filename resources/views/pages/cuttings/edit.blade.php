@@ -127,6 +127,7 @@
         // Ambil data lama dari Laravel (old input atau dari DB)
         let oldDetails = @json(old('details') ? json_decode(old('details'), true) : $details);
 
+
         // Fallback jika kosong
         if (!oldDetails || oldDetails.length === 0) {
             oldDetails = [{
@@ -136,6 +137,7 @@
                 qty: 0
             }];
         }
+        console.log(oldDetails);
 
         const container = document.getElementById('example');
         const hot = new Handsontable(container, {
@@ -155,14 +157,16 @@
                 },
                 {
                     data: 'qty',
-                    type: 'numeric'
+                    type: 'numeric',
+                    renderer: Handsontable.renderers.NumericRenderer // ✅ pakai renderer numeric bawaan
                 }
             ],
             rowHeaders: true,
+            autoRowSize: true,
+            height: 280,
             minSpareRows: 1,
             width: '100%',
             stretchH: 'all',
-            height: 140,
             licenseKey: 'non-commercial-and-evaluation'
         });
 

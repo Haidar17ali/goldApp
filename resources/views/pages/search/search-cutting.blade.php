@@ -4,7 +4,9 @@
             <th scope="col">#</th>
             <th scope="col">Kode</th>
             <th scope="col">Tanggal</th>
-            <th scope="col">Aksi</th>
+            <th scope="col">Nama Penjahit</th>
+            <th scope="col">Pembuat</th>
+            <th scope="col">Pengedit</th>
             <th scope="col">Aksi</th>
         </tr>
     </thead>
@@ -16,6 +18,8 @@
                     <td>{{ $item->code }}</td>
                     <td>{{ date('d-m-y', strtotime($item->date)) }}</td>
                     <td>{{ $item->tailor_name }}</td>
+                    <td>{{ $item->createBy != null ? $item->createBy->username : '' }}</td>
+                    <td>{{ $item->editBy != null ? $item->editBy->username : '' }}</td>
                     <td>
                         <a href="#" class="badge badge-primary modalDetail" id="modalDetail"
                             data-id="{{ $item->id }}" data-toggle="modal" data-target="#exampleModal">
@@ -159,7 +163,7 @@
                         // disable tombol supaya tidak bisa diklik lagi
                         button.replaceWith(
                             `<span class="text-muted">Selesai (${res.finish_at})</span>`
-                            );
+                        );
                     }
                 }
             });

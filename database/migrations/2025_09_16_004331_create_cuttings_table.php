@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string("code");
             $table->date("date");
             $table->string("tailor_name");
+            $table->integer("create_by");
+            $table->integer("edit_by")->nullable();
             $table->timestamps();
         });
     }

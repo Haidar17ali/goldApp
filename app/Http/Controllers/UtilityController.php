@@ -187,11 +187,15 @@ class UtilityController extends Controller
                 'code',
                 'date',
                 'tailor_name',
+                'create_by',
+                'edit_by',
             ],
             'relations' => [
                 'details.product'=> ["name","code"],
                 'details.color'=> ["name","code"],
                 'details.size'=> ["name","code"],
+                'createBy'=> ["username"],
+                'editBy'=> ["username"],
             ]
         ],
         'rotary' => [
