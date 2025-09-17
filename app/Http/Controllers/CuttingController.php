@@ -178,4 +178,31 @@ class CuttingController extends Controller
             return redirect()->back()->with('error', $e->getMessage())->withInput();
         }
     }
+
+    // CuttingController.php
+    public function updateDetail(Request $request){
+        $detail = CuttingDetail::findOrFail($request->id);
+        $detail->status = 'Finish';
+        $detail->finish_at = now();
+        $detail->save();
+
+        return response()->json([
+            'success' => true,
+            'status' => $detail->status,
+            'finish_at' => $detail->finish_at,
+        ]);
+    }
+
+    // Controller
+    public function destroy($id)
+    {
+        DB::transaction(function () use ($id) {
+            $cutting = Cutting::findOrFail($id);
+
+            $cutting->details()->delete(); // hapus detail lewat relasi
+            $cutting->delete();            // hapus parent
+        });
+
+        return redirect()->route('cutting.index')->with('success', 'Data berhasil dihapus.');
+    }
 }

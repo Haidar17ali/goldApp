@@ -70,19 +70,21 @@ Route::prefix('by-zara')
         Route::patch('/size/{id}/ubah', [SizeController::class, 'update'])->name('size.update');
         Route::delete('/size/{id}/hapus', [SizeController::class, 'destroy'])->name('size.hapus');
 
-        // sizes
+        // cutting
         Route::get("/cutting", [CuttingController::class, 'index'])->name("cutting.index");
         Route::get('/cutting/buat', [CuttingController::class, 'create'])->name('cutting.buat');
         Route::post('/cutting/buat', [CuttingController::class, 'store'])->name('cutting.simpan');
         Route::get('/cutting/{id}/ubah', [CuttingController::class, 'edit'])->name('cutting.ubah');
         Route::patch('/cutting/{id}/ubah', [CuttingController::class, 'update'])->name('cutting.update');
         Route::delete('/cutting/{id}/hapus', [CuttingController::class, 'destroy'])->name('cutting.hapus');
+        Route::post('/cutting/update-detail', [CuttingController::class, 'updateDetail'])->name('cutting.updateDetail');
+
         
 
         // utility
             // ajax
         Route::get('no-rek-id/ajax', [UtilityController::class, 'getNumberAccount'])->name('utility.ajax-no-rek');
-        Route::get('npwp-id/ajax', [UtilityController::class, 'getByID'])->name('utility.npwpId');
+        Route::get('npwp-id/ajax', [UtilityController::class, 'getByID'])->name('utility.getById');
         Route::get('npwp-id/ajax/multiple-data', [UtilityController::class, 'getMultipleData'])->name('utility.getMultipleData');
         Route::get('surat-jalan-id/ajax', [UtilityController::class, 'getByID'])->name('utility.suratJalanId');
             // po
