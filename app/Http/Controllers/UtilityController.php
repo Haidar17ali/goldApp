@@ -198,6 +198,18 @@ class UtilityController extends Controller
                 'editBy'=> ["username"],
             ]
         ],
+        'deliveries' => [
+            'model' => 'App\\Models\\Delivery',
+            'columns' => [
+                'id',
+                'date',
+                'sender',
+                'arrival_date',
+                'create_by',
+                'edit_by',
+            ],
+            'relations' => []
+        ],
         'rotary' => [
             'model' => 'App\\Models\\Rotary',
             'columns' => [
@@ -340,6 +352,11 @@ class UtilityController extends Controller
         }elseif($modelKey == "cuttings"){
             return response()->json([
                 'table' => view('pages.search.search-cutting', compact(['data']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "deliveries"){
+            return response()->json([
+                'table' => view('pages.search.search-delivery', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }

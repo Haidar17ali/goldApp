@@ -1,25 +1,26 @@
 @extends('adminlte::page')
 
-@section('title', 'Buat Potongan')
+@section('title', 'Edit Potongan')
 
 @section('content_header')
-    <h1>Buat Potongan</h1>
+    <h1>Edit Potongan</h1>
 @stop
 
 @section('content')
-    <form action="{{ route('cutting.simpan') }}" method="POST" id="formRP">
+    <form action="{{ route('cutting.update', $cutting->id) }}" method="POST" id="formRP">
         @csrf
-        @method('post')
+        @method('PATCH')
 
         <div class="card">
             <div class="card-header">
-                <span class="badge badge-primary">Form Input Warna</span>
+                <span class="badge badge-primary">Form Edit Potongan</span>
             </div>
             <div class="card-body">
 
-                {{-- Error global --}}
+                {{-- Error Validation Alert --}}
                 @if ($errors->any())
                     <div class="alert alert-danger">
+                        <h4 class="mb-2">Terjadi Kesalahan:</h4>
                         <ul class="mb-0">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -32,14 +33,14 @@
                     <label for="date" class="col-sm-2 col-form-label">Tanggal</label>
                     <div class="col-sm-4">
                         <input type="date" class="form-control" id="date" name="date"
-                            value="{{ old('date') }}">
+                            value="{{ old('date', $cutting->date) }}">
                         <span class="text-danger error-text" id="date_error"></span>
                     </div>
 
                     <label for="name" class="col-sm-2 col-form-label">Nama Penjahit</label>
                     <div class="col-sm-4">
                         <input type="text" class="form-control" id="name" name="name"
-                            value="{{ old('name') }}">
+                            value="{{ old('name', $cutting->tailor_name) }}">
                         <span class="text-danger error-text" id="name_error"></span>
                     </div>
                 </div>
@@ -51,8 +52,8 @@
                 <input type="hidden" name="details" id="details" value="{{ old('details') }}">
 
                 <div class="text-right">
-                    <a href="{{ route('pengguna.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
-                    <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
+                    <a href="{{ route('cutting.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                    <button type="submit" class="btn btn-primary rounded-pill">Simpan</button>
                 </div>
             </div>
         </div>
@@ -123,16 +124,9 @@
             };
         }
 
-        // Ambil data lama dari Laravel (old input)
-        let oldDetails = @json(old('details'));
+        // Ambil data lama dari Laravel (old input atau dari DB)
+        let oldDetails = @json(old('details') ? json_decode(old('details'), true) : $details);
 
-        try {
-            if (typeof oldDetails === 'string') {
-                oldDetails = JSON.parse(oldDetails);
-            }
-        } catch (e) {
-            oldDetails = [];
-        }
 
         // Fallback jika kosong
         if (!oldDetails || oldDetails.length === 0) {
@@ -143,10 +137,11 @@
                 qty: 0
             }];
         }
+        console.log(oldDetails);
 
         const container = document.getElementById('example');
         const hot = new Handsontable(container, {
-            data: oldDetails, // gunakan oldDetails agar data tetap ada setelah validasi gagal
+            data: oldDetails,
             colHeaders: ['Produk', 'Warna', 'Ukuran', 'Jumlah'],
             columns: [{
                     data: 'product',
@@ -162,7 +157,8 @@
                 },
                 {
                     data: 'qty',
-                    type: 'numeric'
+                    type: 'numeric',
+                    renderer: Handsontable.renderers.NumericRenderer // ✅ pakai renderer numeric bawaan
                 }
             ],
             rowHeaders: true,
@@ -185,7 +181,6 @@
                     if (prop === 'color') lookup = colors.find(d => d.name === newVal);
                     if (prop === 'size') lookup = sizes.find(d => d.name === newVal);
 
-
                     if (lookup) {
                         hot.setDataAtRowProp(row, prop, lookup.id, 'autoconvert');
                     }
@@ -193,7 +188,7 @@
             }
         });
 
-        // Sebelum submit → convert data ke id dan simpan ke hidden input
+        // Sebelum submit → convert data ke id
         document.getElementById("formRP").addEventListener("submit", function() {
             let data = hot.getSourceData();
 

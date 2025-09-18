@@ -3,6 +3,7 @@
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CuttingController;
+use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
@@ -78,6 +79,14 @@ Route::prefix('by-zara')
         Route::patch('/cutting/{id}/ubah', [CuttingController::class, 'update'])->name('cutting.update');
         Route::delete('/cutting/{id}/hapus', [CuttingController::class, 'destroy'])->name('cutting.hapus');
         Route::post('/cutting/update-detail', [CuttingController::class, 'updateDetail'])->name('cutting.updateDetail');
+        
+        // deliverie
+        Route::get("/pengiriman", [DeliveryController::class, 'index'])->name("pengiriman.index");
+        Route::get('/pengiriman/buat', [DeliveryController::class, 'create'])->name('pengiriman.buat');
+        Route::post('/pengiriman/buat', [DeliveryController::class, 'store'])->name('pengiriman.simpan');
+        Route::get('/pengiriman/{id}/ubah', [DeliveryController::class, 'edit'])->name('pengiriman.ubah');
+        Route::patch('/pengiriman/{id}/ubah', [DeliveryController::class, 'update'])->name('pengiriman.update');
+        Route::delete('/pengiriman/{id}/hapus', [DeliveryController::class, 'destroy'])->name('pengiriman.hapus');
 
         
 

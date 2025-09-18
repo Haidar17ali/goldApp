@@ -362,9 +362,9 @@ return [
                 ],
                 [
                     'text' => 'Pengiriman',
-                    'icon' => 'far fa-truck',
-                    'url' => 'by-zara/lpb',
-                    'can' => 'lpb.index',
+                    'icon' => 'fas fa-truck',
+                    'url' => 'by-zara/pengiriman',
+                    'can' => 'pengiriman.index',
                 ],
             ],
         ],

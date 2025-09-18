@@ -31,4 +31,8 @@ class CuttingDetail extends Model
     public function size(){
         return $this->belongsTo(Size::class, "size_id");
     }
+
+    public function deliveryDetails(){
+        return $this->morphMany(DeliveryDetail::class, "source");
+    }
 }

@@ -7,13 +7,13 @@
 @stop
 
 @section('content')
-    <form action="{{ route('cutting.simpan') }}" method="POST" id="formRP">
+    <form action="{{ route('pengiriman.simpan') }}" method="POST" id="formRP">
         @csrf
         @method('post')
 
         <div class="card">
             <div class="card-header">
-                <span class="badge badge-primary">Form Input Warna</span>
+                <span class="badge badge-primary">Form Input Pengiriman</span>
             </div>
             <div class="card-body">
 
@@ -31,12 +31,12 @@
                 <div class="form-group row">
                     <label for="date" class="col-sm-2 col-form-label">Tanggal</label>
                     <div class="col-sm-4">
-                        <input type="date" class="form-control" id="date" name="date"
+                        <input type="datetime-local" class="form-control" id="date" name="date"
                             value="{{ old('date') }}">
                         <span class="text-danger error-text" id="date_error"></span>
                     </div>
 
-                    <label for="name" class="col-sm-2 col-form-label">Nama Penjahit</label>
+                    <label for="name" class="col-sm-2 col-form-label">Pengirim</label>
                     <div class="col-sm-4">
                         <input type="text" class="form-control" id="name" name="name"
                             value="{{ old('name') }}">
@@ -51,7 +51,7 @@
                 <input type="hidden" name="details" id="details" value="{{ old('details') }}">
 
                 <div class="text-right">
-                    <a href="{{ route('pengguna.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                    <a href="{{ route('pengiriman.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
                     <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                 </div>
             </div>
@@ -96,22 +96,23 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script>
-        const products = @json($products);
-        const colors = @json($colors);
-        const sizes = @json($sizes);
+        const cuttingDetails = @json($cuttingDetails);
 
         function createAutocompleteColumn(sourceData) {
             return {
                 type: 'autocomplete',
-                source: sourceData.map(item => item.name),
+                source: sourceData.map(item => item.cutting_date + " | " + item.color_name + " | " + item.product_name +
+                    " | " +
+                    item.color_name + " | " + item.size_name + " | " + item.qty + " pcs"),
                 strict: true,
                 allowInvalid: false,
                 renderer: function(instance, td, row, col, prop, value, cellProperties) {
+
                     let displayValue = '';
                     if (value != null) {
                         const item = sourceData.find(d => d.id == value);
                         if (item) {
-                            displayValue = item.name.toUpperCase();
+                            displayValue = item.tailor_name.toUpperCase();
                         } else {
                             displayValue = value.toString().toUpperCase();
                         }
@@ -137,9 +138,7 @@
         // Fallback jika kosong
         if (!oldDetails || oldDetails.length === 0) {
             oldDetails = [{
-                product: null,
-                color: null,
-                size: null,
+                cuttingDetail: null,
                 qty: 0
             }];
         }
@@ -147,18 +146,10 @@
         const container = document.getElementById('example');
         const hot = new Handsontable(container, {
             data: oldDetails, // gunakan oldDetails agar data tetap ada setelah validasi gagal
-            colHeaders: ['Produk', 'Warna', 'Ukuran', 'Jumlah'],
+            colHeaders: ['Potongan', 'Jumlah'],
             columns: [{
-                    data: 'product',
-                    ...createAutocompleteColumn(products)
-                },
-                {
-                    data: 'color',
-                    ...createAutocompleteColumn(colors)
-                },
-                {
-                    data: 'size',
-                    ...createAutocompleteColumn(sizes)
+                    data: 'cuttingDetail',
+                    ...createAutocompleteColumn(cuttingDetails)
                 },
                 {
                     data: 'qty',
@@ -181,9 +172,11 @@
                     if (!newVal) return;
 
                     let lookup = null;
-                    if (prop === 'product') lookup = products.find(d => d.name === newVal);
-                    if (prop === 'color') lookup = colors.find(d => d.name === newVal);
-                    if (prop === 'size') lookup = sizes.find(d => d.name === newVal);
+                    if (prop === 'cuttingDetail') lookup = cuttingDetails.find(d => d.cutting_date + " | " +
+                        d.color_name + " | " + d.product_name +
+                        " | " +
+                        d.color_name + " | " + d.size_name + " | " + d.qty + " pcs" ===
+                        newVal);
 
 
                     if (lookup) {
@@ -198,23 +191,21 @@
             let data = hot.getSourceData();
 
             data = data.map(row => {
-                let product = products.find(d => d.name.toUpperCase() === String(row.product)
-                    .toUpperCase() || d.id == row.product);
-                let color = colors.find(d => d.name.toUpperCase() === String(row.color).toUpperCase() || d
-                    .id == row.color);
-                let size = sizes.find(d => d.name.toUpperCase() === String(row.size).toUpperCase() || d
-                    .id == row.size);
+                let cuttingDetail = cuttingDetails.find(d => d.cutting_date + " | " +
+                    d.color_name + " | " + d.product_name +
+                    " | " +
+                    d.color_name + " | " + d.size_name + " | " + d.qty + " pcs" === String(row
+                        .cuttingDetail) || d.id == row.cuttingDetail);
 
                 return {
-                    product: product ? product.id : null,
-                    color: color ? color.id : null,
-                    size: size ? size.id : null,
-                    qty: row.qty ?? 0
+                    cuttingDetail: cuttingDetail ? cuttingDetail.id : null,
+                    qty: row.qty ?? 0,
+                    sourceType: cuttingDetail ? cuttingDetail.source_type : null,
                 };
             });
 
             // Hapus baris kosong
-            data = data.filter(row => row.product || row.color || row.size || row.qty);
+            data = data.filter(row => row.cuttingDetail || row.qty);
 
             document.getElementById("details").value = JSON.stringify(data);
         });
