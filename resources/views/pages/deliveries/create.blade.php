@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Buat Potongan')
+@section('title', 'Buat Pengiriman')
 
 @section('content_header')
-    <h1>Buat Potongan</h1>
+    <h1>Buat Pengiriman</h1>
 @stop
 
 @section('content')
@@ -95,119 +95,151 @@
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
-    <script>
-        const cuttingDetails = @json($cuttingDetails);
+@section('plugins.Toast', true)
 
-        function createAutocompleteColumn(sourceData) {
-            return {
-                type: 'autocomplete',
-                source: sourceData.map(item => item.cutting_date + " | " + item.color_name + " | " + item.product_name +
-                    " | " +
-                    item.color_name + " | " + item.size_name + " | " + item.qty + " pcs"),
-                strict: true,
-                allowInvalid: false,
-                renderer: function(instance, td, row, col, prop, value, cellProperties) {
-
-                    let displayValue = '';
-                    if (value != null) {
-                        const item = sourceData.find(d => d.id == value);
-                        if (item) {
-                            displayValue = item.tailor_name.toUpperCase();
-                        } else {
-                            displayValue = value.toString().toUpperCase();
-                        }
-                    }
-                    Handsontable.renderers.TextRenderer.apply(this, [
-                        instance, td, row, col, prop, displayValue, cellProperties
-                    ]);
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        @if (session('status') === 'minus-qty')
+            Toastify({
+                text: "Qty yang dikeluarkan melebihi stok (stok minus).",
+                className: "danger",
+                close: true,
+                style: {
+                    background: "red",
                 }
-            };
-        }
+            }).showToast();
+        @endif
 
-        // Ambil data lama dari Laravel (old input)
-        let oldDetails = @json(old('details'));
-
-        try {
-            if (typeof oldDetails === 'string') {
-                oldDetails = JSON.parse(oldDetails);
-            }
-        } catch (e) {
-            oldDetails = [];
-        }
-
-        // Fallback jika kosong
-        if (!oldDetails || oldDetails.length === 0) {
-            oldDetails = [{
-                cuttingDetail: null,
-                qty: 0
-            }];
-        }
-
-        const container = document.getElementById('example');
-        const hot = new Handsontable(container, {
-            data: oldDetails, // gunakan oldDetails agar data tetap ada setelah validasi gagal
-            colHeaders: ['Potongan', 'Jumlah'],
-            columns: [{
-                    data: 'cuttingDetail',
-                    ...createAutocompleteColumn(cuttingDetails)
-                },
-                {
-                    data: 'qty',
-                    type: 'numeric'
+        @if (session('status') === 'saved')
+            Toastify({
+                text: "Data pengiriman berhasil disimpan.",
+                className: "success",
+                close: true,
+                style: {
+                    background: "green",
                 }
-            ],
-            rowHeaders: true,
-            autoRowSize: true,
-            height: 280,
-            minSpareRows: 1,
-            width: '100%',
-            stretchH: 'all',
-            licenseKey: 'non-commercial-and-evaluation'
-        });
+            }).showToast();
+        @endif
+    });
+</script>
+<script>
+    const cuttingDetails = @json($cuttingDetails);
 
-        // Convert name → id setelah edit
-        hot.addHook('afterChange', function(changes, source) {
-            if (source === 'edit') {
-                changes.forEach(([row, prop, oldVal, newVal]) => {
-                    if (!newVal) return;
+    function createAutocompleteColumn(sourceData) {
+        return {
+            type: 'autocomplete',
+            source: sourceData.map(item => item.cutting_date + " | " + item.color_name + " | " + item.product_name +
+                " | " +
+                item.color_name + " | " + item.size_name + " | " + item.source_type + " | " + item.qty + " pcs"),
+            strict: true,
+            allowInvalid: false,
+            renderer: function(instance, td, row, col, prop, value, cellProperties) {
 
-                    let lookup = null;
-                    if (prop === 'cuttingDetail') lookup = cuttingDetails.find(d => d.cutting_date + " | " +
-                        d.color_name + " | " + d.product_name +
-                        " | " +
-                        d.color_name + " | " + d.size_name + " | " + d.qty + " pcs" ===
-                        newVal);
-
-
-                    if (lookup) {
-                        hot.setDataAtRowProp(row, prop, lookup.id, 'autoconvert');
+                let displayValue = '';
+                if (value != null) {
+                    const item = sourceData.find(d => d.id == value);
+                    if (item) {
+                        displayValue = item.cutting_date + " | " + item.color_name + " | " + item.product_name +
+                            " | " +
+                            item.color_name + " | " + item.size_name + " | " + item.source_type + " | " + item.qty +
+                            " pcs".toUpperCase();
+                    } else {
+                        displayValue = value.toString().toUpperCase();
                     }
-                });
+                }
+                Handsontable.renderers.TextRenderer.apply(this, [
+                    instance, td, row, col, prop, displayValue, cellProperties
+                ]);
             }
-        });
+        };
+    }
 
-        // Sebelum submit → convert data ke id dan simpan ke hidden input
-        document.getElementById("formRP").addEventListener("submit", function() {
-            let data = hot.getSourceData();
+    // Ambil data lama dari Laravel (old input)
+    let oldDetails = @json(old('details'));
 
-            data = data.map(row => {
-                let cuttingDetail = cuttingDetails.find(d => d.cutting_date + " | " +
+    try {
+        if (typeof oldDetails === 'string') {
+            oldDetails = JSON.parse(oldDetails);
+        }
+    } catch (e) {
+        oldDetails = [];
+    }
+
+    // Fallback jika kosong
+    if (!oldDetails || oldDetails.length === 0) {
+        oldDetails = [{
+            cuttingDetail: null,
+            qty: 0
+        }];
+    }
+
+    const container = document.getElementById('example');
+    const hot = new Handsontable(container, {
+        data: oldDetails, // gunakan oldDetails agar data tetap ada setelah validasi gagal
+        colHeaders: ['Potongan', 'Jumlah'],
+        columns: [{
+                data: 'cuttingDetail',
+                ...createAutocompleteColumn(cuttingDetails)
+            },
+            {
+                data: 'qty',
+                type: 'numeric'
+            }
+        ],
+        rowHeaders: true,
+        autoRowSize: true,
+        height: 280,
+        minSpareRows: 1,
+        width: '100%',
+        stretchH: 'all',
+        licenseKey: 'non-commercial-and-evaluation'
+    });
+
+    // Convert name → id setelah edit
+    hot.addHook('afterChange', function(changes, source) {
+        if (source === 'edit') {
+            changes.forEach(([row, prop, oldVal, newVal]) => {
+                if (!newVal) return;
+
+                let lookup = null;
+                if (prop === 'cuttingDetail') lookup = cuttingDetails.find(d => d.cutting_date + " | " +
                     d.color_name + " | " + d.product_name +
                     " | " +
-                    d.color_name + " | " + d.size_name + " | " + d.qty + " pcs" === String(row
-                        .cuttingDetail) || d.id == row.cuttingDetail);
+                    d.color_name + " | " + d.size_name + " | " + d.source_type + " | " + d.qty +
+                    " pcs" ===
+                    newVal);
 
-                return {
-                    cuttingDetail: cuttingDetail ? cuttingDetail.id : null,
-                    qty: row.qty ?? 0,
-                    sourceType: cuttingDetail ? cuttingDetail.source_type : null,
-                };
+
+                if (lookup) {
+                    hot.setDataAtRowProp(row, prop, lookup.id, 'autoconvert');
+                }
             });
+        }
+    });
 
-            // Hapus baris kosong
-            data = data.filter(row => row.cuttingDetail || row.qty);
+    // Sebelum submit → convert data ke id dan simpan ke hidden input
+    document.getElementById("formRP").addEventListener("submit", function() {
+        let data = hot.getSourceData();
 
-            document.getElementById("details").value = JSON.stringify(data);
+        data = data.map(row => {
+            let cuttingDetail = cuttingDetails.find(d => d.cutting_date + " | " +
+                d.color_name + " | " + d.product_name +
+                " | " +
+                d.color_name + " | " + d.size_name + " | " + d.source_type + " | " + d.qty +
+                " pcs" === String(row
+                    .cuttingDetail) || d.id == row.cuttingDetail);
+
+            return {
+                cuttingDetail: cuttingDetail ? cuttingDetail.id : null,
+                qty: row.qty ?? 0,
+                sourceType: cuttingDetail ? cuttingDetail.source_type : null,
+            };
         });
-    </script>
+
+        // Hapus baris kosong
+        data = data.filter(row => row.cuttingDetail || row.qty);
+
+        document.getElementById("details").value = JSON.stringify(data);
+    });
+</script>
 @stop

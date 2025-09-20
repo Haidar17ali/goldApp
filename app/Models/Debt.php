@@ -14,7 +14,7 @@ class Debt extends Model
         "status",
     ];
 
-    public function DeliveryDetails(){
+    public function deliveryDetails(){
         return $this->morphMany(DeliveryDetail::class, "source");
     }
 

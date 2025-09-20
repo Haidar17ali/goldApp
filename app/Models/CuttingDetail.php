@@ -35,4 +35,8 @@ class CuttingDetail extends Model
     public function deliveryDetails(){
         return $this->morphMany(DeliveryDetail::class, "source");
     }
+
+    public function debt(){
+        return $this->hasMany(Debt::class);
+    }
 }

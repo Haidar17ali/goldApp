@@ -100,17 +100,32 @@
                 `;
 
             datas.details.forEach(detail => {
+                // debugging singkat (hapus kalau sudah OK)
+                console.log('status raw:', detail.status, 'typeof:', typeof detail.status);
+
+                // normalisasi nilai status jadi string kecil tanpa spasi
+                const statusNormalized = String(detail.status ?? '').toLowerCase().trim();
+                const isFinished = (statusNormalized === 'finish' || statusNormalized === 'selesai' ||
+                    statusNormalized === 'done' || statusNormalized === '1');
+
+                const actionHtml = isFinished ?
+                    `<span class="text-muted">Selesai (${detail.status})</span>` :
+                    `<a href="#" class="btn btn-success actionButton" data-id="${detail.id}">
+               <i class="fas fa-check"></i> Selesai
+           </a>`;
+
                 html += `
                     <tr style="text-transform:uppercase;">
-                        <td>${detail.product.name}</td>
-                        <td>${detail.size.code}</td>
-                        <td>${detail.color.name}</td>
-                        <td>${detail.qty}</td>
-                        <td>${detail.status}</td>
-                        <td><a href="#" class="btn btn-success actionButton" data-id="${detail.id}"><i class="fas fa-check"></i> Selesai</a></td>
+                        <td>${detail.product?.name ?? '-'}</td>
+                        <td>${detail.size?.code ?? '-'}</td>
+                        <td>${detail.color?.name ?? '-'}</td>
+                        <td>${detail.qty ?? 0}</td>
+                        <td>${detail.status ?? '-'}</td>
+                        <td>${actionHtml}</td>
                     </tr>
                 `;
             });
+
 
             html += `
                     </tbody>
@@ -123,7 +138,6 @@
         $(".modalDetail").on("click", function(e) {
             e.preventDefault();
             let id = $(this).data("id");
-            console.log(id);
 
             let url = "{{ route('utility.getById') }}";
             let model = "Cutting";

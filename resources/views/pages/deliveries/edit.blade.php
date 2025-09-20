@@ -1,19 +1,19 @@
 @extends('adminlte::page')
 
-@section('title', 'Edit Potongan')
+@section('title', 'Edit Pengiriman')
 
 @section('content_header')
-    <h1>Edit Potongan</h1>
+    <h1>Edit Pengiriman</h1>
 @stop
 
 @section('content')
-    <form action="{{ route('cutting.update', $cutting->id) }}" method="POST" id="formRP">
+    <form action="{{ route('pengiriman.update', $delivery->id) }}" method="POST" id="formRP">
         @csrf
         @method('PATCH')
 
         <div class="card">
             <div class="card-header">
-                <span class="badge badge-primary">Form Edit Potongan</span>
+                <span class="badge badge-primary">Form Edit Pengiriman</span>
             </div>
             <div class="card-body">
 
@@ -32,15 +32,15 @@
                 <div class="form-group row">
                     <label for="date" class="col-sm-2 col-form-label">Tanggal</label>
                     <div class="col-sm-4">
-                        <input type="date" class="form-control" id="date" name="date"
-                            value="{{ old('date', $cutting->date) }}">
+                        <input type="datetime-local" class="form-control" id="date" name="date"
+                            value="{{ old('date', $delivery->date) }}">
                         <span class="text-danger error-text" id="date_error"></span>
                     </div>
 
-                    <label for="name" class="col-sm-2 col-form-label">Nama Penjahit</label>
+                    <label for="name" class="col-sm-2 col-form-label">Nama Pengirim</label>
                     <div class="col-sm-4">
                         <input type="text" class="form-control" id="name" name="name"
-                            value="{{ old('name', $cutting->tailor_name) }}">
+                            value="{{ old('name', $delivery->sender) }}">
                         <span class="text-danger error-text" id="name_error"></span>
                     </div>
                 </div>
@@ -52,7 +52,7 @@
                 <input type="hidden" name="details" id="details" value="{{ old('details') }}">
 
                 <div class="text-right">
-                    <a href="{{ route('cutting.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                    <a href="{{ route('pengiriman.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
                     <button type="submit" class="btn btn-primary rounded-pill">Simpan</button>
                 </div>
             </div>
@@ -97,22 +97,26 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script>
-        const products = @json($products);
-        const colors = @json($colors);
-        const sizes = @json($sizes);
+        const cuttingDetails = @json($cuttingDetails);
 
         function createAutocompleteColumn(sourceData) {
             return {
                 type: 'autocomplete',
-                source: sourceData.map(item => item.name),
+                source: sourceData.map(item => item.cutting_date + " | " + item.color_name + " | " + item.product_name +
+                    " | " +
+                    item.color_name + " | " + item.size_name + " | " + item.source_type + " | " + item.qty + " pcs"),
                 strict: true,
                 allowInvalid: false,
                 renderer: function(instance, td, row, col, prop, value, cellProperties) {
+
                     let displayValue = '';
                     if (value != null) {
                         const item = sourceData.find(d => d.id == value);
                         if (item) {
-                            displayValue = item.name.toUpperCase();
+                            displayValue = item.cutting_date + " | " + item.color_name + " | " + item.product_name +
+                                " | " +
+                                item.color_name + " | " + item.size_name + " | " + item.source_type + " | " + item.qty +
+                                " pcs".toUpperCase();
                         } else {
                             displayValue = value.toString().toUpperCase();
                         }
@@ -127,33 +131,22 @@
         // Ambil data lama dari Laravel (old input atau dari DB)
         let oldDetails = @json(old('details') ? json_decode(old('details'), true) : $details);
 
-
         // Fallback jika kosong
         if (!oldDetails || oldDetails.length === 0) {
             oldDetails = [{
-                product: null,
-                color: null,
-                size: null,
+                cuttingDetail: null,
                 qty: 0
             }];
         }
-        console.log(oldDetails);
+
 
         const container = document.getElementById('example');
         const hot = new Handsontable(container, {
             data: oldDetails,
-            colHeaders: ['Produk', 'Warna', 'Ukuran', 'Jumlah'],
+            colHeaders: ['Potongan', 'Jumlah'],
             columns: [{
-                    data: 'product',
-                    ...createAutocompleteColumn(products)
-                },
-                {
-                    data: 'color',
-                    ...createAutocompleteColumn(colors)
-                },
-                {
-                    data: 'size',
-                    ...createAutocompleteColumn(sizes)
+                    data: 'cuttingDetail',
+                    ...createAutocompleteColumn(cuttingDetails)
                 },
                 {
                     data: 'qty',
@@ -174,14 +167,18 @@
         hot.addHook('afterChange', function(changes, source) {
             if (source === 'edit') {
                 changes.forEach(([row, prop, oldVal, newVal]) => {
+
                     if (!newVal) return;
 
                     let lookup = null;
-                    if (prop === 'product') lookup = products.find(d => d.name === newVal);
-                    if (prop === 'color') lookup = colors.find(d => d.name === newVal);
-                    if (prop === 'size') lookup = sizes.find(d => d.name === newVal);
+                    if (prop === 'cuttingDetail') lookup = cuttingDetails.find(d => d.cutting_date + " | " +
+                        d.color_name + " | " + d.product_name +
+                        " | " +
+                        d.color_name + " | " + d.size_name + " | " + d.source_type + " | " + d.qty +
+                        " pcs" === newVal);
 
                     if (lookup) {
+
                         hot.setDataAtRowProp(row, prop, lookup.id, 'autoconvert');
                     }
                 });
@@ -189,29 +186,55 @@
         });
 
         // Sebelum submit → convert data ke id
-        document.getElementById("formRP").addEventListener("submit", function() {
+        document.getElementById("formRP").addEventListener("click", function() {
             let data = hot.getSourceData();
 
             data = data.map(row => {
-                let product = products.find(d => d.name.toUpperCase() === String(row.product)
-                    .toUpperCase() || d.id == row.product);
-                let color = colors.find(d => d.name.toUpperCase() === String(row.color).toUpperCase() || d
-                    .id == row.color);
-                let size = sizes.find(d => d.name.toUpperCase() === String(row.size).toUpperCase() || d
-                    .id == row.size);
+                let cuttingDetail = cuttingDetails.find(d => d.cutting_date + " | " +
+                    d.color_name + " | " + d.product_name +
+                    " | " +
+                    d.color_name + " | " + d.size_name + " | " + d.source_type + " | " + d.qty +
+                    " pcs" === String(row
+                        .cuttingDetail) || d.id == row.cuttingDetail);
 
                 return {
-                    product: product ? product.id : null,
-                    color: color ? color.id : null,
-                    size: size ? size.id : null,
-                    qty: row.qty ?? 0
+                    cuttingDetail: cuttingDetail ? cuttingDetail.id : null,
+                    qty: row.qty ?? 0,
+                    sourceType: cuttingDetail ? cuttingDetail.source_type : null,
                 };
             });
+            web
+
 
             // Hapus baris kosong
-            data = data.filter(row => row.product || row.color || row.size || row.qty);
+            data = data.filter(row => row.cuttingDetail || row.qty);
 
             document.getElementById("details").value = JSON.stringify(data);
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            @if (session('status') === 'minus-qty')
+                Toastify({
+                    text: "Qty yang dikeluarkan melebihi stok (stok minus).",
+                    className: "danger",
+                    close: true,
+                    style: {
+                        background: "red",
+                    }
+                }).showToast();
+            @endif
+
+            @if (session('status') === 'saved')
+                Toastify({
+                    text: "Data pengiriman berhasil disimpan.",
+                    className: "success",
+                    close: true,
+                    style: {
+                        background: "green",
+                    }
+                }).showToast();
+            @endif
         });
     </script>
 @stop

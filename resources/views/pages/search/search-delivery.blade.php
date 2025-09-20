@@ -17,7 +17,8 @@
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ date('d-m-y H:i:s', strtotime($item->date)) }}</td>
                     <td>{{ $item->sender }}</td>
-                    <td>{{ $item->arrival_date != null ? date('d-m-y H:i:s', strtotime($item->arrival_date)) : '' }}</td>
+                    <td>{{ $item->arrival_date != null ? date('d-m-y H:i:s', strtotime($item->arrival_date)) : '' }}
+                    </td>
                     <td>{{ $item->createBy != null ? $item->createBy->username : '' }}</td>
                     <td>{{ $item->editBy != null ? $item->editBy->username : '' }}</td>
                     <td>
@@ -25,10 +26,10 @@
                             data-id="{{ $item->id }}" data-toggle="modal" data-target="#exampleModal">
                             <i class="fas fa-eye"></i> Detail
                         </a>
-                        <a href="{{ route('cutting.ubah', $item->id) }}" class="badge badge-success">
+                        <a href="{{ route('pengiriman.ubah', $item->id) }}" class="badge badge-success">
                             <i class="fas fa-pencil-alt"></i>
                         </a>
-                        <form action="{{ route('cutting.hapus', $item->id) }}" class="d-inline" method="post">
+                        <form action="{{ route('pengiriman.hapus', $item->id) }}" class="d-inline" method="post">
                             @csrf
                             @method('DELETE')
                             <a href="#" data-id="{{ $item->id }}"

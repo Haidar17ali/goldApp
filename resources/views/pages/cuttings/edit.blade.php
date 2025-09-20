@@ -108,6 +108,7 @@
                 strict: true,
                 allowInvalid: false,
                 renderer: function(instance, td, row, col, prop, value, cellProperties) {
+
                     let displayValue = '';
                     if (value != null) {
                         const item = sourceData.find(d => d.id == value);
@@ -137,7 +138,6 @@
                 qty: 0
             }];
         }
-        console.log(oldDetails);
 
         const container = document.getElementById('example');
         const hot = new Handsontable(container, {
@@ -191,6 +191,8 @@
         // Sebelum submit → convert data ke id
         document.getElementById("formRP").addEventListener("submit", function() {
             let data = hot.getSourceData();
+            console.log(data);
+
 
             data = data.map(row => {
                 let product = products.find(d => d.name.toUpperCase() === String(row.product)
