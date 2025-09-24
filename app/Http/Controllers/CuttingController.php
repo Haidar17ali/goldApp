@@ -108,26 +108,26 @@ class CuttingController extends Controller
     {
         $cutting = Cutting::with('details')->findOrFail($id);
 
-        $products = Product::select(['id', 'name'])->get();
-        $colors = Color::select(['id', 'name'])->get();
-        $sizes = Size::select(['id', 'name'])->get();
+        // $products = Product::select(['id', 'name'])->get();
+        // $colors = Color::select(['id', 'name'])->get();
+        // $sizes = Size::select(['id', 'name'])->get();
 
         // Konversi details untuk Handsontable
-        $details = $cutting->details->map(function ($d) {
-            return [
-                "product" => $d->product_id,
-                "color"   => $d->color_id,
-                "size"    => $d->size_id,
-                "qty"     => $d->qty,
-            ];
-        })->values();
+        // $details = $cutting->details->map(function ($d) {
+        //     return [
+        //         "product" => $d->product_id,
+        //         "color"   => $d->color_id,
+        //         "size"    => $d->size_id,
+        //         "qty"     => $d->qty,
+        //     ];
+        // })->values();
 
         return view('pages.cuttings.edit', compact([
             'cutting',
-            'products',
-            'colors',
-            'sizes',
-            'details'
+            // 'products',
+            // 'colors',
+            // 'sizes',
+            // 'details'
         ]));
     }
 
@@ -136,11 +136,11 @@ class CuttingController extends Controller
         $validator = Validator::make($request->all(), [
             'date' => 'required|date',
             'name' => 'required|string|max:255',
-            'details' => 'required|json',
+            // 'details' => 'required|json',
         ], [
             'date.required' => 'Tanggal wajib diisi.',
             'name.required' => 'Nama penjahit wajib diisi.',
-            'details.required' => 'Detail produk wajib diisi.',
+            // 'details.required' => 'Detail produk wajib diisi.',
         ]);
         
         if ($validator->fails()) {
@@ -158,21 +158,21 @@ class CuttingController extends Controller
             $cutting->save();
 
             // Hapus detail lama
-            CuttingDetail::where('cutting_id', $cutting->id)->delete();
+            // CuttingDetail::where('cutting_id', $cutting->id)->delete();
 
             // Insert detail baru
-            $details = json_decode($request->details, true);
-            foreach ($details as $detail) {
-                if (!empty($detail['product']) && !empty($detail['color']) && !empty($detail['size']) && !empty($detail['qty'])) {
-                    CuttingDetail::create([
-                        'cutting_id' => $cutting->id,
-                        'product_id' => $detail['product'],
-                        'color_id'   => $detail['color'],
-                        'size_id'    => $detail['size'],
-                        'qty'        => $detail['qty'],
-                    ]);
-                }
-            }
+            // $details = json_decode($request->details, true);
+            // foreach ($details as $detail) {
+            //     if (!empty($detail['product']) && !empty($detail['color']) && !empty($detail['size']) && !empty($detail['qty'])) {
+            //         CuttingDetail::create([
+            //             'cutting_id' => $cutting->id,
+            //             'product_id' => $detail['product'],
+            //             'color_id'   => $detail['color'],
+            //             'size_id'    => $detail['size'],
+            //             'qty'        => $detail['qty'],
+            //         ]);
+            //     }
+            // }
 
             DB::commit();
             return redirect()->route('cutting.index')->with('status', 'saved');
@@ -182,8 +182,49 @@ class CuttingController extends Controller
         }
     }
 
+    public function editDetail($id){
+        $cuttingDetail = CuttingDetail::with('cutting')->findOrFail($id);
+
+        if($cuttingDetail->status == "Finish"){
+            return redirect()->back()->with("status", "err-status");
+        }
+
+        $products = Product::select(['id', 'name'])->get();
+        $colors = Color::select(['id', 'name'])->get();
+        $sizes = Size::select(['id', 'name'])->get();
+
+        return view("pages.cuttings.editDetail",compact(["cuttingDetail", "products", "colors", "sizes"]));
+    }
+
+    public function updateDetail(Request $request, $id){
+        $cuttingDetail = CuttingDetail::with('cutting')->findOrFail($id);
+
+        $request->validate([
+            "product" => "exists:products,id",
+            "color"   => "exists:colors,id",
+            "size"    => "exists:sizes,id",
+            "qty"     => "required|numeric",
+        ]);
+
+        // update detail
+        $cuttingDetail->update([
+            "product_id" => $request->product,
+            "color_id"   => $request->color,
+            "size_id"    => $request->size,
+            "qty"        => $request->qty,
+        ]);
+
+        // update parent cutting
+        $cuttingDetail->cutting()->update([
+            "edit_by" => Auth::id()
+        ]);
+
+        return redirect()->route("cutting.index")->with("status", "edited");
+    }
+
+
     // CuttingController.php
-    public function updateDetail(Request $request){
+    public function updateStatus(Request $request){
         $detail = CuttingDetail::findOrFail($request->id);
         $detail->status = 'Finish';
         $detail->finish_at = now();

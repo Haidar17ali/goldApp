@@ -107,12 +107,15 @@
                 const statusNormalized = String(detail.status ?? '').toLowerCase().trim();
                 const isFinished = (statusNormalized === 'finish' || statusNormalized === 'selesai' ||
                     statusNormalized === 'done' || statusNormalized === '1');
+                let editDetailURL = "{{ route('cutting.ubahDetail', ':id') }}";
+                editDetailURL = editDetailURL.replace(":id", detail.id);
 
                 const actionHtml = isFinished ?
                     `<span class="text-muted">Selesai (${detail.status})</span>` :
-                    `<a href="#" class="btn btn-success actionButton" data-id="${detail.id}">
-               <i class="fas fa-check"></i> Selesai
-           </a>`;
+                    `<a href="#" class="badge badge-success actionButton" data-id="${detail.id}">
+                        <i class="fas fa-check"></i> Selesai
+                    </a>
+                    <a href="${editDetailURL}" class="badge badge-success ml-1"><i class="fas fa-pencil-alt"></i></a>`;
 
                 html += `
                     <tr style="text-transform:uppercase;">
@@ -161,7 +164,7 @@
             let id = button.data("id");
 
             $.ajax({
-                url: "{{ route('cutting.updateDetail') }}",
+                url: "{{ route('cutting.updateStatus') }}",
                 method: "POST",
                 data: {
                     id: id,

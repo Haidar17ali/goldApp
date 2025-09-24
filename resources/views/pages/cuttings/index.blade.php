@@ -73,9 +73,9 @@
                         background: "#28A745",
                     }
                 }).showToast();
-            } else if (status == "used") {
+            } else if (status == "err-status") {
                 Toastify({
-                    text: "Data LPB Terpakai Dan Stock Berkurang!",
+                    text: "Status cutting yang sudah finish tidak bisa diedit!!",
                     className: "info",
                     close: true,
                     style: {

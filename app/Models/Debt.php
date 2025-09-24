@@ -8,6 +8,7 @@ class Debt extends Model
 {
     protected $fillable = [
         "tailor",
+        "source_id",
         "cutting_detail_id",
         "from",
         "qty",

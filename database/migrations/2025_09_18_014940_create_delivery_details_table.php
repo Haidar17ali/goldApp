@@ -15,8 +15,9 @@ return new class extends Migration
             $table->bigIncrements("id");
             $table->integer("delivery_id");
             $table->integer("source_id");
-            $table->enum("source_type", ['App\Models\CuttingDetail', 'App\Models\Debt']);
+            $table->enum("source_type", ['cutting', 'hutang']);
             $table->integer("qty");
+            $table->integer("edit_by")->nullable();
             $table->timestamps();
         });
     }

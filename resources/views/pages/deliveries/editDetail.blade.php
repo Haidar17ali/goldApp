@@ -1,19 +1,19 @@
 @extends('adminlte::page')
 
-@section('title', 'Edit Pengiriman')
+@section('title', 'Edit Detail Pengiriman')
 
 @section('content_header')
-    <h1>Edit Pengiriman</h1>
+    <h1>Edit Detail Pengiriman</h1>
 @stop
 
 @section('content')
-    <form action="{{ route('pengiriman.update', $delivery->id) }}" method="POST" id="formRP">
+    <form action="{{ route('pengiriman.updateDetail', $deliveryDetail->id) }}" method="POST" id="formRP">
         @csrf
         @method('PATCH')
 
         <div class="card">
             <div class="card-header">
-                <span class="badge badge-primary">Form Edit Pengiriman</span>
+                <span class="badge badge-primary">Form Edit Detail Pengiriman</span>
             </div>
             <div class="card-body">
 
@@ -30,18 +30,29 @@
                 @endif
 
                 <div class="form-group row">
-                    <label for="date" class="col-sm-2 col-form-label">Tanggal</label>
+                    <label for="date" class="col-sm-2 col-form-label">Potongan</label>
                     <div class="col-sm-4">
-                        <input type="datetime-local" class="form-control" id="date" name="date"
-                            value="{{ old('date', $delivery->date) }}">
-                        <span class="text-danger error-text" id="date_error"></span>
+                        <select name="source_detail" class="form-control" id="cutting">
+                            @foreach ($cuttingDetails as $detail)
+                                <option value="{{ $detail['uid'] }}"
+                                    {{ $deliveryDetail->source_type . '-' . $deliveryDetail->source_id == $detail['uid'] ? 'selected' : '' }}>
+                                    {{ date('d/m/Y', strtotime($detail['cutting_date'])) }} -
+                                    {{ $detail['product_name'] }}
+                                    -
+                                    {{ $detail['color_name'] }}
+                                    - {{ $detail['size_name'] }}
+                                    - {{ $detail['source_type'] }}
+                                    - {{ $detail['qty'] }} pcs
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
-                    <label for="name" class="col-sm-2 col-form-label">Nama Pengirim</label>
+                    <label for="qty" class="col-sm-2 col-form-label">QTY Terkirim</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" id="name" name="name"
-                            value="{{ old('name', $delivery->sender) }}">
-                        <span class="text-danger error-text" id="name_error"></span>
+                        <input type="number" class="form-control" id="qty" name="qty"
+                            value="{{ old('qty', $deliveryDetail->qty) }}">
+                        <span class="text-danger error-text" id="qty_error"></span>
                     </div>
                 </div>
 
@@ -96,6 +107,17 @@
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script>
+        $('#cutting').select2({
+            theme: "bootstrap-5",
+        }).on('select2:open', function() {
+            // Fokuskan ke input search
+            setTimeout(() => {
+                document.querySelector('.select2-container--open .select2-search__field')
+                    ?.focus();
+            }, 10);
+        });
+    </script>
     {{-- <script>
         const cuttingDetails = @json($cuttingDetails);
 
@@ -213,28 +235,29 @@
         // });
     </script> --}}
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            @if (session('status') === 'minus-qty')
-                Toastify({
-                    text: "Qty yang dikeluarkan melebihi stok (stok minus).",
-                    className: "danger",
-                    close: true,
-                    style: {
-                        background: "red",
-                    }
-                }).showToast();
-            @endif
+        @section('plugins.Toast', true)
+            document.addEventListener("DOMContentLoaded", function() {
+                @if (session('status') === 'minus-qty')
+                    Toastify({
+                        text: "Qty yang dikeluarkan melebihi stok (stok minus).",
+                        className: "danger",
+                        close: true,
+                        style: {
+                            background: "red",
+                        }
+                    }).showToast();
+                @endif
 
-            @if (session('status') === 'saved')
-                Toastify({
-                    text: "Data pengiriman berhasil disimpan.",
-                    className: "success",
-                    close: true,
-                    style: {
-                        background: "green",
-                    }
-                }).showToast();
-            @endif
-        });
+                @if (session('status') === 'saved')
+                    Toastify({
+                        text: "Data pengiriman berhasil disimpan.",
+                        className: "success",
+                        close: true,
+                        style: {
+                            background: "green",
+                        }
+                    }).showToast();
+                @endif
+            });
     </script>
 @stop

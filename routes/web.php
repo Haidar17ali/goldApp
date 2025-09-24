@@ -77,8 +77,10 @@ Route::prefix('by-zara')
         Route::post('/cutting/buat', [CuttingController::class, 'store'])->name('cutting.simpan');
         Route::get('/cutting/{id}/ubah', [CuttingController::class, 'edit'])->name('cutting.ubah');
         Route::patch('/cutting/{id}/ubah', [CuttingController::class, 'update'])->name('cutting.update');
+        Route::get('/cutting/{id}/ubah/detail', [CuttingController::class, 'editDetail'])->name('cutting.ubahDetail');
+        Route::patch('/cutting/{id}/ubah/detail', [CuttingController::class, 'updateDetail'])->name('cutting.updateDetail');
         Route::delete('/cutting/{id}/hapus', [CuttingController::class, 'destroy'])->name('cutting.hapus');
-        Route::post('/cutting/update-detail', [CuttingController::class, 'updateDetail'])->name('cutting.updateDetail');
+        Route::post('/cutting/update-Status', [CuttingController::class, 'updateStatus'])->name('cutting.updateStatus');
         
         // deliverie
         Route::get("/pengiriman", [DeliveryController::class, 'index'])->name("pengiriman.index");
@@ -86,6 +88,8 @@ Route::prefix('by-zara')
         Route::post('/pengiriman/buat', [DeliveryController::class, 'store'])->name('pengiriman.simpan');
         Route::get('/pengiriman/{id}/ubah', [DeliveryController::class, 'edit'])->name('pengiriman.ubah');
         Route::patch('/pengiriman/{id}/ubah', [DeliveryController::class, 'update'])->name('pengiriman.update');
+        Route::get('/pengiriman/{id}/ubah/detail', [DeliveryController::class, 'editDetail'])->name('pengiriman.ubahDetail');
+        Route::patch('/pengiriman/{id}/ubah/detail', [DeliveryController::class, 'updateDetail'])->name('pengiriman.updateDetail');
         Route::delete('/pengiriman/{id}/hapus', [DeliveryController::class, 'destroy'])->name('pengiriman.hapus');
 
         

@@ -45,11 +45,11 @@
                     </div>
                 </div>
 
-                <hr>
+                {{-- <hr>
 
                 <h5 class="mb-3">Detail Produk</h5>
                 <div id="example" class="mb-3"></div>
-                <input type="hidden" name="details" id="details" value="{{ old('details') }}">
+                <input type="hidden" name="details" id="details" value="{{ old('details') }}"> --}}
 
                 <div class="text-right">
                     <a href="{{ route('cutting.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
@@ -62,7 +62,7 @@
 
 @section('css')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" />
-    <style>
+    {{-- <style>
         #example {
             margin-top: 15px;
         }
@@ -91,12 +91,12 @@
             border-radius: 6px;
             overflow: hidden;
         }
-    </style>
+    </style> --}}
 @stop
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
-    <script>
+    {{-- <script>
         const products = @json($products);
         const colors = @json($colors);
         const sizes = @json($sizes);
@@ -215,5 +215,5 @@
 
             document.getElementById("details").value = JSON.stringify(data);
         });
-    </script>
+    </script> --}}
 @stop

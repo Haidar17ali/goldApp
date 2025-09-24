@@ -1,19 +1,19 @@
 @extends('adminlte::page')
 
-@section('title', 'Edit Pengiriman')
+@section('title', 'Edit Detail Pemotongan')
 
 @section('content_header')
-    <h1>Edit Pengiriman</h1>
+    <h1>Edit Detail Pemotongan</h1>
 @stop
 
 @section('content')
-    <form action="{{ route('pengiriman.update', $delivery->id) }}" method="POST" id="formRP">
+    <form action="{{ route('cutting.updateDetail', $cuttingDetail->id) }}" method="POST" id="formRP">
         @csrf
         @method('PATCH')
 
         <div class="card">
             <div class="card-header">
-                <span class="badge badge-primary">Form Edit Pengiriman</span>
+                <span class="badge badge-primary">Form Edit Detail Pemotongan</span>
             </div>
             <div class="card-body">
 
@@ -30,18 +30,47 @@
                 @endif
 
                 <div class="form-group row">
-                    <label for="date" class="col-sm-2 col-form-label">Tanggal</label>
+                    <label for="product" class="col-sm-2 col-form-label">Produk</label>
                     <div class="col-sm-4">
-                        <input type="datetime-local" class="form-control" id="date" name="date"
-                            value="{{ old('date', $delivery->date) }}">
-                        <span class="text-danger error-text" id="date_error"></span>
+                        <select name="product" class="form-control" id="product">
+                            @foreach ($products as $product)
+                                <option value="{{ $product->id }}"
+                                    {{ $product->id == $cuttingDetail->product_id ? 'selected' : '' }}>
+                                    {{ strtoupper($product->name) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <label for="color" class="col-sm-2 col-form-label">Warna</label>
+                    <div class="col-sm-4">
+                        <select name="color" class="form-control" id="color">
+                            @foreach ($colors as $color)
+                                <option value="{{ $color->id }}"
+                                    {{ $color->id == $cuttingDetail->color_id ? 'selected' : '' }}>
+                                    {{ strtoupper($color->name) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="size" class="col-sm-2 col-form-label">Ukuran</label>
+                    <div class="col-sm-4">
+                        <select name="size" class="form-control" id="size">
+                            @foreach ($sizes as $size)
+                                <option value="{{ $size->id }}"
+                                    {{ $size->id == $cuttingDetail->size_id ? 'selected' : '' }}>
+                                    {{ strtoupper($size->name) }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
-                    <label for="name" class="col-sm-2 col-form-label">Nama Pengirim</label>
+                    <label for="qty" class="col-sm-2 col-form-label">QTY</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" id="name" name="name"
-                            value="{{ old('name', $delivery->sender) }}">
-                        <span class="text-danger error-text" id="name_error"></span>
+                        <input type="number" class="form-control" id="qty" name="qty"
+                            value="{{ old('qty', $cuttingDetail->qty) }}">
+                        <span class="text-danger error-text" id="qty_error"></span>
                     </div>
                 </div>
 
@@ -96,6 +125,35 @@
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script>
+        $('#color').select2({
+            theme: "bootstrap-5",
+        }).on('select2:open', function() {
+            // Fokuskan ke input search
+            setTimeout(() => {
+                document.querySelector('.select2-container--open .select2-search__field')
+                    ?.focus();
+            }, 10);
+        });
+        $('#product').select2({
+            theme: "bootstrap-5",
+        }).on('select2:open', function() {
+            // Fokuskan ke input search
+            setTimeout(() => {
+                document.querySelector('.select2-container--open .select2-search__field')
+                    ?.focus();
+            }, 10);
+        });
+        $('#size').select2({
+            theme: "bootstrap-5",
+        }).on('select2:open', function() {
+            // Fokuskan ke input search
+            setTimeout(() => {
+                document.querySelector('.select2-container--open .select2-search__field')
+                    ?.focus();
+            }, 10);
+        });
+    </script>
     {{-- <script>
         const cuttingDetails = @json($cuttingDetails);
 
@@ -213,28 +271,29 @@
         // });
     </script> --}}
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            @if (session('status') === 'minus-qty')
-                Toastify({
-                    text: "Qty yang dikeluarkan melebihi stok (stok minus).",
-                    className: "danger",
-                    close: true,
-                    style: {
-                        background: "red",
-                    }
-                }).showToast();
-            @endif
+        @section('plugins.Toast', true)
+            document.addEventListener("DOMContentLoaded", function() {
+                @if (session('status') === 'minus-qty')
+                    Toastify({
+                        text: "Qty yang dikeluarkan melebihi stok (stok minus).",
+                        className: "danger",
+                        close: true,
+                        style: {
+                            background: "red",
+                        }
+                    }).showToast();
+                @endif
 
-            @if (session('status') === 'saved')
-                Toastify({
-                    text: "Data pengiriman berhasil disimpan.",
-                    className: "success",
-                    close: true,
-                    style: {
-                        background: "green",
-                    }
-                }).showToast();
-            @endif
-        });
+                @if (session('status') === 'saved')
+                    Toastify({
+                        text: "Data pengiriman berhasil disimpan.",
+                        className: "success",
+                        close: true,
+                        style: {
+                            background: "green",
+                        }
+                    }).showToast();
+                @endif
+            });
     </script>
 @stop

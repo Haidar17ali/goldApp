@@ -54,7 +54,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Detail</h5>
+                <h5 class="modal-title" id="modalTitle">Detail Pengiriman</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -70,3 +70,122 @@
 </div>
 
 <script src="{{ asset('assets//JS/myHelper.js') }}"></script>
+<script>
+    $(document).ready(function() {
+
+        function loadData(datas) {
+            $("#modalTitle").text("Detail Pengiriman");
+            // Isi body modal
+            let html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Tanggal:</strong> ${datas.date}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Nama Penjahit:</strong> ${datas.sender}</p>    
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Nama Produk</th>
+                                <th>Ukuran</th>
+                                <th>Warna</th>
+                                <th>Qty</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+            datas.details.forEach(detail => {
+                // debugging singkat (hapus kalau sudah OK)
+                console.log('status raw:', detail.status, 'typeof:', typeof detail.status);
+
+                // normalisasi nilai status jadi string kecil tanpa spasi
+                const statusNormalized = String(detail.status ?? '').toLowerCase().trim();
+                const isFinished = (statusNormalized === 'finish' || statusNormalized === 'selesai' ||
+                    statusNormalized === 'done' || statusNormalized === '1');
+                let editDetailURL = "{{ route('pengiriman.ubahDetail', ':id') }}";
+                editDetailURL = editDetailURL.replace(":id", detail.id);
+
+
+                const actionHtml = isFinished ?
+                    `<span class="text-muted">Selesai (${detail.status})</span>` :
+                    `<a href="#" class="badge badge-success actionButton d-inline" data-id="${detail.id}">
+                        <i class="fas fa-check"></i> Selesai
+                    </a>
+                    <a href="${editDetailURL}" class="badge badge-success ml-1"><i class="fas fa-pencil-alt"></i></a>`;
+
+                html += `
+                    <tr style="text-transform:uppercase;">
+                        <td>${detail.source?.product?.name ?? '-'}</td>
+                        <td>${detail.source?.size?.code ?? '-'}</td>
+                        <td>${detail.source?.color?.name ?? '-'}</td>
+                        <td>${detail.qty ?? 0}</td>
+                        <td>${actionHtml}</td>
+                    </tr>
+                `;
+            });
+
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            $("#modalBody").html(html);
+        }
+
+        $(".modalDetail").on("click", function(e) {
+            e.preventDefault();
+            let id = $(this).data("id");
+
+            let url = "{{ route('utility.getById') }}";
+            let model = "Delivery";
+            let relation = ["details.source.product", "details.source.size", "details.source.color"]
+
+            let data = {
+                id: id,
+                model: model,
+                relation: relation,
+            }
+
+            let datas = loadWithData(url, data);
+
+
+            loadData(datas);
+
+        });
+
+        $(document).on("click", ".actionButton", function(e) {
+            e.preventDefault();
+            let button = $(this);
+            let id = button.data("id");
+
+            $.ajax({
+                url: "{{ route('cutting.updateStatus') }}",
+                method: "POST",
+                data: {
+                    id: id,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(res) {
+                    if (res.success) {
+                        // update kolom status langsung di tabel
+                        let row = button.closest("tr");
+                        row.find("td:nth-child(5)").html(
+                            `<span class="badge bg-success">${res.status}</span>`);
+
+                        // disable tombol supaya tidak bisa diklik lagi
+                        button.replaceWith(
+                            `<span class="text-muted">Selesai (${res.finish_at})</span>`
+                        );
+                    }
+                }
+            });
+        });
+
+    })
+</script>

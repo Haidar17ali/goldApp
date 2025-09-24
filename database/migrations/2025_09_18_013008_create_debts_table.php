@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('debts', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->string("tailor");
+            $table->integer("source_id");
             $table->integer("cutting_detail_id");
             $table->integer("qty");
             $table->enum("from", ["cutting", "delivery"])->default("cutting");

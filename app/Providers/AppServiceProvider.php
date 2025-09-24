@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFour();
         Relation::morphMap([
             'cutting' => \App\Models\CuttingDetail::class,
-            'hutang' => \App\Models\DeliveryDetail::class,
+            'debt.cut' => \App\Models\DeliveryDetail::class,
             // tambah model lain kalau perlu
         ]);
     }
