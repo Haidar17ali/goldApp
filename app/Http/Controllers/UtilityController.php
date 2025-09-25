@@ -210,6 +210,23 @@ class UtilityController extends Controller
             ],
             'relations' => []
         ],
+        'productVariants' => [
+            'model' => 'App\\Models\\ProductVariant',
+            'columns' => [
+                'id',
+                'product_id',
+                'color_id',
+                'size_id',
+                'sku',
+                'barcode',
+                'default_price',
+            ],
+            'relations' => [
+                'product'=> ["name","code"],
+                'color'=> ["name","code"],
+                'size'=> ["name","code"],
+            ]
+        ],
         'rotary' => [
             'model' => 'App\\Models\\Rotary',
             'columns' => [
@@ -357,6 +374,11 @@ class UtilityController extends Controller
         }elseif($modelKey == "deliveries"){
             return response()->json([
                 'table' => view('pages.search.search-delivery', compact(['data']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "productVariants"){
+            return response()->json([
+                'table' => view('pages.search.search-product-variant', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }

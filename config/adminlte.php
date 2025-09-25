@@ -347,6 +347,11 @@ return [
                     'text' => 'Ukuran',
                     'url' => 'by-zara/size',
                     'can' => 'size.index',
+                ],
+                [
+                    'text' => 'Varian Produk',
+                    'url' => 'by-zara/varian-produk',
+                    'can' => 'size.index',
                 ]
             ],
         ],

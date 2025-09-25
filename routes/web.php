@@ -7,6 +7,7 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\UserController;
@@ -82,7 +83,7 @@ Route::prefix('by-zara')
         Route::delete('/cutting/{id}/hapus', [CuttingController::class, 'destroy'])->name('cutting.hapus');
         Route::post('/cutting/update-Status', [CuttingController::class, 'updateStatus'])->name('cutting.updateStatus');
         
-        // deliverie
+        // deliveries
         Route::get("/pengiriman", [DeliveryController::class, 'index'])->name("pengiriman.index");
         Route::get('/pengiriman/buat', [DeliveryController::class, 'create'])->name('pengiriman.buat');
         Route::post('/pengiriman/buat', [DeliveryController::class, 'store'])->name('pengiriman.simpan');
@@ -91,6 +92,16 @@ Route::prefix('by-zara')
         Route::get('/pengiriman/{id}/ubah/detail', [DeliveryController::class, 'editDetail'])->name('pengiriman.ubahDetail');
         Route::patch('/pengiriman/{id}/ubah/detail', [DeliveryController::class, 'updateDetail'])->name('pengiriman.updateDetail');
         Route::delete('/pengiriman/{id}/hapus', [DeliveryController::class, 'destroy'])->name('pengiriman.hapus');
+
+        // product variant
+        Route::get("/varian-produk", [ProductVariantController::class, 'index'])->name("varian-produk.index");
+        Route::get('/varian-produk/buat', [ProductVariantController::class, 'create'])->name('varian-produk.buat');
+        Route::post('/varian-produk/buat', [ProductVariantController::class, 'store'])->name('varian-produk.simpan');
+        Route::get('/varian-produk/{id}/ubah', [ProductVariantController::class, 'edit'])->name('varian-produk.ubah');
+        Route::patch('/varian-produk/{id}/ubah', [ProductVariantController::class, 'update'])->name('varian-produk.update');
+        Route::get('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'editDetail'])->name('varian-produk.ubahDetail');
+        Route::patch('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'updateDetail'])->name('varian-produk.updateDetail');
+        Route::delete('/varian-produk/{id}/hapus', [ProductVariantController::class, 'destroy'])->name('varian-produk.hapus');
 
         
 
