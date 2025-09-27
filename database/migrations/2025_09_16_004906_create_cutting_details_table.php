@@ -14,9 +14,7 @@ return new class extends Migration
         Schema::create('cutting_details', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->integer("cutting_id");
-            $table->integer("product_id");
-            $table->integer("color_id");
-            $table->integer("size_id");
+            $table->integer("product_variant_id");
             $table->bigInteger("qty");
             $table->date("finish_at")->nullable();
             $table->enum("status", ["Pending", "Cancel", "Finish"]);

@@ -30,37 +30,15 @@
                 @endif
 
                 <div class="form-group row">
-                    <label for="product" class="col-sm-2 col-form-label">Produk</label>
+                    <label for="product" class="col-sm-2 col-form-label">Varian Produk</label>
                     <div class="col-sm-4">
                         <select name="product" class="form-control" id="product">
-                            @foreach ($products as $product)
-                                <option value="{{ $product->id }}"
-                                    {{ $product->id == $cuttingDetail->product_id ? 'selected' : '' }}>
-                                    {{ strtoupper($product->name) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <label for="color" class="col-sm-2 col-form-label">Warna</label>
-                    <div class="col-sm-4">
-                        <select name="color" class="form-control" id="color">
-                            @foreach ($colors as $color)
-                                <option value="{{ $color->id }}"
-                                    {{ $color->id == $cuttingDetail->color_id ? 'selected' : '' }}>
-                                    {{ strtoupper($color->name) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="size" class="col-sm-2 col-form-label">Ukuran</label>
-                    <div class="col-sm-4">
-                        <select name="size" class="form-control" id="size">
-                            @foreach ($sizes as $size)
-                                <option value="{{ $size->id }}"
-                                    {{ $size->id == $cuttingDetail->size_id ? 'selected' : '' }}>
-                                    {{ strtoupper($size->name) }}
+                            @foreach ($product_variants as $product_variant)
+                                <option value="{{ $product_variant['id'] }}"
+                                    {{ $product_variant['id'] == $cuttingDetail->product_id ? 'selected' : '' }}>
+                                    {{ strtoupper($product_variant['product_name']) }}
+                                    {{ strtoupper($product_variant['color_name']) }}
+                                    ({{ strtoupper($product_variant['size_code']) }})
                                 </option>
                             @endforeach
                         </select>
@@ -136,15 +114,6 @@
             }, 10);
         });
         $('#product').select2({
-            theme: "bootstrap-5",
-        }).on('select2:open', function() {
-            // Fokuskan ke input search
-            setTimeout(() => {
-                document.querySelector('.select2-container--open .select2-search__field')
-                    ?.focus();
-            }, 10);
-        });
-        $('#size').select2({
             theme: "bootstrap-5",
         }).on('select2:open', function() {
             // Fokuskan ke input search

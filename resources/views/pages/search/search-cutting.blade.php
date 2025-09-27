@@ -117,11 +117,12 @@
                     </a>
                     <a href="${editDetailURL}" class="badge badge-success ml-1"><i class="fas fa-pencil-alt"></i></a>`;
 
+
                 html += `
                     <tr style="text-transform:uppercase;">
-                        <td>${detail.product?.name ?? '-'}</td>
-                        <td>${detail.size?.code ?? '-'}</td>
-                        <td>${detail.color?.name ?? '-'}</td>
+                        <td>${detail.product_variant?.product?.name ?? '-'}</td>
+                        <td>${detail.product_variant?.size?.code ?? '-'}</td>
+                        <td>${detail.product_variant?.color?.name ?? '-'}</td>
                         <td>${detail.qty ?? 0}</td>
                         <td>${detail.status ?? '-'}</td>
                         <td>${actionHtml}</td>
@@ -144,7 +145,9 @@
 
             let url = "{{ route('utility.getById') }}";
             let model = "Cutting";
-            let relation = ["details.product", "details.size", "details.color"]
+            let relation = ["details.productVariant.product", "details.productVariant.size",
+                "details.productVariant.color"
+            ]
 
             let data = {
                 id: id,

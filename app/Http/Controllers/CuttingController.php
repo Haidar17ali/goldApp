@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Models\Cutting;
 use App\Models\CuttingDetail;
+use App\Models\ProductVariant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,20 +21,19 @@ class CuttingController extends Controller
     }
 
     public function create(){
-        $products = Product::select(['id','name'])->get()->map(function($item){
-            $item->name = strtoupper($item->name);
-            return $item;
-        });
-        $colors = Color::select(['id','name'])->get()->map(function($item){
-            $item->name = strtoupper($item->name);
-            return $item;
-        });
-        $sizes = Size::select(['id','name'])->get()->map(function($item){
-            $item->name = strtoupper($item->name);
-            return $item;
+       $product_variants = ProductVariant::select(['id','product_id', 'color_id', 'size_id'])
+        ->with(['product:id,name', 'color:id,name', 'size:id,code'])
+        ->get()
+        ->map(function ($item) {
+            return [
+                'id'           => $item->id,
+                'product_name' => strtoupper($item->product?->name ?? ''),
+                'color_name'   => strtoupper($item->color?->name ?? ''),
+                'size_code'    => strtoupper($item->size?->code ?? ''),
+            ];
         });
 
-        return view('pages.cuttings.create', compact(['products', 'colors', 'sizes']));
+        return view('pages.cuttings.create', compact(['product_variants']));
     }
 
     public function store(Request $request)
@@ -56,7 +56,7 @@ class CuttingController extends Controller
 
         // 🔹 Validasi tiap baris details
         foreach ($details as $i => $row) {
-            if (empty($row['product']) || empty($row['color']) || empty($row['size']) || empty($row['qty'])) {
+            if (empty($row['product']) || empty($row['qty'])) {
                 throw ValidationException::withMessages([
                     'details' => "Detail baris ke-" . ($i + 1) . " belum lengkap.",
                 ]);
@@ -85,9 +85,7 @@ class CuttingController extends Controller
             foreach ($details as $row) {
                 CuttingDetail::create([
                     'cutting_id' => $cutting->id,
-                    'product_id' => $row['product'],
-                    'color_id'   => $row['color'],
-                    'size_id'    => $row['size'],
+                    'product_variant_id' => $row['product'],
                     'qty'        => $row['qty'],
                     'status'     => "Pending"
                 ]);
@@ -96,7 +94,7 @@ class CuttingController extends Controller
             DB::commit();
 
             return redirect()->route('cutting.index')
-                ->with('success', 'Data cutting berhasil disimpan.');
+                ->with('status', 'saved');
         } catch (\Throwable $th) {
             DB::rollBack();
             return back()->withErrors(['msg' => 'Terjadi kesalahan: ' . $th->getMessage()])
@@ -189,11 +187,19 @@ class CuttingController extends Controller
             return redirect()->back()->with("status", "err-status");
         }
 
-        $products = Product::select(['id', 'name'])->get();
-        $colors = Color::select(['id', 'name'])->get();
-        $sizes = Size::select(['id', 'name'])->get();
-
-        return view("pages.cuttings.editDetail",compact(["cuttingDetail", "products", "colors", "sizes"]));
+        $product_variants = ProductVariant::select(['id','product_id', 'color_id', 'size_id'])
+        ->with(['product:id,name', 'color:id,name', 'size:id,code'])
+        ->get()
+        ->map(function ($item) {
+            return [
+                'id'           => $item->id,
+                'product_name' => strtoupper($item->product?->name ?? ''),
+                'color_name'   => strtoupper($item->color?->name ?? ''),
+                'size_code'    => strtoupper($item->size?->code ?? ''),
+            ];
+        });
+        // dd($product_variants);
+        return view("pages.cuttings.editDetail",compact(["cuttingDetail", "product_variants"]));
     }
 
     public function updateDetail(Request $request, $id){
@@ -201,16 +207,12 @@ class CuttingController extends Controller
 
         $request->validate([
             "product" => "exists:products,id",
-            "color"   => "exists:colors,id",
-            "size"    => "exists:sizes,id",
             "qty"     => "required|numeric",
         ]);
 
         // update detail
         $cuttingDetail->update([
-            "product_id" => $request->product,
-            "color_id"   => $request->color,
-            "size_id"    => $request->size,
+            "product_variant_id" => $request->product,
             "qty"        => $request->qty,
         ]);
 

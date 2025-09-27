@@ -96,14 +96,12 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script>
-        const products = @json($products);
-        const colors = @json($colors);
-        const sizes = @json($sizes);
+        const products = @json($product_variants);
 
         function createAutocompleteColumn(sourceData) {
             return {
                 type: 'autocomplete',
-                source: sourceData.map(item => item.name),
+                source: sourceData.map(item => item.product_name + " " + item.color_name + " (" + item.size_code + ")"),
                 strict: true,
                 allowInvalid: false,
                 renderer: function(instance, td, row, col, prop, value, cellProperties) {
@@ -111,7 +109,7 @@
                     if (value != null) {
                         const item = sourceData.find(d => d.id == value);
                         if (item) {
-                            displayValue = item.name.toUpperCase();
+                            displayValue = item.product_name + " " + item.color_name + " (" + item.size_code + ")";
                         } else {
                             displayValue = value.toString().toUpperCase();
                         }
@@ -138,8 +136,6 @@
         if (!oldDetails || oldDetails.length === 0) {
             oldDetails = [{
                 product: null,
-                color: null,
-                size: null,
                 qty: 0
             }];
         }
@@ -151,14 +147,6 @@
             columns: [{
                     data: 'product',
                     ...createAutocompleteColumn(products)
-                },
-                {
-                    data: 'color',
-                    ...createAutocompleteColumn(colors)
-                },
-                {
-                    data: 'size',
-                    ...createAutocompleteColumn(sizes)
                 },
                 {
                     data: 'qty',
@@ -181,9 +169,9 @@
                     if (!newVal) return;
 
                     let lookup = null;
-                    if (prop === 'product') lookup = products.find(d => d.name === newVal);
-                    if (prop === 'color') lookup = colors.find(d => d.name === newVal);
-                    if (prop === 'size') lookup = sizes.find(d => d.name === newVal);
+
+                    if (prop === 'product') lookup = products.find(d => d.product_name + " " + d
+                        .color_name + " (" + d.size_code + ")" === newVal);
 
 
                     if (lookup) {
@@ -194,27 +182,22 @@
         });
 
         // Sebelum submit → convert data ke id dan simpan ke hidden input
-        document.getElementById("formRP").addEventListener("submit", function() {
+        document.getElementById("formRP").addEventListener("click", function() {
             let data = hot.getSourceData();
 
             data = data.map(row => {
-                let product = products.find(d => d.name.toUpperCase() === String(row.product)
+                let product = products.find(d => d.product_name + " " + d
+                    .color_name + " (" + d.size_code + ")" === String(row.product)
                     .toUpperCase() || d.id == row.product);
-                let color = colors.find(d => d.name.toUpperCase() === String(row.color).toUpperCase() || d
-                    .id == row.color);
-                let size = sizes.find(d => d.name.toUpperCase() === String(row.size).toUpperCase() || d
-                    .id == row.size);
 
                 return {
                     product: product ? product.id : null,
-                    color: color ? color.id : null,
-                    size: size ? size.id : null,
                     qty: row.qty ?? 0
                 };
             });
 
             // Hapus baris kosong
-            data = data.filter(row => row.product || row.color || row.size || row.qty);
+            data = data.filter(row => row.product || row.qty);
 
             document.getElementById("details").value = JSON.stringify(data);
         });

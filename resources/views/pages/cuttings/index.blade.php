@@ -132,9 +132,9 @@
                             'edit_by',
                         ],
                         relations: {
-                            'details.product': ["name", "code"],
-                            'details.color': ["name", "code"],
-                            'details.size': ["name", "code"],
+                            'details.productVariant.product': ["name", "code"],
+                            'details.productVariant.color': ["name", "code"],
+                            'details.productVariant.size': ["name", "code"],
                             'createBy': ["username"],
                             'editBy': ["username"],
                         },

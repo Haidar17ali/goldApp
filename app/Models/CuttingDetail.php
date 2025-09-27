@@ -8,9 +8,7 @@ class CuttingDetail extends Model
 {
     protected $fillable = [
             "cutting_id",
-            "product_id",
-            "color_id",
-            "size_id",
+            "product_variant_id",
             "qty",
             "finish_at",
             "status",
@@ -20,16 +18,8 @@ class CuttingDetail extends Model
         return $this->belongsTo(Cutting::class, "cutting_id");
     }
 
-    public function product(){
-        return $this->belongsTo(Product::class, "product_id");
-    }
-
-    public function color(){
-        return $this->belongsTo(Color::class, "color_id");
-    }
-
-    public function size(){
-        return $this->belongsTo(Size::class, "size_id");
+    public function productVariant(){
+        return $this->belongsTo(ProductVariant::class, "product_variant_id");
     }
 
     public function deliveryDetails(){
