@@ -334,6 +334,11 @@ return [
             'icon' => 'fas fa-database',
             'submenu' => [
                 [
+                    'text' => 'Kain',
+                    'url' => 'by-zara/kain',
+                    'can' => 'kain.index',
+                ],
+                [
                     'text' => 'Produk',
                     'url' => 'by-zara/produk',
                     'can' => 'produk.index',

@@ -151,6 +151,16 @@ class UtilityController extends Controller
             ],
             'relations' => []
         ],
+        'fabrics' => [
+            'model' => 'App\\Models\\Fabric',
+            'columns' => [
+                'id',
+                'name',
+                'material',
+                'unit',
+            ],
+            'relations' => []
+        ],
         'products' => [
             'model' => 'App\\Models\\Product',
             'columns' => [
@@ -346,8 +356,13 @@ class UtilityController extends Controller
 
         });
 
-        if($modelKey  == "products"){
+        if($modelKey  == "fabrics"){
             return response()->json([
+                'table' => view('pages.search.search-fabrics', compact('data'))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "products"){
+           return response()->json([
                 'table' => view('pages.search.search-product', compact('data'))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);

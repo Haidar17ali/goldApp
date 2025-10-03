@@ -4,6 +4,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CuttingController;
 use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\FabricController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
@@ -47,6 +48,14 @@ Route::prefix('by-zara')
         Route::get('/pengguna/{id}/ubah', [UserController::class, 'edit'])->name('pengguna.ubah');
         Route::patch('/pengguna/{id}/ubah', [UserController::class, 'update'])->name('pengguna.update');
         Route::delete('/pengguna/{id}/hapus', [UserController::class, 'destroy'])->name('pengguna.hapus');
+
+        // fabrics
+        Route::get("/kain", [FabricController::class, 'index'])->name("kain.index");
+        Route::get('/kain/buat', [FabricController::class, 'create'])->name('kain.buat');
+        Route::post('/kain/buat', [FabricController::class, 'store'])->name('kain.simpan');
+        Route::get('/kain/{id}/ubah', [FabricController::class, 'edit'])->name('kain.ubah');
+        Route::patch('/kain/{id}/ubah', [FabricController::class, 'update'])->name('kain.update');
+        Route::delete('/kain/{id}/hapus', [FabricController::class, 'destroy'])->name('kain.hapus');
 
         // products
         Route::get("/produk", [ProductController::class, 'index'])->name("produk.index");
