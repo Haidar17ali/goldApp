@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer("source_id");
             $table->enum("source_type", ['cutting', 'hutang']);
             $table->integer("qty");
+            $table->enum("status", ['pending', 'datang'])->default("pending");
             $table->integer("edit_by")->nullable();
             $table->timestamps();
         });

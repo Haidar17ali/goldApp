@@ -101,6 +101,7 @@ Route::prefix('by-zara')
         Route::get('/pengiriman/{id}/ubah/detail', [DeliveryController::class, 'editDetail'])->name('pengiriman.ubahDetail');
         Route::patch('/pengiriman/{id}/ubah/detail', [DeliveryController::class, 'updateDetail'])->name('pengiriman.updateDetail');
         Route::delete('/pengiriman/{id}/hapus', [DeliveryController::class, 'destroy'])->name('pengiriman.hapus');
+        Route::post('/delivery/update-Status', [DeliveryController::class, 'updateStatus'])->name('delivery.updateStatus');
 
         // product variant
         Route::get("/varian-produk", [ProductVariantController::class, 'index'])->name("varian-produk.index");

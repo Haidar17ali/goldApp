@@ -20,9 +20,9 @@ class DeliveryController extends BaseController
 
     public function create(){
         $cuttingDetails = CuttingDetail::with([
-            'product:id,name',
-            'color:id,name',
-            'size:id,name',
+            'productVariant.product:id,name',
+            'productVariant.color:id,name',
+            'productVariant.size:id,name',
             'cutting:id,date,tailor_name'
         ])
         ->where("status", "finish")
@@ -31,9 +31,9 @@ class DeliveryController extends BaseController
         ->map(function($item) {
             return [
                 'id'           => $item->id,
-                'product_name' => strtoupper($item->product->name ?? '-'),
-                'color_name'   => strtoupper($item->color->name ?? '-'),
-                'size_name'    => strtoupper($item->size->name ?? '-'),
+                'product_name' => strtoupper($item->productVariant->product->name ?? '-'),
+                'color_name'   => strtoupper($item->productVariant->color->name ?? '-'),
+                'size_name'    => strtoupper($item->productVariant->size->name ?? '-'),
                 'cutting_date' => $item->cutting->date ?? null,
                 'tailor_name'  => strtoupper($item->cutting->tailor_name ?? '-'),
                 'source_type'  => 'cutting',
@@ -42,9 +42,9 @@ class DeliveryController extends BaseController
         });
 
         $debts = Debt::with([
-            "cuttingdetail.product:id,name",
-            "cuttingdetail.color:id,name",
-            "cuttingdetail.size:id,name",
+            "cuttingdetail.productVariant.product:id,name",
+            "cuttingdetail.productVariant.color:id,name",
+            "cuttingdetail.productVariant.size:id,name",
             "cuttingdetail.cutting:id,date,tailor_name",
         ])
         ->where("status", "belum")
@@ -53,9 +53,9 @@ class DeliveryController extends BaseController
         ->map(function($item){
             return[
                 'id'           => $item->id,
-                'product_name' => strtoupper($item->cuttingDetail->product->name ?? '-'),
-                'color_name'   => strtoupper($item->cuttingDetail->color->name ?? '-'),
-                'size_name'    => strtoupper($item->cuttingDetail->size->name ?? '-'),
+                'product_name' => strtoupper($item->cuttingDetail->productVariant->product->name ?? '-'),
+                'color_name'   => strtoupper($item->cuttingDetail->productVariant->color->name ?? '-'),
+                'size_name'    => strtoupper($item->cuttingDetail->productVariant->size->name ?? '-'),
                 'cutting_date' => $item->cuttingDetail->cutting->date ?? null,
                 'tailor_name'  => strtoupper($item->cuttingDetail->cutting->tailor_name ?? '-'),
                 'source_type'  => 'debt',
@@ -183,9 +183,9 @@ class DeliveryController extends BaseController
         $delivery = Delivery::with('details')->findOrFail($id);
         
         $cuttingDetails = CuttingDetail::with([
-                'product:id,name',
-                'color:id,name',
-                'size:id,name',
+                'productVariant.product:id,name',
+                'productVariant.color:id,name',
+                'productVariant.size:id,name',
                 'cutting:id,date,tailor_name'
             ])
             ->where("status", "finish")
@@ -199,9 +199,9 @@ class DeliveryController extends BaseController
             ->map(function($item) {
                 return [
                     'id'           => $item->id,
-                    'product_name' => strtoupper($item->product->name ?? '-'),
-                    'color_name'   => strtoupper($item->color->name ?? '-'),
-                    'size_name'    => strtoupper($item->size->name ?? '-'),
+                    'product_name' => strtoupper($item->productVariant->product->name ?? '-'),
+                    'color_name'   => strtoupper($item->productVariant->color->name ?? '-'),
+                    'size_name'    => strtoupper($item->productVariant->size->name ?? '-'),
                     'cutting_date' => $item->cutting->date ?? null,
                     'tailor_name'  => strtoupper($item->cutting->tailor_name ?? '-'),
                     'source_type'  => 'cutting',
@@ -210,9 +210,9 @@ class DeliveryController extends BaseController
             });
 
         $debts = Debt::with([
-                "cuttingdetail.product:id,name",
-                "cuttingdetail.color:id,name",
-                "cuttingdetail.size:id,name",
+                "cuttingdetail.productVariant.product:id,name",
+                "cuttingdetail.productVariant.color:id,name",
+                "cuttingdetail.productVariant.size:id,name",
                 "cuttingdetail.cutting:id,date,tailor_name",
             ])
             ->where("status", "belum")
@@ -226,9 +226,9 @@ class DeliveryController extends BaseController
             ->map(function($item){
                 return [
                     'id'           => $item->id,
-                    'product_name' => strtoupper($item->cuttingDetail->product->name ?? '-'),
-                    'color_name'   => strtoupper($item->cuttingDetail->color->name ?? '-'),
-                    'size_name'    => strtoupper($item->cuttingDetail->size->name ?? '-'),
+                    'product_name' => strtoupper($item->cuttingDetail->productVariant->product->name ?? '-'),
+                    'color_name'   => strtoupper($item->cuttingDetail->productVariant->color->name ?? '-'),
+                    'size_name'    => strtoupper($item->cuttingDetail->productVariant->size->name ?? '-'),
                     'cutting_date' => $item->cuttingDetail->cutting->date ?? null,
                     'tailor_name'  => strtoupper($item->cuttingDetail->cutting->tailor_name ?? '-'),
                     'source_type'  => 'debt',
@@ -255,10 +255,7 @@ class DeliveryController extends BaseController
         ]));
     }
 
-
-
-
-   public function update(Request $request, $id){
+    public function update(Request $request, $id){
         $request->validate([
             'date' => ['required', 'date'],
             'name' => ['required', 'string', 'max:255'],
@@ -365,9 +362,9 @@ class DeliveryController extends BaseController
         $delivery = Delivery::where("id", $deliveryDetail->delivery_id)->first();
 
         $cuttingDetails = CuttingDetail::with([
-            'product:id,name',
-            'color:id,name',
-            'size:id,name',
+            'productVariant.product:id,name',
+            'productVariant.color:id,name',
+            'productVariant.size:id,name',
             'cutting:id,date,tailor_name'
         ])
         ->where("status", "finish")
@@ -382,9 +379,9 @@ class DeliveryController extends BaseController
             return [
                 'uid'          => 'cutting-'.$item->id, // 👈 unique id
                 'id'           => $item->id,
-                'product_name' => strtoupper($item->product->name ?? '-'),
-                'color_name'   => strtoupper($item->color->name ?? '-'),
-                'size_name'    => strtoupper($item->size->name ?? '-'),
+                'product_name' => strtoupper($item->productVariant->product->name ?? '-'),
+                'color_name'   => strtoupper($item->productVariant->color->name ?? '-'),
+                'size_name'    => strtoupper($item->productVariant->size->name ?? '-'),
                 'cutting_date' => $item->cutting->date ?? null,
                 'tailor_name'  => strtoupper($item->cutting->tailor_name ?? '-'),
                 'source_type'  => 'cutting',
@@ -393,9 +390,9 @@ class DeliveryController extends BaseController
         });
 
         $debts = Debt::with([
-                "cuttingdetail.product:id,name",
-                "cuttingdetail.color:id,name",
-                "cuttingdetail.size:id,name",
+                "cuttingdetail.productVariant.product:id,name",
+                "cuttingdetail.productVariant.color:id,name",
+                "cuttingdetail.productVariant.size:id,name",
                 "cuttingdetail.cutting:id,date,tailor_name",
             ])
             ->where("status", "belum")
@@ -410,9 +407,9 @@ class DeliveryController extends BaseController
                 return [
                     'uid'          => 'debt-'.$item->id, // 👈 unique id
                     'id'           => $item->id,
-                    'product_name' => strtoupper($item->cuttingDetail->product->name ?? '-'),
-                    'color_name'   => strtoupper($item->cuttingDetail->color->name ?? '-'),
-                    'size_name'    => strtoupper($item->cuttingDetail->size->name ?? '-'),
+                    'product_name' => strtoupper($item->cuttingDetail->productVariant->product->name ?? '-'),
+                    'color_name'   => strtoupper($item->cuttingDetail->productVariant->color->name ?? '-'),
+                    'size_name'    => strtoupper($item->cuttingDetail->productVariant->size->name ?? '-'),
                     'cutting_date' => $item->cuttingDetail->cutting->date ?? null,
                     'tailor_name'  => strtoupper($item->cuttingDetail->cutting->tailor_name ?? '-'),
                     'source_type'  => 'debt',
@@ -511,6 +508,18 @@ class DeliveryController extends BaseController
             DB::rollBack();
             return back()->withInput()->with('status', 'error')->with('message', $e->getMessage());
         }
+    }
+
+    public function updateStatus(Request $request){
+        $detail = DeliveryDetail::findOrFail($request->id);
+        $detail->status = 'datang';
+        $detail->save();
+
+        return response()->json([
+            'success' => true,
+            'status' => $detail->status,
+            'finish_at' => $detail->finish_at,
+        ]);
     }
 
     public function destroy($id){

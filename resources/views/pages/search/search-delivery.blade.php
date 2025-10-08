@@ -101,28 +101,24 @@
 
             datas.details.forEach(detail => {
                 // debugging singkat (hapus kalau sudah OK)
-                console.log('status raw:', detail.status, 'typeof:', typeof detail.status);
+                // console.log('status raw:', detail.status, 'typeof:', typeof detail.status);
 
                 // normalisasi nilai status jadi string kecil tanpa spasi
                 const statusNormalized = String(detail.status ?? '').toLowerCase().trim();
-                const isFinished = (statusNormalized === 'finish' || statusNormalized === 'selesai' ||
+                const isFinished = (statusNormalized === 'datang' || statusNormalized === 'Selesai' ||
                     statusNormalized === 'done' || statusNormalized === '1');
                 let editDetailURL = "{{ route('pengiriman.ubahDetail', ':id') }}";
                 editDetailURL = editDetailURL.replace(":id", detail.id);
 
 
                 const actionHtml = isFinished ?
-                    `<span class="text-muted">Selesai (${detail.status})</span>` :
-                    `<a href="#" class="badge badge-success actionButton d-inline" data-id="${detail.id}">
-                        <i class="fas fa-check"></i> Selesai
-                    </a>
-                    <a href="${editDetailURL}" class="badge badge-success ml-1"><i class="fas fa-pencil-alt"></i></a>`;
+                    `<a href="${editDetailURL}" class="badge badge-success ml-1"><i class="fas fa-pencil-alt"></i></a>`;
 
                 html += `
                     <tr style="text-transform:uppercase;">
-                        <td>${detail.source?.product?.name ?? '-'}</td>
-                        <td>${detail.source?.size?.code ?? '-'}</td>
-                        <td>${detail.source?.color?.name ?? '-'}</td>
+                        <td>${detail.source?.product_variant?.product?.name ?? '-'}</td>
+                        <td>${detail.source?.product_variant?.size?.code ?? '-'}</td>
+                        <td>${detail.source?.product_variant?.color?.name ?? '-'}</td>
                         <td>${detail.qty ?? 0}</td>
                         <td>${actionHtml}</td>
                     </tr>
@@ -144,7 +140,11 @@
 
             let url = "{{ route('utility.getById') }}";
             let model = "Delivery";
-            let relation = ["details.source.product", "details.source.size", "details.source.color"]
+            let relation = ["details.source.productVariant.product",
+                "details.source.productVariant.size",
+                "details.source.productVariant.color"
+            ]
+
 
             let data = {
                 id: id,
@@ -165,7 +165,7 @@
             let id = button.data("id");
 
             $.ajax({
-                url: "{{ route('cutting.updateStatus') }}",
+                url: "{{ route('delivery.updateStatus') }}",
                 method: "POST",
                 data: {
                     id: id,
@@ -180,7 +180,7 @@
 
                         // disable tombol supaya tidak bisa diklik lagi
                         button.replaceWith(
-                            `<span class="text-muted">Selesai (${res.finish_at})</span>`
+                            `<span class="text-muted">Datang (${res.finish_at})</span>`
                         );
                     }
                 }
