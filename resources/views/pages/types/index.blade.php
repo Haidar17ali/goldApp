@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Warna')
+@section('title', 'Jenis Emas')
 
 @section('content_header')
-    <h1>Warna</h1>
+    <h1>Jenis Emas</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('warna.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Warna</a>
+            <a href="{{ route('jenis.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
+                Jenis Emas</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="colors" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="types" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -141,7 +141,7 @@
                     }
                 });
             }
-            fetchData("", 1, "colors");
+            fetchData("", 1, "types");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -155,11 +155,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'colors');
+                fetchData(inputElement, page, 'types');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'colors');
+                fetchData(this, 1, 'types');
             });
         });
     </script>

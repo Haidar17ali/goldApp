@@ -4,8 +4,6 @@
             <th scope="col">#</th>
             <th scope="col">Kode</th>
             <th scope="col">Nama</th>
-            <th scope="col">Panjang</th>
-            <th scope="col">Lebar</th>
             <th scope="col">Aksi</th>
         </tr>
     </thead>
@@ -16,13 +14,11 @@
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ $item->code }}</td>
                     <td>{{ $item->name }}</td>
-                    <td>{{ $item->length }}</td>
-                    <td>{{ $item->width }}</td>
                     <td>
-                        <a href="{{ route('size.ubah', $item->id) }}" class="badge badge-success">
+                        <a href="{{ route('jenis.ubah', $item->id) }}" class="badge badge-success">
                             <i class="fas fa-pencil-alt"></i>
                         </a>
-                        <form action="{{ route('size.hapus', $item->id) }}" class="d-inline" method="post">
+                        <form action="{{ route('jenis.hapus', $item->id) }}" class="d-inline" method="post">
                             @csrf
                             @method('DELETE')
                             <a href="#" data-id="{{ $item->id }}"
@@ -35,7 +31,7 @@
             @endforeach
         @else
             <tr>
-                <td colspan="7" class="text-center"><b>Data Size tidak ditemukan!</b></td>
+                <td colspan="7" class="text-center"><b>Data jenis tidak ditemukan!</b></td>
             </tr>
         @endif
     </tbody>

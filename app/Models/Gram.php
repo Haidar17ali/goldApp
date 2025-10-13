@@ -4,13 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Size extends Model
+class Gram extends Model
 {
     protected $fillable = [
-            "code",
             "name",
-            "width",
-            "length",
+            "weight",
     ];
 
     public function variants(){

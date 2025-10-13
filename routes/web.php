@@ -1,16 +1,17 @@
 <?php
 
 use App\Http\Controllers\BackupController;
-use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CuttingController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\FabricController;
+use App\Http\Controllers\GramController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SizeController;
+use App\Http\Controllers\TypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +26,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // Route::get('/dashboard/stok/filter', [HomeController::class, 'filterStok'])->name('filter-stock');
 
 
-Route::prefix('by-zara')
+Route::prefix('gold-app')
     ->middleware(['auth'])
     ->group(function(){
 
@@ -66,20 +67,20 @@ Route::prefix('by-zara')
         Route::delete('/produk/{id}/hapus', [ProductController::class, 'destroy'])->name('produk.hapus');
 
         // colors
-        Route::get("/warna", [ColorController::class, 'index'])->name("warna.index");
-        Route::get('/warna/buat', [ColorController::class, 'create'])->name('warna.buat');
-        Route::post('/warna/buat', [ColorController::class, 'store'])->name('warna.simpan');
-        Route::get('/warna/{id}/ubah', [ColorController::class, 'edit'])->name('warna.ubah');
-        Route::patch('/warna/{id}/ubah', [ColorController::class, 'update'])->name('warna.update');
-        Route::delete('/warna/{id}/hapus', [ColorController::class, 'destroy'])->name('warna.hapus');
+        Route::get("/jenis", [TypeController::class, 'index'])->name("jenis.index");
+        Route::get('/jenis/buat', [TypeController::class, 'create'])->name('jenis.buat');
+        Route::post('/jenis/buat', [TypeController::class, 'store'])->name('jenis.simpan');
+        Route::get('/jenis/{id}/ubah', [TypeController::class, 'edit'])->name('jenis.ubah');
+        Route::patch('/jenis/{id}/ubah', [TypeController::class, 'update'])->name('jenis.update');
+        Route::delete('/jenis/{id}/hapus', [TypeController::class, 'destroy'])->name('jenis.hapus');
 
         // sizes
-        Route::get("/size", [SizeController::class, 'index'])->name("size.index");
-        Route::get('/size/buat', [SizeController::class, 'create'])->name('size.buat');
-        Route::post('/size/buat', [SizeController::class, 'store'])->name('size.simpan');
-        Route::get('/size/{id}/ubah', [SizeController::class, 'edit'])->name('size.ubah');
-        Route::patch('/size/{id}/ubah', [SizeController::class, 'update'])->name('size.update');
-        Route::delete('/size/{id}/hapus', [SizeController::class, 'destroy'])->name('size.hapus');
+        Route::get("/berat", [GramController::class, 'index'])->name("berat.index");
+        Route::get('/berat/buat', [GramController::class, 'create'])->name('berat.buat');
+        Route::post('/berat/buat', [GramController::class, 'store'])->name('berat.simpan');
+        Route::get('/berat/{id}/ubah', [GramController::class, 'edit'])->name('berat.ubah');
+        Route::patch('/berat/{id}/ubah', [GramController::class, 'update'])->name('berat.update');
+        Route::delete('/berat/{id}/hapus', [GramController::class, 'destroy'])->name('berat.hapus');
 
         // cutting
         Route::get("/cutting", [CuttingController::class, 'index'])->name("cutting.index");

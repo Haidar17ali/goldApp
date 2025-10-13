@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'logo' => '<b>By Zara</b>',
+    'logo' => '<b>Toko Emas</b>',
     'logo_img' => 'assets/images/LogoJM.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -334,28 +334,23 @@ return [
             'icon' => 'fas fa-database',
             'submenu' => [
                 [
-                    'text' => 'Kain',
-                    'url' => 'by-zara/kain',
-                    'can' => 'kain.index',
-                ],
-                [
                     'text' => 'Produk',
-                    'url' => 'by-zara/produk',
+                    'url' => 'gold-app/produk',
                     'can' => 'produk.index',
                 ],
                 [
-                    'text' => 'Warna',
-                    'url' => 'by-zara/warna',
-                    'can' => 'warna.index',
+                    'text' => 'Jenis',
+                    'url' => 'gold-app/jenis',
+                    'can' => 'jenis.index',
                 ],
                 [
-                    'text' => 'Ukuran',
-                    'url' => 'by-zara/size',
-                    'can' => 'size.index',
+                    'text' => 'Gramasi',
+                    'url' => 'gold-app/berat',
+                    'can' => 'berat.index',
                 ],
                 [
                     'text' => 'Varian Produk',
-                    'url' => 'by-zara/varian-produk',
+                    'url' => 'gold-app/varian-produk',
                     'can' => 'size.index',
                 ]
             ],
@@ -367,13 +362,13 @@ return [
                 [
                     'text' => 'Cutting',
                     'icon' => 'fas fa-hand-scissors',
-                    'url' => 'by-zara/cutting',
+                    'url' => 'gold-app/cutting',
                     'can' => 'cutting.index',
                 ],
                 [
                     'text' => 'Pengiriman',
                     'icon' => 'fas fa-truck',
-                    'url' => 'by-zara/pengiriman',
+                    'url' => 'gold-app/pengiriman',
                     'can' => 'pengiriman.index',
                 ],
             ],
@@ -384,27 +379,27 @@ return [
             'submenu' => [
                 [
                     'text' => 'Laporan Surat Jalan',
-                    'url' => 'by-zara/report/surat-jalan',
+                    'url' => 'gold-app/report/surat-jalan',
                     'can' => 'laporan.surat-jalan',
                 ],
                 [
                     'text' => 'Laporan LPB',
-                    'url' => 'by-zara/report/lpb',
+                    'url' => 'gold-app/report/lpb',
                     'can' => 'laporan.lpb',
                 ],
                 [
                     'text' => 'Laporan LPB Supplier',
-                    'url' => 'by-zara/report/lpb-supplier',
+                    'url' => 'gold-app/report/lpb-supplier',
                     'can' => 'laporan.lpb-supplier',
                 ],
                 [
                     'text' => 'Laporan Purchase Jurnal',
-                    'url' => 'by-zara/purchase-jurnal',
+                    'url' => 'gold-app/purchase-jurnal',
                     'can' => 'purchase-jurnal.index',
                 ],
                 [
                     'text' => 'Laporan DP (Down Payment)',
-                    'url' => 'by-zara/report/dp',
+                    'url' => 'gold-app/report/dp',
                     'can' => 'laporan.dp',
                 ],
             ],
@@ -426,17 +421,17 @@ return [
             'submenu' => [
                 [
                     'text' => 'Role',
-                    'url' => 'by-zara/role',
+                    'url' => 'gold-app/role',
                     'can' => 'role.index',
                 ],
                 [
                     'text' => 'Permissions',
-                    'url' => 'by-zara/permission',
+                    'url' => 'gold-app/permission',
                     'can' => 'permission.index',
                 ],
                 [
                     'text' => 'Pengguna',
-                    'url' => 'by-zara/pengguna',
+                    'url' => 'gold-app/pengguna',
                     'can' => 'pengguna.index',
                 ],
             ],
@@ -448,7 +443,7 @@ return [
         [
             'text' => 'Database',
             'icon' => 'fas fa-database',
-            'url' => 'by-zara/backup',
+            'url' => 'gold-app/backup',
             'can' => 'backup.index',
         ],
     ],

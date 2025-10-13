@@ -170,8 +170,8 @@ class UtilityController extends Controller
             ],
             'relations' => []
         ],
-        'colors' => [
-            'model' => 'App\\Models\\Color',
+        'types' => [
+            'model' => 'App\\Models\\Type',
             'columns' => [
                 'id',
                 'code',
@@ -179,14 +179,12 @@ class UtilityController extends Controller
             ],
             'relations' => []
         ],
-        'sizes' => [
-            'model' => 'App\\Models\\Size',
+        'grams' => [
+            'model' => 'App\\Models\\Gram',
             'columns' => [
                 'id',
-                'code',
                 'name',
-                'width',
-                'length',
+                'weight',
             ],
             'relations' => []
         ],
@@ -366,9 +364,9 @@ class UtilityController extends Controller
                 'table' => view('pages.search.search-product', compact('data'))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "colors"){
+        }elseif($modelKey == "types"){
             return response()->json([
-                'table' => view('pages.search.search-color', compact(['data']))->render(),
+                'table' => view('pages.search.search-type', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "users"){
@@ -376,9 +374,9 @@ class UtilityController extends Controller
                 'table' => view('pages.search.search-user', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "sizes"){
+        }elseif($modelKey == "grams"){
             return response()->json([
-                'table' => view('pages.search.search-size', compact(['data']))->render(),
+                'table' => view('pages.search.search-gram', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "cuttings"){

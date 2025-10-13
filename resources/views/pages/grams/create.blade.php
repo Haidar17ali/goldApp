@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Ubah Size ')
+@section('title', 'Buat Gramasi ')
 
 @section('content_header')
-    <h1>Ubah Size</h1>
+    <h1>Buat Gramasi</h1>
 @stop
 
 @section('content')
@@ -22,53 +22,36 @@
 
             <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
-            <div class="badge badge-primary float-right">Ubah Size</div>
+            <div class="float-right badge badge-primary">Buat Gramasi</div>
         </div>
     </div>
-    <form action="{{ route('size.update', $size->id) }}" method="POST" id="formRP">
+    <form action="{{ route('berat.simpan') }}" method="POST" id="formRP">
         @csrf
-        @method('patch')
+        @method('post')
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
-                            <label for="code" class="col-sm-2 col-form-label">Kode</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="code" name="code"
-                                    value="{{ old('code', $size->code) }}">
-                                <span class="text-danger error-text" id="code_error"></span>
-                            </div>
                             <label for="name" class="col-sm-2 col-form-label">Nama</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control" id="name" name="name"
-                                    value="{{ old('name', $size->name) }}">
+                                    value="{{ old('name') }}">
                                 <span class="text-danger error-text" id="name_error"></span>
                             </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="width" class="col-sm-2 col-form-label">Lebar</label>
+                            <label for="weight" class="col-sm-2 col-form-label">Berat</label>
                             <div class="col-sm-4 input-group">
-                                <input type="number" class="form-control" id="width" name="width"
-                                    value="{{ old('width', $size->width) }}">
+                                <input type="text" class="form-control" id="weight" name="weight"
+                                    value="{{ old('weight') }}">
                                 <div class="input-group-append">
-                                    <div class="input-group-text">CM</div>
+                                    <div class="input-group-text">gram</div>
                                 </div>
 
-                                <span class="text-danger error-text" id="width_error"></span>
-                            </div>
-                            <label for="length" class="col-sm-2 col-form-label">Panjang</label>
-                            <div class="col-sm-4 input-group">
-                                <input type="text" class="form-control" id="length" name="length"
-                                    value="{{ old('length', $size->length) }}">
-                                <div class="input-group-append">
-                                    <div class="input-group-text">CM</div>
-                                </div>
-                                <span class="text-danger error-text" id="length_error"></span>
+                                <span class="text-danger error-text" id="weight_error"></span>
                             </div>
                         </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('size.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            <a href="{{ route('berat.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>

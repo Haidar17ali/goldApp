@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Color;
+use App\Models\Type;
 use Illuminate\Http\Request;
 
-class ColorController extends Controller
+class TypeController extends Controller
 {
     public function index(){
-        return view("pages.colors.index");
+        return view("pages.types.index");
     }
 
     public function create(){
-        return view("pages.colors.create");
+        return view("pages.types.create");
     }
 
     public function store(Request $request){
@@ -27,17 +27,17 @@ class ColorController extends Controller
             "name"=> strtolower($request->name),
         ];
 
-        Color::create($data);
-        return redirect()->route("warna.index")->with("status", "saved");
+        Type::create($data);
+        return redirect()->route("jenis.index")->with("status", "saved");
     }
 
     public function edit($id){
-        $product = Color::findOrFail($id);
-        return view("pages.colors.edit", compact("product"));
+        $product = Type::findOrFail($id);
+        return view("pages.Types.edit", compact("product"));
     }
 
     public function update(Request $request, $id){
-        $product = Color::findOrFail($id);
+        $product = Type::findOrFail($id);
         // validasai
         $request->validate([
             "code" => "required|unique:products,code,".$id,
@@ -48,11 +48,11 @@ class ColorController extends Controller
             $product->name = strtolower($request->name);
             $product->save();
 
-        return redirect()->route("warna.index")->with("status", "edited");
+        return redirect()->route("jenis.index")->with("status", "edited");
     }
 
     public function destroy($id){
-        Color::findOrFail($id)->delete();
+        Type::findOrFail($id)->delete();
         return redirect()->back()->with("status", "deleted");
     }
 }

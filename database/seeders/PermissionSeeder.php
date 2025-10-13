@@ -19,7 +19,7 @@ class PermissionSeeder extends Seeder
         foreach($routes as $route){
             
             // Periksa apakah URI rute dimulai dengan 'JM'
-            if (str_starts_with($route->uri(), 'JM')) {
+            if (str_starts_with($route->uri(), 'gold-app')) {
                 // inisialisasio route name
                 $routeName = $route->getName();
                 if($routeName && !Permission::where('name', $routeName)->exists()){

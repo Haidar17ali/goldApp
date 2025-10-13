@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Size')
+@section('title', 'Gramasi')
 
 @section('content_header')
-    <h1>Size</h1>
+    <h1>Gramasi</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('size.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Size</a>
+            <a href="{{ route('berat.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
+                Gramasi</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="sizes" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="grams" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -125,10 +125,8 @@
                         search: search,
                         columns: [
                             'id',
-                            'code',
                             'name',
-                            'width',
-                            'length',
+                            'weight',
 
                         ],
                         relations: {
@@ -143,7 +141,7 @@
                     }
                 });
             }
-            fetchData("", 1, "sizes");
+            fetchData("", 1, "grams");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -157,11 +155,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'sizes');
+                fetchData(inputElement, page, 'grams');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'sizes');
+                fetchData(this, 1, 'grams');
             });
         });
     </script>

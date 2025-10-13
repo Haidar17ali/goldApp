@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Buat Produk ')
+@section('title', 'Ubah Produk ')
 
 @section('content_header')
-    <h1>Buat Warna</h1>
+    <h1>Ubah Warna</h1>
 @stop
 
 @section('content')
@@ -22,12 +22,12 @@
 
             <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
-            <div class="badge badge-primary float-right">Buat Warna</div>
+            <div class="float-right badge badge-primary">Ubah Warna</div>
         </div>
     </div>
-    <form action="{{ route('warna.simpan') }}" method="POST" id="formRP">
+    <form action="{{ route('jenis.update', $product->id) }}" method="POST" id="formRP">
         @csrf
-        @method('post')
+        @method('patch')
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -36,18 +36,18 @@
                             <label for="code" class="col-sm-2 col-form-label">Kode</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control" id="code" name="code"
-                                    value="{{ old('code') }}">
+                                    value="{{ old('code', $product->code) }}">
                                 <span class="text-danger error-text" id="code_error"></span>
                             </div>
                             <label for="name" class="col-sm-2 col-form-label">Nama</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control" id="name" name="name"
-                                    value="{{ old('name') }}">
+                                    value="{{ old('name', $product->name) }}">
                                 <span class="text-danger error-text" id="name_error"></span>
                             </div>
                         </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('pengguna.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            <a href="{{ route('pengguna.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>

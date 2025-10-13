@@ -21,7 +21,7 @@ class PermissionController extends Controller
         $routeNames = [];
 
         foreach ($routes as $route) {
-            if (str_starts_with($route->uri(), 'by-zara')) {
+            if (str_starts_with($route->uri(), 'gold-app')) {
                 $routeName = $route->getName();
 
                 if ($routeName) {
@@ -36,7 +36,7 @@ class PermissionController extends Controller
         }
 
         // 2. Hapus permission lama yang tidak ada di routes
-        Permission::where('name', 'like', 'by-zara%')
+        Permission::where('name', 'like', 'gold-app%')
             ->whereNotIn('name', $routeNames)
             ->delete();
 
