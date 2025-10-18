@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Varian Prodik')
+@section('title', 'Varian Produk')
 
 @section('content_header')
     <h1>Varian Produk</h1>
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('varian-produk.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
+            <a href="{{ route('varian-produk.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
                 Varian Produk</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="productVariants" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="productVariants" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -126,16 +126,15 @@
                         columns: [
                             'id',
                             'product_id',
-                            'color_id',
-                            'size_id',
+                            'karat_id',
+                            'gram',
                             'sku',
                             'barcode',
                             'default_price',
                         ],
                         relations: {
                             'product': ["name", "code"],
-                            'color': ["name", "code"],
-                            'size': ["name", "code"],
+                            'karat': ["name"],
                         },
                         page: page
                     },

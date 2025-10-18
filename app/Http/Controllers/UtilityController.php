@@ -179,12 +179,11 @@ class UtilityController extends Controller
             ],
             'relations' => []
         ],
-        'grams' => [
-            'model' => 'App\\Models\\Gram',
+        'karats' => [
+            'model' => 'App\\Models\\Karat',
             'columns' => [
                 'id',
                 'name',
-                'weight',
             ],
             'relations' => []
         ],
@@ -200,8 +199,7 @@ class UtilityController extends Controller
             ],
             'relations' => [
                 'details.productVariant.product'=> ["name","code"],
-                'details.productVariant.color'=> ["name","code"],
-                'details.productVariant.size'=> ["name","code"],
+                'details.productVariant.karat'=> ["name"],
                 'createBy'=> ["username"],
                 'editBy'=> ["username"],
             ]
@@ -223,16 +221,15 @@ class UtilityController extends Controller
             'columns' => [
                 'id',
                 'product_id',
-                'color_id',
-                'size_id',
+                'karat_id',
+                'gram',
                 'sku',
                 'barcode',
                 'default_price',
             ],
             'relations' => [
                 'product'=> ["name","code"],
-                'color'=> ["name","code"],
-                'size'=> ["name","code"],
+                'karat'=> ["name"],
             ]
         ],
         'rotary' => [
@@ -374,9 +371,9 @@ class UtilityController extends Controller
                 'table' => view('pages.search.search-user', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "grams"){
+        }elseif($modelKey == "karats"){
             return response()->json([
-                'table' => view('pages.search.search-gram', compact(['data']))->render(),
+                'table' => view('pages.search.search-karat', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "cuttings"){

@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('product_variants', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('color_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('size_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('karat_id')->nullable()->constrained()->nullOnDelete();
 
+            $table->double('gram');
             $table->string('sku')->unique();      // SKU unik
             $table->string('barcode')->nullable()->unique(); // bisa null kalau belum ada
             $table->integer('default_price')->nullable();

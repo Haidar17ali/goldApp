@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Gramasi')
+@section('title', 'Karat')
 
 @section('content_header')
-    <h1>Gramasi</h1>
+    <h1>Karat</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('berat.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
-                Gramasi</a>
+            <a href="{{ route('karat.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
+                Karat</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="grams" class="float-right mb-3 form-control"
+                <input type="text" id="searchBox" data-model="karats" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -126,11 +126,9 @@
                         columns: [
                             'id',
                             'name',
-                            'weight',
 
                         ],
                         relations: {
-                            'employee': [],
                         },
                         page: page
                     },
@@ -141,7 +139,7 @@
                     }
                 });
             }
-            fetchData("", 1, "grams");
+            fetchData("", 1, "karats");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -155,11 +153,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'grams');
+                fetchData(inputElement, page, 'karats');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'grams');
+                fetchData(this, 1, 'karats');
             });
         });
     </script>

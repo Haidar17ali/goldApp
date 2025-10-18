@@ -16,8 +16,8 @@
                 <tr style="text-transform: uppercase">
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ strtoupper($item->product?->name) }}</td>
-                    <td>{{ strtoupper($item->size?->name) }}</td>
-                    <td>{{ strtoupper($item->color?->name) }}</td>
+                    <td>{{ strtoupper($item->karat?->name) }}</td>
+                    <td>{{ strtoupper($item->gram) }}</td>
                     <td>{{ $item->sku }}</td>
                     <td>Rp.{{ money_format($item->default_price) }}</td>
                     <td>
@@ -65,122 +65,122 @@
 </div>
 
 <script src="{{ asset('assets//JS/myHelper.js') }}"></script>
-<script>
+{{-- <script>
     $(document).ready(function() {
 
-        function loadData(datas) {
-            $("#modalTitle").text("Kode Potongan: " + datas.code);
-            // Isi body modal
-            let html = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Tanggal:</strong> ${datas.date}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Nama Penjahit:</strong> ${datas.tailor_name}</p>    
-                        </div>
-                    </div>
+        // function loadData(datas) {
+        //     $("#modalTitle").text("Kode Potongan: " + datas.code);
+        //     // Isi body modal
+        //     let html = `
+        //             <div class="row">
+        //                 <div class="col-md-6">
+        //                     <p><strong>Tanggal:</strong> ${datas.date}</p>
+        //                 </div>
+        //                 <div class="col-md-6">
+        //                     <p><strong>Nama Penjahit:</strong> ${datas.tailor_name}</p>    
+        //                 </div>
+        //             </div>
 
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Nama Produk</th>
-                                <th>Ukuran</th>
-                                <th>Warna</th>
-                                <th>Qty</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+        //             <table class="table table-bordered">
+        //                 <thead>
+        //                     <tr>
+        //                         <th>Nama Produk</th>
+        //                         <th>Ukuran</th>
+        //                         <th>Warna</th>
+        //                         <th>Qty</th>
+        //                         <th>Status</th>
+        //                         <th>Aksi</th>
+        //                     </tr>
+        //                 </thead>
+        //                 <tbody>
+        //         `;
 
-            datas.details.forEach(detail => {
-                // debugging singkat (hapus kalau sudah OK)
-                console.log('status raw:', detail.status, 'typeof:', typeof detail.status);
+        //     datas.details.forEach(detail => {
+        //         // debugging singkat (hapus kalau sudah OK)
+        //         console.log('status raw:', detail.status, 'typeof:', typeof detail.status);
 
-                // normalisasi nilai status jadi string kecil tanpa spasi
-                const statusNormalized = String(detail.status ?? '').toLowerCase().trim();
-                const isFinished = (statusNormalized === 'finish' || statusNormalized === 'selesai' ||
-                    statusNormalized === 'done' || statusNormalized === '1');
-                let editDetailURL = "{{ route('cutting.ubahDetail', ':id') }}";
-                editDetailURL = editDetailURL.replace(":id", detail.id);
+        //         // normalisasi nilai status jadi string kecil tanpa spasi
+        //         const statusNormalized = String(detail.status ?? '').toLowerCase().trim();
+        //         const isFinished = (statusNormalized === 'finish' || statusNormalized === 'selesai' ||
+        //             statusNormalized === 'done' || statusNormalized === '1');
+        //         let editDetailURL = "{{ route('cutting.ubahDetail', ':id') }}";
+        //         editDetailURL = editDetailURL.replace(":id", detail.id);
 
-                const actionHtml = isFinished ?
-                    `<span class="text-muted">Selesai (${detail.status})</span>` :
-                    `<a href="#" class="badge badge-success actionButton" data-id="${detail.id}">
-                        <i class="fas fa-check"></i> Selesai
-                    </a>
-                    <a href="${editDetailURL}" class="badge badge-success ml-1"><i class="fas fa-pencil-alt"></i></a>`;
+        //         const actionHtml = isFinished ?
+        //             `<span class="text-muted">Selesai (${detail.status})</span>` :
+        //             `<a href="#" class="badge badge-success actionButton" data-id="${detail.id}">
+        //                 <i class="fas fa-check"></i> Selesai
+        //             </a>
+        //             <a href="${editDetailURL}" class="ml-1 badge badge-success"><i class="fas fa-pencil-alt"></i></a>`;
 
-                html += `
-                    <tr style="text-transform:uppercase;">
-                        <td>${detail.product?.name ?? '-'}</td>
-                        <td>${detail.size?.code ?? '-'}</td>
-                        <td>${detail.color?.name ?? '-'}</td>
-                        <td>${detail.qty ?? 0}</td>
-                        <td>${detail.status ?? '-'}</td>
-                        <td>${actionHtml}</td>
-                    </tr>
-                `;
-            });
+        //         html += `
+        //             <tr style="text-transform:uppercase;">
+        //                 <td>${detail.product?.name ?? '-'}</td>
+        //                 <td>${detail.karat?.name ?? '-'}</td>
+        //                 <td>${detail.gram ?? '-'}</td>
+        //                 <td>${detail.qty ?? 0}</td>
+        //                 <td>${detail.status ?? '-'}</td>
+        //                 <td>${actionHtml}</td>
+        //             </tr>
+        //         `;
+        //     });
 
 
-            html += `
-                    </tbody>
-                </table>
-            `;
+        //     html += `
+        //             </tbody>
+        //         </table>
+        //     `;
 
-            $("#modalBody").html(html);
-        }
+        //     $("#modalBody").html(html);
+        // }
 
-        $(".modalDetail").on("click", function(e) {
-            e.preventDefault();
-            let id = $(this).data("id");
+        // $(".modalDetail").on("click", function(e) {
+        //     e.preventDefault();
+        //     let id = $(this).data("id");
 
-            let url = "{{ route('utility.getById') }}";
-            let model = "Cutting";
-            let relation = ["details.product", "details.size", "details.color"]
+        //     let url = "{{ route('utility.getById') }}";
+        //     let model = "Cutting";
+        //     let relation = ["details.product", "details.karat"]
 
-            let data = {
-                id: id,
-                model: model,
-                relation: relation,
-            }
+        //     let data = {
+        //         id: id,
+        //         model: model,
+        //         relation: relation,
+        //     }
 
-            let datas = loadWithData(url, data);
+        //     let datas = loadWithData(url, data);
 
-            loadData(datas);
+        //     loadData(datas);
 
-        });
+        // });
 
-        $(document).on("click", ".actionButton", function(e) {
-            e.preventDefault();
-            let button = $(this);
-            let id = button.data("id");
+        // $(document).on("click", ".actionButton", function(e) {
+        //     e.preventDefault();
+        //     let button = $(this);
+        //     let id = button.data("id");
 
-            $.ajax({
-                url: "{{ route('cutting.updateStatus') }}",
-                method: "POST",
-                data: {
-                    id: id,
-                    _token: "{{ csrf_token() }}"
-                },
-                success: function(res) {
-                    if (res.success) {
-                        // update kolom status langsung di tabel
-                        let row = button.closest("tr");
-                        row.find("td:nth-child(5)").html(
-                            `<span class="badge bg-success">${res.status}</span>`);
+        //     $.ajax({
+        //         url: "{{ route('cutting.updateStatus') }}",
+        //         method: "POST",
+        //         data: {
+        //             id: id,
+        //             _token: "{{ csrf_token() }}"
+        //         },
+        //         success: function(res) {
+        //             if (res.success) {
+        //                 // update kolom status langsung di tabel
+        //                 let row = button.closest("tr");
+        //                 row.find("td:nth-child(5)").html(
+        //                     `<span class="badge bg-success">${res.status}</span>`);
 
-                        // disable tombol supaya tidak bisa diklik lagi
-                        button.replaceWith(
-                            `<span class="text-muted">Selesai (${res.finish_at})</span>`
-                        );
-                    }
-                }
-            });
-        });
+        //                 // disable tombol supaya tidak bisa diklik lagi
+        //                 button.replaceWith(
+        //                     `<span class="text-muted">Selesai (${res.finish_at})</span>`
+        //                 );
+        //             }
+        //         }
+        //     });
+        // });
 
     })
-</script>
+</script> --}}

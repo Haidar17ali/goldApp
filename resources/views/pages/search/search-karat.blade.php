@@ -3,7 +3,6 @@
         <tr>
             <th scope="col">#</th>
             <th scope="col">Nama</th>
-            <th scope="col">Berat</th>
             <th scope="col">Aksi</th>
         </tr>
     </thead>
@@ -13,12 +12,11 @@
                 <tr style="text-transform: uppercase">
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ $item->name }}</td>
-                    <td>{{ $item->weight }}</td>
                     <td>
-                        <a href="{{ route('berat.ubah', $item->id) }}" class="badge badge-success">
+                        <a href="{{ route('karat.ubah', $item->id) }}" class="badge badge-success">
                             <i class="fas fa-pencil-alt"></i>
                         </a>
-                        <form action="{{ route('berat.hapus', $item->id) }}" class="d-inline" method="post">
+                        <form action="{{ route('karat.hapus', $item->id) }}" class="d-inline" method="post">
                             @csrf
                             @method('DELETE')
                             <a href="#" data-id="{{ $item->id }}"
@@ -31,7 +29,7 @@
             @endforeach
         @else
             <tr>
-                <td colspan="7" class="text-center"><b>Data berat tidak ditemukan!</b></td>
+                <td colspan="7" class="text-center"><b>Data karat tidak ditemukan!</b></td>
             </tr>
         @endif
     </tbody>

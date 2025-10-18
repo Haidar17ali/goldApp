@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Ubah Gramasi ')
+@section('title', 'Buat Karat ')
 
 @section('content_header')
-    <h1>Ubah Gramasi</h1>
+    <h1>Buat Karat</h1>
 @stop
 
 @section('content')
@@ -22,12 +22,12 @@
 
             <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
-            <div class="float-right badge badge-primary">Ubah Size</div>
+            <div class="float-right badge badge-primary">Buat Karat</div>
         </div>
     </div>
-    <form action="{{ route('berat.update', $gram->id) }}" method="POST" id="formRP">
+    <form action="{{ route('karat.simpan') }}" method="POST" id="formRP">
         @csrf
-        @method('patch')
+        @method('post')
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -36,22 +36,12 @@
                             <label for="name" class="col-sm-2 col-form-label">Nama</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control" id="name" name="name"
-                                    value="{{ old('name', $gram->name) }}">
+                                    value="{{ old('name') }}">
                                 <span class="text-danger error-text" id="name_error"></span>
-                            </div>
-                            <label for="weight" class="col-sm-2 col-form-label">berat</label>
-                            <div class="col-sm-4 input-group">
-                                <input type="text" class="form-control" id="weight" name="weight"
-                                    value="{{ old('weight', $gram->weight) }}">
-                                <div class="input-group-append">
-                                    <div class="input-group-text">gram</div>
-                                </div>
-
-                                <span class="text-danger error-text" id="weight_error"></span>
                             </div>
                         </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('berat.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
+                            <a href="{{ route('karat.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>
