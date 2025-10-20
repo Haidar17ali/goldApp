@@ -9,24 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_variants', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->bigIncrements("id");
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('karat_id')->nullable()->constrained()->nullOnDelete();
 
-            $table->foreignId('product_id')
-                ->constrained('products')
-                ->cascadeOnDelete();
-
-            $table->foreignId('type_id')
-                ->nullable()
-                ->constrained('types')
-                ->nullOnDelete();
-
-            $table->foreignId('gram_id')
-                ->nullable()
-                ->constrained('grams')
-                ->nullOnDelete();
-
-            $table->string('sku')->unique();
-            $table->string('barcode')->nullable()->unique();
+            $table->double('gram');
+            $table->string('sku')->unique();      // SKU unik
+            $table->string('barcode')->nullable()->unique(); // bisa null kalau belum ada
             $table->integer('default_price')->nullable();
             $table->timestamps();
         });

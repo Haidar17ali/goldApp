@@ -8,8 +8,8 @@ class ProductVariant extends Model
 {
      protected $fillable = [
         'product_id',
-        'color_id',
-        'size_id',
+        'karat_id',
+        'gram',
         'sku',
         'barcode',
         'default_price',
@@ -20,18 +20,8 @@ class ProductVariant extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function color()
+    public function karat()
     {
-        return $this->belongsTo(Color::class);
-    }
-
-    public function size()
-    {
-        return $this->belongsTo(Size::class);
-    }
-
-    public function stocks()
-    {
-        return $this->hasMany(Stock::class, 'product_variant_id');
+        return $this->belongsTo(Karat::class);
     }
 }

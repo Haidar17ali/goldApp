@@ -42,32 +42,26 @@
                         <span class="text-danger error-text" id="product_id_error"></span>
                     </div>
 
-                    <label for="color_id" class="col-sm-2 col-form-label">Warna</label>
+                    <label for="karat_id" class="col-sm-2 col-form-label">Karat</label>
                     <div class="col-sm-4">
-                        <select name="color_id" id="color_id" class="form-control select2">
-                            <option value="">-- Pilih Warna --</option>
-                            @foreach ($colors as $color)
-                                <option value="{{ $color->id }}" {{ old('color_id') == $color->id ? 'selected' : '' }}>
-                                    {{ strtoupper($color->name) }}
+                        <select name="karat_id" id="karat_id" class="form-control select2">
+                            <option value="">-- Pilih Karat --</option>
+                            @foreach ($karats as $karat)
+                                <option value="{{ $karat->id }}" {{ old('karat_id') == $karat->id ? 'selected' : '' }}>
+                                    {{ strtoupper($karat->name) }}
                                 </option>
                             @endforeach
                         </select>
-                        <span class="text-danger error-text" id="color_id_error"></span>
+                        <span class="text-danger error-text" id="karat_id_error"></span>
                     </div>
                 </div>
 
                 <div class="form-group row">
-                    <label for="size_id" class="col-sm-2 col-form-label">Ukuran</label>
+                    <label for="gram" class="col-sm-2 col-form-label">Gram (Berat)</label>
                     <div class="col-sm-4">
-                        <select name="size_id" id="size_id" class="form-control select2">
-                            <option value="">-- Pilih Ukuran --</option>
-                            @foreach ($sizes as $size)
-                                <option value="{{ $size->id }}" {{ old('size_id') == $size->id ? 'selected' : '' }}>
-                                    {{ strtoupper($size->name) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <span class="text-danger error-text" id="size_id_error"></span>
+                        <input type="text" class="form-control" id="gram" name="gram"
+                            value="{{ old('gram') }}">
+                        <span class="text-danger error-text" id="gram_error"></span>
                     </div>
 
                     <label for="default_price" class="col-sm-2 col-form-label">Harga Default</label>
@@ -79,7 +73,7 @@
                 </div>
 
                 <div class="text-right">
-                    <a href="{{ route('varian-produk.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                    <a href="{{ route('varian-produk.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
                     <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                 </div>
             </div>

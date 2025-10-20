@@ -1,17 +1,12 @@
 <?php
 
 use App\Http\Controllers\BackupController;
-use App\Http\Controllers\CuttingController;
-use App\Http\Controllers\DeliveryController;
-use App\Http\Controllers\FabricController;
-use App\Http\Controllers\GramController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KaratController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\SizeController;
-use App\Http\Controllers\TypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use Illuminate\Support\Facades\Route;
@@ -50,14 +45,6 @@ Route::prefix('gold-app')
         Route::patch('/pengguna/{id}/ubah', [UserController::class, 'update'])->name('pengguna.update');
         Route::delete('/pengguna/{id}/hapus', [UserController::class, 'destroy'])->name('pengguna.hapus');
 
-        // fabrics
-        Route::get("/kain", [FabricController::class, 'index'])->name("kain.index");
-        Route::get('/kain/buat', [FabricController::class, 'create'])->name('kain.buat');
-        Route::post('/kain/buat', [FabricController::class, 'store'])->name('kain.simpan');
-        Route::get('/kain/{id}/ubah', [FabricController::class, 'edit'])->name('kain.ubah');
-        Route::patch('/kain/{id}/ubah', [FabricController::class, 'update'])->name('kain.update');
-        Route::delete('/kain/{id}/hapus', [FabricController::class, 'destroy'])->name('kain.hapus');
-
         // products
         Route::get("/produk", [ProductController::class, 'index'])->name("produk.index");
         Route::get('/produk/buat', [ProductController::class, 'create'])->name('produk.buat');
@@ -66,43 +53,14 @@ Route::prefix('gold-app')
         Route::patch('/produk/{id}/ubah', [ProductController::class, 'update'])->name('produk.update');
         Route::delete('/produk/{id}/hapus', [ProductController::class, 'destroy'])->name('produk.hapus');
 
-        // colors
-        Route::get("/jenis", [TypeController::class, 'index'])->name("jenis.index");
-        Route::get('/jenis/buat', [TypeController::class, 'create'])->name('jenis.buat');
-        Route::post('/jenis/buat', [TypeController::class, 'store'])->name('jenis.simpan');
-        Route::get('/jenis/{id}/ubah', [TypeController::class, 'edit'])->name('jenis.ubah');
-        Route::patch('/jenis/{id}/ubah', [TypeController::class, 'update'])->name('jenis.update');
-        Route::delete('/jenis/{id}/hapus', [TypeController::class, 'destroy'])->name('jenis.hapus');
-
-        // sizes
-        Route::get("/berat", [GramController::class, 'index'])->name("berat.index");
-        Route::get('/berat/buat', [GramController::class, 'create'])->name('berat.buat');
-        Route::post('/berat/buat', [GramController::class, 'store'])->name('berat.simpan');
-        Route::get('/berat/{id}/ubah', [GramController::class, 'edit'])->name('berat.ubah');
-        Route::patch('/berat/{id}/ubah', [GramController::class, 'update'])->name('berat.update');
-        Route::delete('/berat/{id}/hapus', [GramController::class, 'destroy'])->name('berat.hapus');
-
-        // cutting
-        Route::get("/cutting", [CuttingController::class, 'index'])->name("cutting.index");
-        Route::get('/cutting/buat', [CuttingController::class, 'create'])->name('cutting.buat');
-        Route::post('/cutting/buat', [CuttingController::class, 'store'])->name('cutting.simpan');
-        Route::get('/cutting/{id}/ubah', [CuttingController::class, 'edit'])->name('cutting.ubah');
-        Route::patch('/cutting/{id}/ubah', [CuttingController::class, 'update'])->name('cutting.update');
-        Route::get('/cutting/{id}/ubah/detail', [CuttingController::class, 'editDetail'])->name('cutting.ubahDetail');
-        Route::patch('/cutting/{id}/ubah/detail', [CuttingController::class, 'updateDetail'])->name('cutting.updateDetail');
-        Route::delete('/cutting/{id}/hapus', [CuttingController::class, 'destroy'])->name('cutting.hapus');
-        Route::post('/cutting/update-Status', [CuttingController::class, 'updateStatus'])->name('cutting.updateStatus');
+        // karat
+        Route::get("/karat", [KaratController::class, 'index'])->name("karat.index");
+        Route::get('/karat/buat', [KaratController::class, 'create'])->name('karat.buat');
+        Route::post('/karat/buat', [KaratController::class, 'store'])->name('karat.simpan');
+        Route::get('/karat/{id}/ubah', [KaratController::class, 'edit'])->name('karat.ubah');
+        Route::patch('/karat/{id}/ubah', [KaratController::class, 'update'])->name('karat.update');
+        Route::delete('/karat/{id}/hapus', [KaratController::class, 'destroy'])->name('karat.hapus');
         
-        // deliveries
-        Route::get("/pengiriman", [DeliveryController::class, 'index'])->name("pengiriman.index");
-        Route::get('/pengiriman/buat', [DeliveryController::class, 'create'])->name('pengiriman.buat');
-        Route::post('/pengiriman/buat', [DeliveryController::class, 'store'])->name('pengiriman.simpan');
-        Route::get('/pengiriman/{id}/ubah', [DeliveryController::class, 'edit'])->name('pengiriman.ubah');
-        Route::patch('/pengiriman/{id}/ubah', [DeliveryController::class, 'update'])->name('pengiriman.update');
-        Route::get('/pengiriman/{id}/ubah/detail', [DeliveryController::class, 'editDetail'])->name('pengiriman.ubahDetail');
-        Route::patch('/pengiriman/{id}/ubah/detail', [DeliveryController::class, 'updateDetail'])->name('pengiriman.updateDetail');
-        Route::delete('/pengiriman/{id}/hapus', [DeliveryController::class, 'destroy'])->name('pengiriman.hapus');
-        Route::post('/delivery/update-Status', [DeliveryController::class, 'updateStatus'])->name('delivery.updateStatus');
 
         // product variant
         Route::get("/varian-produk", [ProductVariantController::class, 'index'])->name("varian-produk.index");

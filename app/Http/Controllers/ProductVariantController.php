@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Color;
-use App\Models\Size;
+use App\Models\Karat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -19,41 +18,39 @@ class ProductVariantController extends Controller
     public function create()
     {
         $products = Product::all();
-        $colors   = Color::all();
-        $sizes    = Size::all();
-        return view('pages.product-variants.create', compact('products', 'colors', 'sizes'));
+        $karats   = Karat::all();
+        return view('pages.product-variants.create', compact('products', 'karats'));
     }
 
 
     public function store(Request $request){
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'color_id'   => 'nullable|exists:colors,id',
-            'size_id'    => 'nullable|exists:sizes,id',
+            'karat_id'   => 'nullable|exists:karats,id',
+            'gram'    => 'required',
             'default_price' => 'nullable|numeric|min:0',
         ]);
 
         $product   = Product::find($request->product_id);
-        $colorName = $request->color_id ? Color::find($request->color_id)->name : 'NOCLR';
-        $sizeCode  = $request->size_id ? Size::find($request->size_id)->code : 'NOSIZE';
+        $karatName = $request->karat_id ? Karat::find($request->karat_id)->name : 'NOKRT';
 
-        // SKU format: PRODUCTCODE-COLORCODE-SIZECODE
-        $sku = strtoupper($product->name . '-' . $colorName . '-' . $sizeCode);
+        // SKU format: PRODUCTCODE-karatCODE-SIZECODE
+        $sku = strtoupper($product->name . '-' . $karatName. '-' . $request->gram);
 
         // Barcode: unik (pakai UUID atau kombinasi angka acak)
         $barcode = strtoupper(Str::random(12));
 
         $variant = ProductVariant::create([
             'product_id' => $request->product_id,
-            'color_id'   => $request->color_id,
-            'size_id'    => $request->size_id,
+            'karat_id'   => $request->karat_id,
+            'gram'    => $request->gram,
             'sku'        => $sku,
             'barcode'    => $barcode,
             'default_price' => $request->default_price,
         ]);
 
         return redirect()->route('varian-produk.index')
-            ->with('success', 'Product variant berhasil ditambahkan.');
+            ->with('status', 'saved');
     }
 
 
@@ -61,38 +58,36 @@ class ProductVariantController extends Controller
     {
         $productVariant = ProductVariant::findOrFail($id);
         $products = Product::all();
-        $colors   = Color::all();
-        $sizes    = Size::all();
-        return view('pages.product-variants.edit', compact('productVariant', 'products', 'colors', 'sizes'));
+        $karats   = Karat::all();
+        return view('pages.product-variants.edit', compact('productVariant', 'products', 'karats'));
     }
 
     public function update(Request $request, $id){
         $productVariant = ProductVariant::findOrFail($id);
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'color_id'   => 'nullable|exists:colors,id',
-            'size_id'    => 'nullable|exists:sizes,id',
+            'karat_id'   => 'nullable|exists:karats,id',
+            'gram'    => 'required',
             'default_price' => 'nullable|numeric|min:0',
         ]);
 
         $product   = Product::find($request->product_id);
-        $colorName = $request->color_id ? Color::find($request->color_id)->name : 'NOCLR';
-        $sizeCode  = $request->size_id ? Size::find($request->size_id)->code : 'NOSIZE';
+        $karatName = $request->karat_id ? Karat::find($request->karat_id)->name : 'NOKRT';
 
-        // SKU regenerate setiap kali edit product/color/size
-        $sku = strtoupper($product->name . '-' . $colorName . '-' . $sizeCode);
+        // SKU regenerate setiap kali edit product/karat/size
+        $sku = strtoupper($product->name . '-' . $karatName . '-' . $request->gram);
 
         $productVariant->update([
             'product_id' => $request->product_id,
-            'color_id'   => $request->color_id,
-            'size_id'    => $request->size_id,
+            'karat_id'   => $request->karat_id,
+            'gram'    => $request->gram,
             'sku'        => $sku,
             // barcode tidak berubah biar tetap unik (kalau mau regenerate bisa juga)
             'default_price' => $request->default_price,
         ]);
 
         return redirect()->route('varian-produk.index')
-            ->with('success', 'Product variant berhasil diperbarui.');
+            ->with('status', 'saved');
     }
 
 

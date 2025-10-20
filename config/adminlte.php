@@ -339,14 +339,9 @@ return [
                     'can' => 'produk.index',
                 ],
                 [
-                    'text' => 'Jenis',
-                    'url' => 'gold-app/jenis',
-                    'can' => 'jenis.index',
-                ],
-                [
-                    'text' => 'Gramasi',
-                    'url' => 'gold-app/berat',
-                    'can' => 'berat.index',
+                    'text' => 'Karat',
+                    'url' => 'gold-app/karat',
+                    'can' => 'karat.index',
                 ],
                 [
                     'text' => 'Varian Produk',

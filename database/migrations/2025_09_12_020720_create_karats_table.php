@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('grams', function (Blueprint $table) {
+        Schema::create('karats', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->string("name");
-            $table->double("weight");
             $table->timestamps();
         });
     }
@@ -24,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('grams');
+        Schema::dropIfExists('karats');
     }
 };
