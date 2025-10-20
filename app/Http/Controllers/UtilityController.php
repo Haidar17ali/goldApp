@@ -187,32 +187,22 @@ class UtilityController extends Controller
             ],
             'relations' => []
         ],
-        'cuttings' => [
-            'model' => 'App\\Models\\Cutting',
+        'branches' => [
+            'model' => 'App\\Models\\Branch',
             'columns' => [
                 'id',
                 'code',
-                'date',
-                'tailor_name',
-                'create_by',
-                'edit_by',
+                'name',
+                'address',
             ],
-            'relations' => [
-                'details.productVariant.product'=> ["name","code"],
-                'details.productVariant.karat'=> ["name"],
-                'createBy'=> ["username"],
-                'editBy'=> ["username"],
-            ]
+            'relations' => []
         ],
-        'deliveries' => [
-            'model' => 'App\\Models\\Delivery',
+        'storageLocations' => [
+            'model' => 'App\\Models\\storageLocation',
             'columns' => [
                 'id',
-                'date',
-                'sender',
-                'arrival_date',
-                'create_by',
-                'edit_by',
+                'name',
+                'description',
             ],
             'relations' => []
         ],
@@ -376,14 +366,14 @@ class UtilityController extends Controller
                 'table' => view('pages.search.search-karat', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "cuttings"){
+        }elseif($modelKey == "branches"){
             return response()->json([
-                'table' => view('pages.search.search-cutting', compact(['data']))->render(),
+                'table' => view('pages.search.search-branch', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "deliveries"){
+        }elseif($modelKey == "storageLocations"){
             return response()->json([
-                'table' => view('pages.search.search-delivery', compact(['data']))->render(),
+                'table' => view('pages.search.search-storageLocation', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "productVariants"){

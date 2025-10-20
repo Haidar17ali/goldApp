@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Buat Kain ')
+@section('title', 'Buat Cabang ')
 
 @section('content_header')
-    <h1>Buat Kain</h1>
+    <h1>Buat Cabang</h1>
 @stop
 
 @section('content')
@@ -22,10 +22,10 @@
 
             <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
-            <div class="badge badge-primary float-right">Buat Kain</div>
+            <div class="float-right badge badge-primary">Buat Cabang</div>
         </div>
     </div>
-    <form action="{{ route('kain.simpan') }}" method="POST" id="formRP">
+    <form action="{{ route('cabang.simpan') }}" method="POST" id="formRP">
         @csrf
         @method('post')
         <div class="row">
@@ -33,29 +33,28 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
-                            <label for="name" class="col-sm-2 col-form-label">Nama Kain</label>
+                            <label for="code" class="col-sm-2 col-form-label">Kode</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="code" name="code"
+                                    value="{{ old('code') }}">
+                                <span class="text-danger error-text" id="code_error"></span>
+                            </div>
+                            <label for="name" class="col-sm-2 col-form-label">Nama</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control" id="name" name="name"
                                     value="{{ old('name') }}">
-                                <span class="text-danger error-text" id="code_error"></span>
-                            </div>
-                            <label for="material" class="col-sm-2 col-form-label">Material</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="material" name="material"
-                                    value="{{ old('material') }}">
                                 <span class="text-danger error-text" id="name_error"></span>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="Unit" class="col-sm-2 col-form-label">Satuan</label>
+                            <label for="address" class="col-sm-2 col-form-label">Alamat</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" id="Unit" placeholder="meter / yard / roll"
-                                    name="unit" value="{{ old('Unit') }}">
-                                <span class="text-danger error-text" id="name_error"></span>
+                                <textarea class="form-control" id="exampleFormControlTextarea1" id="address" name="address" rows="3"></textarea>
+                                <span class="text-danger error-text" id="address_error"></span>
                             </div>
                         </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('kain.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            <a href="{{ route('pengguna.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>

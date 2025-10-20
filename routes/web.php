@@ -9,6 +9,8 @@ use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\StorageLocationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -60,6 +62,22 @@ Route::prefix('gold-app')
         Route::get('/karat/{id}/ubah', [KaratController::class, 'edit'])->name('karat.ubah');
         Route::patch('/karat/{id}/ubah', [KaratController::class, 'update'])->name('karat.update');
         Route::delete('/karat/{id}/hapus', [KaratController::class, 'destroy'])->name('karat.hapus');
+        
+        // storage location
+        Route::get("/penyimpanan", [StorageLocationController::class, 'index'])->name("penyimpanan.index");
+        Route::get('/penyimpanan/buat', [StorageLocationController::class, 'create'])->name('penyimpanan.buat');
+        Route::post('/penyimpanan/buat', [StorageLocationController::class, 'store'])->name('penyimpanan.simpan');
+        Route::get('/penyimpanan/{id}/ubah', [StorageLocationController::class, 'edit'])->name('penyimpanan.ubah');
+        Route::patch('/penyimpanan/{id}/ubah', [StorageLocationController::class, 'update'])->name('penyimpanan.update');
+        Route::delete('/penyimpanan/{id}/hapus', [StorageLocationController::class, 'destroy'])->name('penyimpanan.hapus');
+        
+        // branch
+        Route::get("/cabang", [BranchController::class, 'index'])->name("cabang.index");
+        Route::get('/cabang/buat', [BranchController::class, 'create'])->name('cabang.buat');
+        Route::post('/cabang/buat', [BranchController::class, 'store'])->name('cabang.simpan');
+        Route::get('/cabang/{branch}/ubah', [BranchController::class, 'edit'])->name('cabang.ubah');
+        Route::patch('/cabang/{branch}/ubah', [BranchController::class, 'update'])->name('cabang.update');
+        Route::delete('/cabang/{branch}/hapus', [BranchController::class, 'destroy'])->name('cabang.hapus');
         
 
         // product variant

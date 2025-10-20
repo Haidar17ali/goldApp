@@ -48,16 +48,18 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form action="{{ route('varian-produk.import') }}" method="POST">
+                <form action="{{ route('varian-produk.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method("post")
                     <div class="modal-body">
                         <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="customFile">
+                            <input type="file" class="custom-file-input" name="file" id="customFile">
                             <label class="custom-file-label" for="customFile">Choose file</label>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">tutup</button>
-                        <button type="button" class="btn btn-primary">Import</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
                     </div>
                 </form>
             </div>

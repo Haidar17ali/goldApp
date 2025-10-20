@@ -334,6 +334,16 @@ return [
             'icon' => 'fas fa-database',
             'submenu' => [
                 [
+                    'text' => 'Cabang',
+                    'url' => 'gold-app/cabang',
+                    'can' => 'cabang.index',
+                ],
+                [
+                    'text' => 'Penyimpanan',
+                    'url' => 'gold-app/penyimpanan',
+                    'can' => 'penyimpanan.index',
+                ],
+                [
                     'text' => 'Produk',
                     'url' => 'gold-app/produk',
                     'can' => 'produk.index',

@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Pemotongan')
+@section('title', 'Cabang')
 
 @section('content_header')
-    <h1>Pemotongan/Cutting</h1>
+    <h1>Cabang</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('cutting.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Pemotongan/Cutting</a>
+            <a href="{{ route('cabang.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
+                Cabang</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="cuttings" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="branches" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -73,9 +73,9 @@
                         background: "#28A745",
                     }
                 }).showToast();
-            } else if (status == "err-status") {
+            } else if (status == "used") {
                 Toastify({
-                    text: "Status cutting yang sudah finish tidak bisa diedit!!",
+                    text: "Data LPB Terpakai Dan Stock Berkurang!",
                     className: "info",
                     close: true,
                     style: {
@@ -126,18 +126,11 @@
                         columns: [
                             'id',
                             'code',
-                            'date',
-                            'tailor_name',
-                            'create_by',
-                            'edit_by',
+                            'name',
+                            'address',
+
                         ],
-                        relations: {
-                            'details.productVariant.product': ["name", "code"],
-                            'details.productVariant.color': ["name", "code"],
-                            'details.productVariant.size': ["name", "code"],
-                            'createBy': ["username"],
-                            'editBy': ["username"],
-                        },
+                        relations: {},
                         page: page
                     },
                     success: function(response) {
@@ -147,7 +140,7 @@
                     }
                 });
             }
-            fetchData("", 1, "cuttings");
+            fetchData("", 1, "branches");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -161,11 +154,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'cuttings');
+                fetchData(inputElement, page, 'branches');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'cuttings');
+                fetchData(this, 1, 'branches');
             });
         });
     </script>

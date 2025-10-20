@@ -16,32 +16,40 @@ class ProductVariantImport implements ToModel, WithHeadingRow
         // Pastikan kolom di Excel punya heading:
         // product_name | karat_name | gram | default_price
 
-        // Cari product berdasarkan nama
-        $product = Product::where('name', $row['product_name'])->first();
-
-        if (! $product) {
-            // Jika product tidak ditemukan, skip baris ini
+        if (empty($row['product_name']) || empty($row['gram'])) {
+            // Jika data penting kosong, skip baris ini
             return null;
         }
 
+        // === Cari atau buat product ===
+        $product = Product::firstOrCreate(
+            ['name' => trim($row['product_name'])],
+            ['code' => strtoupper(Str::slug($row['product_name'], '-'))] // optional field
+        );
+
+        // === Cari atau buat karat (jika diisi) ===
         $karat = null;
         if (!empty($row['karat_name'])) {
-            $karat = Karat::where('name', $row['karat_name'])->first();
+            $karat = Karat::firstOrCreate(
+                ['name' => trim($row['karat_name'])]
+            );
         }
 
         $karatName = $karat ? $karat->name : 'NOKRT';
 
-        // Generate SKU & Barcode
+        // === Generate SKU & Barcode ===
         $sku = strtoupper($product->name . '-' . $karatName . '-' . $row['gram']);
         $barcode = strtoupper(Str::random(12));
 
-        // Cegah duplikasi (jika SKU sudah ada)
-        $existing = ProductVariant::where('sku', $sku)->first();
-        if ($existing) return null;
+        // === Cegah duplikasi SKU ===
+        if (ProductVariant::where('sku', $sku)->exists()) {
+            return null;
+        }
 
+        // === Buat ProductVariant ===
         return new ProductVariant([
             'product_id'    => $product->id,
-            'karat_id'      => $karat ? $karat->id : null,
+            'karat_id'      => $karat?->id,
             'gram'          => $row['gram'],
             'sku'           => $sku,
             'barcode'       => $barcode,

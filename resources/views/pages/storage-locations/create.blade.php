@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Ubah Kain ')
+@section('title', 'Buat Produk ')
 
 @section('content_header')
-    <h1>Ubah Kain</h1>
+    <h1>Buat Produk</h1>
 @stop
 
 @section('content')
@@ -22,40 +22,32 @@
 
             <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
-            <div class="badge badge-primary float-right">Ubah Kain</div>
+            <div class="float-right badge badge-primary">Buat Produk</div>
         </div>
     </div>
-    <form action="{{ route('kain.update', $fabric->id) }}" method="POST" id="formRP">
+    <form action="{{ route('penyimpanan.simpan') }}" method="POST" id="formRP">
         @csrf
-        @method('patch')
+        @method('post')
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
-                            <label for="name" class="col-sm-2 col-form-label">Nama Kain</label>
+                            <label for="name" class="col-sm-2 col-form-label">Nama</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control" id="name" name="name"
-                                    value="{{ old('name', $fabric->name) }}">
-                                <span class="text-danger error-text" id="code_error"></span>
-                            </div>
-                            <label for="material" class="col-sm-2 col-form-label">Material</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="material" name="material"
-                                    value="{{ old('material', $fabric->material) }}">
+                                    value="{{ old('name') }}">
                                 <span class="text-danger error-text" id="name_error"></span>
                             </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="Unit" class="col-sm-2 col-form-label">Satuan</label>
+                            <label for="description" class="col-sm-2 col-form-label">Deskripsi</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" id="Unit" placeholder="meter / yard / roll"
-                                    name="unit" value="{{ old('Unit', $fabric->unit) }}">
-                                <span class="text-danger error-text" id="name_error"></span>
+                                <input type="text" class="form-control" id="description" name="description"
+                                    value="{{ old('description') }}">
+                                <span class="text-danger error-text" id="description_error"></span>
                             </div>
                         </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('kain.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            <a href="{{ route('penyimpanan.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>

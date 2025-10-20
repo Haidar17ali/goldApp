@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Pengiriman')
+@section('title', 'Tempat Penyimpanan')
 
 @section('content_header')
-    <h1>Pengiriman</h1>
+    <h1>Tempat Penyimpanan</h1>
 @stop
 
 @section('content')
@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('pengiriman.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
-                Pengiriman</a>
+            <a href="{{ route('penyimpanan.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
+                Penyimpanan</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="deliveries" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="storageLocations" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -125,11 +125,9 @@
                         search: search,
                         columns: [
                             'id',
-                            'date',
-                            'sender',
-                            'arrival_date',
-                            'create_by',
-                            'edit_by',
+                            'name',
+                            'description',
+
                         ],
                         relations: {},
                         page: page
@@ -141,7 +139,7 @@
                     }
                 });
             }
-            fetchData("", 1, "deliveries");
+            fetchData("", 1, "storageLocations");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -155,11 +153,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'deliveries');
+                fetchData(inputElement, page, 'storageLocations');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'deliveries');
+                fetchData(this, 1, 'storageLocations');
             });
         });
     </script>
