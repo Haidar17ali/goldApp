@@ -6,29 +6,36 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('product_variants', function (Blueprint $table) {
-            $table->bigIncrements("id");
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('color_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('size_id')->nullable()->constrained()->nullOnDelete();
+            $table->bigIncrements('id');
 
-            $table->string('sku')->unique();      // SKU unik
-            $table->string('barcode')->nullable()->unique(); // bisa null kalau belum ada
+            $table->foreignId('product_id')
+                ->constrained('products')
+                ->cascadeOnDelete();
+
+            $table->foreignId('type_id')
+                ->nullable()
+                ->constrained('types')
+                ->nullOnDelete();
+
+            $table->foreignId('gram_id')
+                ->nullable()
+                ->constrained('grams')
+                ->nullOnDelete();
+
+            $table->string('sku')->unique();
+            $table->string('barcode')->nullable()->unique();
             $table->integer('default_price')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('product_variants');
+        Schema::disableForeignKeyConstraints();
+        Schema::enableForeignKeyConstraints();
     }
 };

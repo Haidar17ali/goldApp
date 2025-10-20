@@ -7,23 +7,26 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Jalankan migration.
      */
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->bigIncrements("id");
-            $table->string("code");
-            $table->string("name");
+            $table->bigIncrements('id');
+            $table->string('code')->unique();
+            $table->string('name');
             $table->timestamps();
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Rollback migration.
      */
     public function down(): void
     {
+        // Nonaktifkan FK supaya drop tidak error
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('products');
+        Schema::enableForeignKeyConstraints();
     }
 };
