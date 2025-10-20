@@ -71,6 +71,7 @@ Route::prefix('gold-app')
         Route::get('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'editDetail'])->name('varian-produk.ubahDetail');
         Route::patch('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'updateDetail'])->name('varian-produk.updateDetail');
         Route::delete('/varian-produk/{id}/hapus', [ProductVariantController::class, 'destroy'])->name('varian-produk.hapus');
+        Route::post('/varian-produk/import', [ProductVariantController::class, 'import'])->name('varian-produk.import');
 
         
 

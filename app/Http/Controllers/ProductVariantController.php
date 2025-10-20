@@ -8,6 +8,9 @@ use App\Models\Karat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ProductVariantImport;
+
 class ProductVariantController extends Controller
 {
     public function index()
@@ -96,5 +99,15 @@ class ProductVariantController extends Controller
         $productVariant = ProductVariant::findOrFail($id);
         $productVariant->delete();
         return redirect()->route('varian-produk.index')->with('status', 'deleted');
+    }
+
+    public function import(Request $request){
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        Excel::import(new ProductVariantImport, $request->file('file'));
+
+        return redirect()->route('varian-produk.index')->with('status', 'imported');
     }
 }

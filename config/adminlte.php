@@ -346,7 +346,7 @@ return [
                 [
                     'text' => 'Varian Produk',
                     'url' => 'gold-app/varian-produk',
-                    'can' => 'size.index',
+                    'can' => 'varian-produk.index',
                 ]
             ],
         ],

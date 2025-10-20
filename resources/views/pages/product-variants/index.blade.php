@@ -21,6 +21,10 @@
             <!-- Button trigger modal -->
             <a href="{{ route('varian-produk.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
                 Varian Produk</a>
+
+            <button type="button" class="float-right mr-1 btn btn-success" data-toggle="modal" data-target="#importModal"><i
+                    class="fas fa-file-excel"></i>
+                Import Excel</button>
             <div class="float-left">
                 <input type="text" id="searchBox" data-model="productVariants" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
@@ -32,6 +36,34 @@
             <div class="search-pagination d-flex justify-content-end"></div>
         </div>
     </div>
+
+    {{-- modal for import --}}
+    <!-- Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Produk</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ route('varian-produk.import') }}" method="POST">
+                    <div class="modal-body">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="customFile">
+                            <label class="custom-file-label" for="customFile">Choose file</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">tutup</button>
+                        <button type="button" class="btn btn-primary">Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @stop
 
 @section('css')
@@ -43,6 +75,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
     <script src="{{ asset('assets/JS/myHelper.js') }}"></script>
     <script>
+        $(document).ready(function() {
+            bsCustomFileInput.init()
+        })
         // toast
         @section('plugins.Toast', true)
             var status = "{{ session('status') }}";
