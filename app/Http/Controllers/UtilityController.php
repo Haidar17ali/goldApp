@@ -222,6 +222,22 @@ class UtilityController extends Controller
                 'karat'=> ["name"],
             ]
         ],
+        'transactions' => [
+            'model' => 'App\\Models\\Transaction',
+            'columns' => [
+                'id',
+                'transaction_date',
+                'invoice_number',
+                'total',
+                'customer_name',
+                'supplier_name',
+                'note',
+                'created_by',
+            ],
+            'relations' => [
+                'user'=> ["username"],
+            ]
+        ],
         'rotary' => [
             'model' => 'App\\Models\\Rotary',
             'columns' => [
@@ -277,6 +293,7 @@ class UtilityController extends Controller
         $from = $request->input('from');
         $modelKey = $request->input('model');
         $type = $request->input('type');
+        $purchaseType = $request->input('purchase_type');
         $isEdit = $request->edit;
         $page = $request->page ?? 1;
         
@@ -379,6 +396,11 @@ class UtilityController extends Controller
         }elseif($modelKey == "productVariants"){
             return response()->json([
                 'table' => view('pages.search.search-product-variant', compact(['data']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "transactions"){
+            return response()->json([
+                'table' => view('pages.search.search-transactions', compact(['data', "type", "purchaseType"]))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }

@@ -370,7 +370,7 @@ return [
                     'submenu' => [
                         [
                             'text' => 'Pembelian Sepuh',
-                            'url' => 'gold-app/pembelian/sepuh',
+                            'url' => 'gold-app/transaksi/purchase/sepuh',
                             'icon' => 'fas fa-ring',
                             // 'can' => 'pembelian.sepuh.index',
                         ],

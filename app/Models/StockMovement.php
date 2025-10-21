@@ -12,6 +12,7 @@ class StockMovement extends Model
         'storage_location_id',
         'type',
         'quantity',
+        'weight',
         'reference_type',
         'reference_id',
         'note',

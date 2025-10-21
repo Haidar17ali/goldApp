@@ -56,7 +56,6 @@ class StockHelper
     public static function moveStock($variantId, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null)
     {
         return DB::transaction(function () use ($variantId, $branchId, $storageLocationId, $type, $quantity, $weight, $referenceType, $referenceId, $note, $userId) {
-
             $movement = StockMovement::create([
                 'product_variant_id' => $variantId,
                 'branch_id' => $branchId,
@@ -77,18 +76,14 @@ class StockHelper
                 'storage_location_id' => $storageLocationId,
             ], [
                 'quantity' => 0,
-                'weight' => 0,
             ]);
 
             if (in_array($type, ['in', 'loan_in'])) {
                 $stock->quantity += $quantity;
-                $stock->weight += $weight ?? 0;
             } elseif (in_array($type, ['out', 'loan_out'])) {
                 $stock->quantity -= $quantity;
-                $stock->weight -= $weight ?? 0;
             } elseif ($type === 'adjustment') {
                 $stock->quantity = $quantity;
-                $stock->weight = $weight ?? $stock->weight;
             }
 
             $stock->save();

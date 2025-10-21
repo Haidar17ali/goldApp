@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\StorageLocationController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -90,6 +91,14 @@ Route::prefix('gold-app')
         Route::patch('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'updateDetail'])->name('varian-produk.updateDetail');
         Route::delete('/varian-produk/{id}/hapus', [ProductVariantController::class, 'destroy'])->name('varian-produk.hapus');
         Route::post('/varian-produk/import', [ProductVariantController::class, 'import'])->name('varian-produk.import');
+
+        // product variant
+        Route::get("/transaksi/{type}/{purchaseType}", [TransactionController::class, 'index'])->name("transaksi.index");
+        Route::get('/transaksi/{type}/{purchaseType}/buat', [TransactionController::class, 'create'])->name('transaksi.buat');
+        Route::post('/transaksi/{type}/{purchaseType}/buat', [TransactionController::class, 'store'])->name('transaksi.simpan');
+        Route::get('/transaksi/{type}/{purchaseType}/{id}/ubah', [TransactionController::class, 'edit'])->name('transaksi.ubah');
+        Route::patch('/transaksi/{type}/{purchaseType}/{id}/ubah', [TransactionController::class, 'update'])->name('transaksi.update');
+        Route::delete('/transaksi/{id}/hapus', [TransactionController::class, 'destroy'])->name('transaksi.hapus');
 
         
 
