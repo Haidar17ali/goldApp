@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'title' => 'By Zara',
+    'title' => 'Emas App',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -361,20 +361,56 @@ return [
             ],
         ],
         [
-            'text' => 'Produksi',
-            'icon' => 'fas fa-tshirt',
+            'text' => 'Transaksi',
+            'icon' => 'fas fa-exchange-alt',
             'submenu' => [
                 [
-                    'text' => 'Cutting',
-                    'icon' => 'fas fa-hand-scissors',
-                    'url' => 'gold-app/cutting',
-                    'can' => 'cutting.index',
+                    'text' => 'Penjualan & Pembelian',
+                    'icon' => 'fas fa-shopping-cart',
+                    'submenu' => [
+                        [
+                            'text' => 'Pembelian Sepuh',
+                            'url' => 'gold-app/pembelian/sepuh',
+                            'icon' => 'fas fa-ring',
+                            // 'can' => 'pembelian.sepuh.index',
+                        ],
+                        [
+                            'text' => 'Pembelian Pabrik',
+                            'url' => 'gold-app/pembelian/pabrik',
+                            'icon' => 'fas fa-industry',
+                            // 'can' => 'pembelian.pabrik.index',
+                        ],
+                        [
+                            'text' => 'Pembelian Rosok',
+                            'url' => 'gold-app/pembelian/rosok',
+                            'icon' => 'fas fa-recycle',
+                            // 'can' => 'pembelian.rosok.index',
+                        ],
+                        [
+                            'text' => 'Penjualan',
+                            'url' => 'gold-app/penjualan',
+                            'icon' => 'fas fa-cash-register',
+                            // 'can' => 'penjualan.index',
+                        ],
+                    ],
                 ],
                 [
-                    'text' => 'Pengiriman',
-                    'icon' => 'fas fa-truck',
-                    'url' => 'gold-app/pengiriman',
-                    'can' => 'pengiriman.index',
+                    'text' => 'Peminjaman & Pengembalian',
+                    'icon' => 'fas fa-handshake',
+                    'submenu' => [
+                        [
+                            'text' => 'Peminjaman Emas',
+                            'url' => 'gold-app/peminjaman',
+                            'icon' => 'fas fa-hand-holding',
+                            // 'can' => 'peminjaman.index',
+                        ],
+                        [
+                            'text' => 'Pengembalian Emas',
+                            'url' => 'gold-app/pengembalian',
+                            'icon' => 'fas fa-undo',
+                            // 'can' => 'pengembalian.index',
+                        ],
+                    ],
                 ],
             ],
         ],
