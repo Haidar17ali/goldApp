@@ -128,6 +128,7 @@
                 ],
                 stretchH: 'all',
                 rowHeaders: true,
+                rowHeights: "50px",
                 height: '260px',
                 minSpareRows: 10,
                 licenseKey: 'non-commercial-and-evaluation',
