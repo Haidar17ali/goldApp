@@ -23,10 +23,13 @@
                     <td>{{ money_format($item->total) }}</td>
                     <td>{{ $item->note }}</td>
                     <td>
-                        <a href="{{ route('transaksi.ubah', ["type"=>$type,"purchaseType" =>$purchaseType, "id" => $item->id]) }}" class="badge badge-success">
+                        <a href="{{ route('transaksi.ubah', ['type' => $type, 'purchaseType' => $purchaseType, 'transaction' => $item->id]) }}"
+                            class="badge badge-success">
                             <i class="fas fa-pencil-alt"></i>
                         </a>
-                        <form action="{{ route('transaksi.hapus', $item->id) }}" class="d-inline" method="post">
+                        <form
+                            action="{{ route('transaksi.hapus', ['type' => $type, 'purchaseType' => $purchaseType, 'transaction' => $item->id]) }}"
+                            class="d-inline" method="post">
                             @csrf
                             @method('DELETE')
                             <a href="#" data-id="{{ $item->id }}"

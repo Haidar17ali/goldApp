@@ -376,13 +376,13 @@ return [
                         ],
                         [
                             'text' => 'Pembelian Pabrik',
-                            'url' => 'gold-app/pembelian/pabrik',
+                            'url' => 'gold-app/transaksi/purchase/pabrik',
                             'icon' => 'fas fa-industry',
                             // 'can' => 'pembelian.pabrik.index',
                         ],
                         [
                             'text' => 'Pembelian Rosok',
-                            'url' => 'gold-app/pembelian/rosok',
+                            'url' => 'gold-app/transaksi/purchase/rosok',
                             'icon' => 'fas fa-recycle',
                             // 'can' => 'pembelian.rosok.index',
                         ],

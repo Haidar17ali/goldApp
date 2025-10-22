@@ -327,7 +327,7 @@ class UtilityController extends Controller
 
         Cache::forget($cacheKey); // Hapus cache agar query tidak tersimpan
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type) {
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type,$purchaseType) {
             return App::make($modelClass)::select($columns)->with($withRelations)
             ->when(in_array('parent_id', $columns), function ($query) {
                 $query->whereNull('parent_id');
@@ -353,6 +353,9 @@ class UtilityController extends Controller
             })
             ->when($type, function ($query) use ($type) {
                 $query->where('type', $type);
+            })
+            ->when($purchaseType, function ($query) use ($purchaseType) {
+                $query->where('purchase_type', $purchaseType);
             })
             ->orderBy("id", "desc")->paginate(10);
 

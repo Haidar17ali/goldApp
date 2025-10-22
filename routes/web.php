@@ -92,13 +92,13 @@ Route::prefix('gold-app')
         Route::delete('/varian-produk/{id}/hapus', [ProductVariantController::class, 'destroy'])->name('varian-produk.hapus');
         Route::post('/varian-produk/import', [ProductVariantController::class, 'import'])->name('varian-produk.import');
 
-        // product variant
+        // transaksi pembelian
         Route::get("/transaksi/{type}/{purchaseType}", [TransactionController::class, 'index'])->name("transaksi.index");
         Route::get('/transaksi/{type}/{purchaseType}/buat', [TransactionController::class, 'create'])->name('transaksi.buat');
         Route::post('/transaksi/{type}/{purchaseType}/buat', [TransactionController::class, 'store'])->name('transaksi.simpan');
-        Route::get('/transaksi/{type}/{purchaseType}/{id}/ubah', [TransactionController::class, 'edit'])->name('transaksi.ubah');
-        Route::patch('/transaksi/{type}/{purchaseType}/{id}/ubah', [TransactionController::class, 'update'])->name('transaksi.update');
-        Route::delete('/transaksi/{id}/hapus', [TransactionController::class, 'destroy'])->name('transaksi.hapus');
+        Route::get('/transaksi/{type}/{purchaseType}/{transaction}/ubah', [TransactionController::class, 'edit'])->name('transaksi.ubah');
+        Route::patch('/transaksi/{type}/{purchaseType}/{transaction}/update', [TransactionController::class, 'update'])->name('transaksi.update');
+        Route::delete('/transaksi/{transaction}/hapus', [TransactionController::class, 'destroy'])->name('transaksi.hapus');
 
         
 

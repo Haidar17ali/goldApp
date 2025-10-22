@@ -1,170 +1,191 @@
 @extends('adminlte::page')
 
-@section('title', 'Ubah Karat ')
+@section('title', 'Edit Transaksi')
 
 @section('content_header')
-    <h1>Ubah Karat</h1>
+    <h1>Edit Transaksi Pembelian</h1>
 @stop
 
 @section('content')
-    <div class="card">
+    <div class="shadow card">
         <div class="card-header">
             @if ($errors->any())
                 <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                    <strong>Terjadi kesalahan!</strong><br>
+                    {{ $errors->first('msg') }}
                 </div>
             @endif
-
-
-            <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
-            <div id="error-messages"></div>
-            <div class="float-right badge badge-primary">Ubah Karat</div>
         </div>
-    </div>
-    <form action="{{ route('karat.update', $karat->id) }}" method="POST" id="formRP">
-        @csrf
-        @method('patch')
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="form-group row">
-                            <label for="name" class="col-sm-2 col-form-label">Nama</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="name" name="name"
-                                    value="{{ old('name', $karat->name) }}">
-                                <span class="text-danger error-text" id="name_error"></span>
-                            </div>
-                        </div>
-                        <div class="float-right mt-3">
-                            <a href="{{ route('karat.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
-                            <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
-                        </div>
+        <div class="card-body">
+            <form id="transactionForm" method="POST"
+                action="{{ route('transaksi.update', ['type' => $type, 'purchaseType' => $purchaseType, 'transaction' => $transaction->id]) }}">
+                @csrf
+                @method('patch')
+
+                <div class="mb-4 row">
+                    <div class="col-md-4">
+                        <label for="invoice_number" class="form-label">Nomor Invoice</label>
+                        <input type="text" name="invoice_number" id="invoice_number" class="form-control"
+                            value="{{ old('invoice_number', $transaction->invoice_number) }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="customer_name" class="form-label">Nama Customer</label>
+                        <input type="text" name="customer_name" id="customer_name" class="form-control"
+                            value="{{ old('customer_name', $transaction->customer_name) }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="note" class="form-label">Catatan</label>
+                        <input type="text" name="note" id="note" class="form-control"
+                            value="{{ old('note', $transaction->note) }}">
                     </div>
                 </div>
-            </div>
+
+                <div class="mb-3">
+                    <label>Detail Barang</label>
+                    <div id="hot" class="border rounded" style="width:100%; height:600px;"></div>
+                    <div class="mt-3 text-right">
+                        <h5><strong>Grand Total: Rp <span id="grandTotal">0</span></strong></h5>
+                    </div>
+                </div>
+
+                <button type="submit" class="float-right btn btn-primary">Update Transaksi</button>
+            </form>
         </div>
-    </form>
-@stop
-
-@section('css')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/styles/handsontable.min.css" />
-    <style>
-        /* Mengubah warna header */
-        .ht_clone_top th {
-            background-color: #4CAF50;
-            color: white;
-            font-size: 16px;
-        }
-
-        /* Mengatur border tabel */
-        .htCore {
-            border-collapse: collapse;
-            border: 2px solid #ddd;
-        }
-
-        /* Mengubah warna sel saat dipilih */
-        .ht_master .current {
-            background-color: #a3a3a3 !important;
-        }
-
-        /* Mengatur padding dan font */
-        .htCore td,
-        .htCore th {
-            padding: 10px;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-
-        #loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* toggle */
-
-        /* Style untuk switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
-        /* Hide default checkbox */
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        /* Style untuk slider */
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.4s;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: 0.4s;
-        }
-
-        input:checked+.slider {
-            background-color: #2196F3;
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(26px);
-        }
-
-        /* Rounded sliders */
-        .slider.round {
-            border-radius: 34px;
-        }
-
-        .slider.round:before {
-            border-radius: 50%;
-        }
-    </style>
+    </div>
 @stop
 
 @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js" crossorigin="anonymous"
-        referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
-    <script src="{{ asset('assets/js/myHelper.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.1.0/dist/handsontable.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.1.0/dist/handsontable.full.min.css">
 
     <script>
-        $(document).ready(function() {
-            $('#role_id').select2({
-                theme: "bootstrap-5",
+        document.addEventListener("DOMContentLoaded", function() {
+            const variants = @json($variants ?? []);
+            const variantNames = variants.map(v => v.label);
+            const variantMap = {};
+            variants.forEach(v => {
+                variantMap[v.label] = v;
             });
-            $('#employee_id').select2({
-                theme: "bootstrap-5",
+
+            // Ambil details lama dari controller
+            const oldDetails = @json(old('details') ? json_decode(old('details'), true) : $details);
+            console.log(oldDetails);
+
+
+            const container = document.getElementById('hot');
+            const grandTotalElement = document.getElementById('grandTotal');
+
+            function updateGrandTotal(hotInstance) {
+                const data = hotInstance.getSourceData();
+                let total = 0;
+                data.forEach(row => total += parseFloat(row.subtotal) || 0);
+                grandTotalElement.textContent = total.toLocaleString('id-ID', {
+                    minimumFractionDigits: 2
+                });
+            }
+
+            const hot = new Handsontable(container, {
+                data: oldDetails.length ? oldDetails : [],
+                colHeaders: ['Varian', 'Produk', 'Karat', 'Gram', 'Qty', 'Harga/gr', 'Subtotal'],
+                columns: [{
+                        data: 'variant_label',
+                        type: 'autocomplete',
+                        source: variantNames,
+                        strict: false,
+                        allowInvalid: true
+                    },
+                    {
+                        data: 'product_name',
+                        type: 'text'
+                    }, // editable manual
+                    {
+                        data: 'karat_name',
+                        type: 'text'
+                    }, // editable manual
+                    {
+                        data: 'gram',
+                        type: 'numeric',
+                        numericFormat: {
+                            pattern: '0.000'
+                        }
+                    }, // editable manual
+                    {
+                        data: 'qty',
+                        type: 'numeric'
+                    },
+                    {
+                        data: 'price_per_gram',
+                        type: 'numeric',
+                        numericFormat: {
+                            pattern: '0,0.00'
+                        }
+                    },
+                    {
+                        data: 'subtotal',
+                        type: 'numeric',
+                        readOnly: true,
+                        numericFormat: {
+                            pattern: '0,0.00'
+                        }
+                    },
+                ],
+                stretchH: 'all',
+                rowHeaders: true,
+                height: '260px',
+                minSpareRows: 10,
+                licenseKey: 'non-commercial-and-evaluation',
+
+                afterChange(changes, source) {
+                    if (!changes || source === 'loadData') return;
+
+                    changes.forEach(([row, prop, oldValue, newValue]) => {
+                        if (prop === 'variant_label' && newValue) {
+                            const v = variantMap[newValue];
+                            if (v) {
+                                this.setDataAtRowProp(row, 'product_name', v.product_name);
+                                this.setDataAtRowProp(row, 'karat_name', v.karat_name);
+                                this.setDataAtRowProp(row, 'gram', v.gram);
+                            }
+                        }
+
+                        if (["gram", "qty", "price_per_gram"].includes(prop)) {
+                            const rowData = this.getSourceDataAtRow(row);
+                            const gram = parseFloat(rowData.gram) || 0;
+                            const qty = parseFloat(rowData.qty) || 0;
+                            const price = parseFloat(rowData.price_per_gram) || 0;
+                            const subtotal = gram * qty * price;
+                            this.setDataAtRowProp(row, 'subtotal', subtotal);
+                        }
+                    });
+
+                    updateGrandTotal(this);
+                },
+
+                afterRemoveRow() {
+                    updateGrandTotal(this);
+                },
+                afterCreateRow() {
+                    updateGrandTotal(this);
+                },
+            });
+
+            updateGrandTotal(hot);
+
+            document.getElementById('transactionForm').addEventListener('submit', function(e) {
+                const rows = hot.getSourceData().filter(r =>
+                    (r.variant_label && r.variant_label.trim()) ||
+                    (r.product_name && r.product_name.trim())
+                );
+                if (rows.length === 0) {
+                    e.preventDefault();
+                    return alert('Tidak ada item di detail transaksi.');
+                }
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'details';
+                input.value = JSON.stringify(rows);
+                this.appendChild(input);
             });
         });
     </script>
