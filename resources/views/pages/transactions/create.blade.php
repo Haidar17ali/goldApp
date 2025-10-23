@@ -3,181 +3,290 @@
 @section('title', 'Tambah Transaksi')
 
 @section('content_header')
-    <h1>Tambah Transaksi Pembelian</h1>
+    <h1 class="fw-bold">Tambah Transaksi Pembelian</h1>
 @stop
 
 @section('content')
-    <div class="shadow card">
-        <div class="card-header">
+    <div class="card shadow-lg">
+        <div class="card-body">
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <strong>Terjadi kesalahan!</strong><br>
                     {{ $errors->first('msg') }}
                 </div>
             @endif
-        </div>
-        <div class="card-body">
+
             <form id="transactionForm" method="POST"
                 action="{{ route('transaksi.simpan', ['type' => $type, 'purchaseType' => $purchaseType]) }}">
                 @csrf
 
-                <div class="mb-4 row">
+                <div class="row mb-4">
                     <div class="col-md-4">
-                        <label for="invoice_number" class="form-label">Nomor Invoice</label>
-                        <input type="text" name="invoice_number" id="invoice_number" class="form-control"
+                        <label class="fw-semibold">Nomor Invoice</label>
+                        <input type="text" name="invoice_number" class="form-control form-control-lg"
                             value="{{ 'INV-' . strtoupper(Str::random(6)) }}" required>
                     </div>
                     <div class="col-md-4">
-                        <label for="customer_name" class="form-label">Nama Customer</label>
-                        <input type="text" name="customer_name" id="customer_name" class="form-control"
+                        <label class="fw-semibold">Nama Customer</label>
+                        <input type="text" name="customer_name" class="form-control form-control-lg"
                             placeholder="Masukkan nama customer" required>
                     </div>
                     <div class="col-md-4">
-                        <label for="note" class="form-label">Catatan</label>
-                        <input type="text" name="note" id="note" class="form-control"
-                            placeholder="Catatan tambahan">
+                        <label class="fw-semibold">Catatan</label>
+                        <input type="text" name="note" class="form-control form-control-lg"
+                            placeholder="Catatan tambahan (opsional)">
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Detail Barang</label>
-                    <div id="hot" class="border rounded" style="width:100%; height:600px;"></div>
-                    <div class="mt-3 text-right">
-                        <h5><strong>Grand Total: Rp <span id="grandTotal">0</span></strong></h5>
-                    </div>
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3">Detail Barang</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle" id="detailTable">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width: 25%">Produk</th>
+                                <th style="width: 15%">Karat</th>
+                                <th style="width: 10%">Gram</th>
+                                <th style="width: 10%">Qty</th>
+                                <th style="width: 15%">Harga/gr</th>
+                                <th style="width: 15%">Subtotal</th>
+                                <th style="width: 5%"></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
 
+                <div class="text-end mb-3">
+                    <button type="button" id="addRow" class="btn btn-success btn-lg">
+                        <i class="fas fa-plus"></i> Tambah Baris
+                    </button>
+                </div>
 
-                <button type="submit" class="float-right btn btn-primary">Simpan Transaksi</button>
+                <div class="text-end mb-4">
+                    <h4><strong>Grand Total: Rp <span id="grandTotal">0</span></strong></h4>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-save me-1"></i> Simpan Transaksi
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 @stop
 
+@section('css')
+    <style>
+        /* 🧩 Biar semua input sejajar secara vertikal */
+        #detailTable td {
+            vertical-align: middle !important;
+        }
+
+        /* 🧱 Perbaiki Select2 agar tinggi & posisi teks sejajar input lain */
+        .select2-container--default .select2-selection--single {
+            height: calc(2.875rem + 2px) !important;
+            /* sesuai .form-control-lg */
+            padding: 0.5rem 0.75rem !important;
+            display: flex !important;
+            align-items: center !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 0.5rem !important;
+        }
+
+        /* Teks select2 center */
+        .select2-selection__rendered {
+            line-height: 1.5rem !important;
+            font-size: 1rem !important;
+        }
+
+        /* Panah dropdown sejajar tengah */
+        .select2-selection__arrow {
+            height: 100% !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+        }
+
+        /* Pastikan input besar sejajar semua */
+        .form-control-lg {
+            height: calc(2.875rem + 2px);
+        }
+
+        /* Table cell padding lebih rapi */
+        #detailTable th,
+        #detailTable td {
+            padding: 0.5rem;
+        }
+    </style>
+    <style>
+        /* Biar semua input sejajar secara vertikal */
+        #detailTable td {
+            vertical-align: middle !important;
+        }
+
+        /* Select2 agar teksnya lebih center (presisi) */
+        .select2-container--default .select2-selection--single {
+            height: calc(2.875rem + 2px) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 0.5rem !important;
+        }
+
+        /* Center text di Select2 */
+        .select2-selection__rendered {
+            text-align: center !important;
+            line-height: 1.5rem !important;
+            font-size: 1rem !important;
+            width: 100% !important;
+        }
+
+        /* Panah dropdown sejajar tengah */
+        .select2-selection__arrow {
+            height: 100% !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+        }
+
+        /* Pastikan semua input besar sejajar */
+        .form-control-lg {
+            height: calc(2.875rem + 2px);
+        }
+
+        /* Table cell padding rapi */
+        #detailTable th,
+        #detailTable td {
+            padding: 0.5rem;
+        }
+
+        /* Kolom angka sedikit diperlebar */
+        #detailTable input.gram,
+        #detailTable input.qty,
+        #detailTable input.price {
+            min-width: 110px;
+            text-align: center;
+        }
+
+        /* Subtotal juga center */
+        #detailTable input.subtotal {
+            text-align: center;
+        }
+    </style>
+@stop
+
 @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.1.0/dist/handsontable.full.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.1.0/dist/handsontable.full.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener('DOMContentLoaded', function() {
             const variants = @json($variants ?? []);
-            const variantNames = variants.map(v => v.label);
-            const variantMap = {};
-            variants.forEach(v => {
-                variantMap[v.label] = v;
-            });
+            const products = [...new Set(variants.map(v => v.product_name))];
+            const karats = [...new Set(variants.map(v => v.karat_name))];
 
-            const oldDetails = @json(old('details') ? json_decode(old('details'), true) : []);
+            const tableBody = document.querySelector('#detailTable tbody');
+            const grandTotalEl = document.getElementById('grandTotal');
 
-            const container = document.getElementById('hot');
-            const grandTotalElement = document.getElementById('grandTotal');
-
-            function updateGrandTotal(hotInstance) {
-                const data = hotInstance.getSourceData();
-                let total = 0;
-                data.forEach(row => total += parseFloat(row.subtotal) || 0);
-                grandTotalElement.textContent = total.toLocaleString('id-ID', {
+            function formatNumber(num) {
+                return num.toLocaleString('id-ID', {
                     minimumFractionDigits: 2
                 });
             }
 
-            const hot = new Handsontable(container, {
-                data: oldDetails.length ? oldDetails : [],
-                colHeaders: ['Varian', 'Produk', 'Karat', 'Gram', 'Qty', 'Harga/gr', 'Subtotal'],
-                columns: [{
-                        data: 'variant_label',
-                        type: 'autocomplete',
-                        source: variantNames,
-                        strict: false,
-                        allowInvalid: true
-                    },
-                    {
-                        data: 'product_name',
-                        type: 'text'
-                    }, // ✅ sekarang editable
-                    {
-                        data: 'karat_name',
-                        type: 'text'
-                    }, // ✅ sekarang editable
-                    {
-                        data: 'gram',
-                        type: 'numeric',
-                        numericFormat: {
-                            pattern: '0.000'
-                        }
-                    }, // ✅ editable juga
-                    {
-                        data: 'qty',
-                        type: 'numeric'
-                    },
-                    {
-                        data: 'price_per_gram',
-                        type: 'numeric',
-                        numericFormat: {
-                            pattern: '0,0.00'
-                        }
-                    },
-                    {
-                        data: 'subtotal',
-                        type: 'numeric',
-                        readOnly: true,
-                        numericFormat: {
-                            pattern: '0,0.00'
-                        }
-                    },
-                ],
-                stretchH: 'all',
-                rowHeaders: true,
-                height: '260px',
-                minSpareRows: 10,
-                licenseKey: 'non-commercial-and-evaluation',
+            function updateGrandTotal() {
+                let total = 0;
+                document.querySelectorAll('.subtotal').forEach(el => {
+                    total += parseFloat(el.value) || 0;
+                });
+                grandTotalEl.textContent = formatNumber(total);
+            }
 
-                afterChange(changes, source) {
-                    if (!changes || source === 'loadData') return;
+            function createRow(data = {}) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+            <td>
+                <select class="form-control form-control-lg select-product" name="details[][product_name]">
+                    <option value="">-- pilih / ketik produk --</option>
+                    ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
+                </select>
+            </td>
+            <td>
+                <select class="form-control form-control-lg select-karat" name="details[][karat_name]">
+                    <option value="">-- pilih / ketik karat --</option>
+                    ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
+                </select>
+            </td>
+            <td>
+            <input type="number" step="0.01" class="form-control form-control-lg gram"
+                    name="details[][gram]" value="${data.gram || ''}">
+            </td>
+            <td><input type="number" step="1" class="form-control form-control-lg qty" name="details[][qty]" value="${data.qty || ''}"></td>
+            <td><input type="number" step="0.01" class="form-control form-control-lg price" name="details[][price_per_gram]" value="${data.price_per_gram || ''}"></td>
+            <td><input type="text" readonly class="form-control form-control-lg subtotal" name="details[][subtotal]" value="${data.subtotal || ''}"></td>
+            <td class="text-center">
+                <button type="button" class="btn btn-danger btn-lg remove-row"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+                tableBody.appendChild(tr);
 
-                    changes.forEach(([row, prop, oldValue, newValue]) => {
-                        if (prop === 'variant_label' && newValue) {
-                            const v = variantMap[newValue];
-                            if (v) {
-                                // Auto isi hanya jika varian dikenali
-                                this.setDataAtRowProp(row, 'product_name', v.product_name);
-                                this.setDataAtRowProp(row, 'karat_name', v.karat_name);
-                                this.setDataAtRowProp(row, 'gram', v.gram);
-                            }
-                        }
+                $(tr).find('.select-product').select2({
+                    tags: true,
+                    width: '100%'
+                });
+                $(tr).find('.select-karat').select2({
+                    tags: true,
+                    width: '100%'
+                });
 
-                        if (["gram", "qty", "price_per_gram"].includes(prop)) {
-                            const rowData = this.getSourceDataAtRow(row);
-                            const gram = parseFloat(rowData.gram) || 0;
-                            const qty = parseFloat(rowData.qty) || 0;
-                            const price = parseFloat(rowData.price_per_gram) || 0;
-                            const subtotal = gram * qty * price;
-                            this.setDataAtRowProp(row, 'subtotal', subtotal);
-                        }
+                tr.querySelectorAll('.gram, .qty, .price').forEach(el => {
+                    el.addEventListener('input', () => {
+                        const gram = parseFloat(tr.querySelector('.gram').value) || 0;
+                        const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+                        const price = parseFloat(tr.querySelector('.price').value) || 0;
+                        const subtotal = gram * qty * price;
+                        tr.querySelector('.subtotal').value = subtotal.toFixed(2);
+                        updateGrandTotal();
                     });
+                });
 
-                    updateGrandTotal(this);
-                },
+                tr.querySelector('.remove-row').addEventListener('click', () => {
+                    tr.remove();
+                    updateGrandTotal();
+                });
+            }
 
-                afterRemoveRow() {
-                    updateGrandTotal(this);
-                },
-                afterCreateRow() {
-                    updateGrandTotal(this);
-                },
-            });
+            document.getElementById('addRow').addEventListener('click', () => createRow());
+            createRow();
 
-            updateGrandTotal(hot);
-
-            // --- event submit ---
             document.getElementById('transactionForm').addEventListener('submit', function(e) {
-                const rows = hot.getSourceData().filter(r =>
-                    (r.variant_label && r.variant_label.trim()) ||
-                    (r.product_name && r.product_name.trim())
-                );
+                const rows = [];
+                tableBody.querySelectorAll('tr').forEach(tr => {
+                    const product = tr.querySelector('.select-product').value;
+                    const karat = tr.querySelector('.select-karat').value;
+                    const gram = tr.querySelector('.gram').value;
+                    const qty = tr.querySelector('.qty').value;
+                    const price = tr.querySelector('.price').value;
+                    const subtotal = tr.querySelector('.subtotal').value;
+
+                    if (product && karat && gram && qty && price) {
+                        rows.push({
+                            product_name: product,
+                            karat_name: karat,
+                            gram,
+                            qty,
+                            price_per_gram: price,
+                            subtotal
+                        });
+                    }
+                });
+
                 if (rows.length === 0) {
                     e.preventDefault();
-                    return alert('Tidak ada item di detail transaksi.');
+                    alert('Tambahkan minimal satu detail barang.');
+                    return;
                 }
 
                 const input = document.createElement('input');
@@ -188,6 +297,4 @@
             });
         });
     </script>
-
-
 @stop
