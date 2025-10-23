@@ -196,14 +196,6 @@
                 });
             }
 
-            function updateGrandTotal() {
-                let total = 0;
-                document.querySelectorAll('.subtotal').forEach(el => {
-                    total += parseFloat(el.value) || 0;
-                });
-                grandTotalEl.textContent = formatNumber(total);
-            }
-
             function createRow(data = {}) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
