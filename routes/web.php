@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KaratController;
 use App\Http\Controllers\PermissionController;
@@ -79,6 +80,14 @@ Route::prefix('gold-app')
         Route::get('/cabang/{branch}/ubah', [BranchController::class, 'edit'])->name('cabang.ubah');
         Route::patch('/cabang/{branch}/ubah', [BranchController::class, 'update'])->name('cabang.update');
         Route::delete('/cabang/{branch}/hapus', [BranchController::class, 'destroy'])->name('cabang.hapus');
+
+        // branch
+        Route::get("/rekening", [BankAccountController::class, 'index'])->name("rekening.index");
+        Route::get('/rekening/buat', [BankAccountController::class, 'create'])->name('rekening.buat');
+        Route::post('/rekening/buat', [BankAccountController::class, 'store'])->name('rekening.simpan');
+        Route::get('/rekening/{bankAccount}/ubah', [BankAccountController::class, 'edit'])->name('rekening.ubah');
+        Route::patch('/rekening/{bankAccount}/ubah', [BankAccountController::class, 'update'])->name('rekening.update');
+        Route::delete('/rekening/{bankAccount}/hapus', [BankAccountController::class, 'destroy'])->name('rekening.hapus');
         
 
         // product variant
@@ -97,8 +106,8 @@ Route::prefix('gold-app')
         Route::get('/transaksi/{type}/{purchaseType}/buat', [TransactionController::class, 'create'])->name('transaksi.buat');
         Route::post('/transaksi/{type}/{purchaseType}/buat', [TransactionController::class, 'store'])->name('transaksi.simpan');
         Route::get('/transaksi/{type}/{purchaseType}/{transaction}/ubah', [TransactionController::class, 'edit'])->name('transaksi.ubah');
-        Route::patch('/transaksi/{type}/{purchaseType}/{transaction}/update', [TransactionController::class, 'update'])->name('transaksi.update');
-        Route::delete('/transaksi/{transaction}/hapus', [TransactionController::class, 'destroy'])->name('transaksi.hapus');
+        Route::patch('/transaksi/{type}/{purchaseType}/{id}/update', [TransactionController::class, 'update'])->name('transaksi.update');
+        Route::delete('/transaksi{type}/{purchaseType}/{transaction}/hapus', [TransactionController::class, 'destroy'])->name('transaksi.hapus');
 
         
 

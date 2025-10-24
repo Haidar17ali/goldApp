@@ -120,61 +120,6 @@
             padding: 0.5rem;
         }
     </style>
-    <style>
-        /* Biar semua input sejajar secara vertikal */
-        #detailTable td {
-            vertical-align: middle !important;
-        }
-
-        /* Select2 agar teksnya lebih center (presisi) */
-        .select2-container--default .select2-selection--single {
-            height: calc(2.875rem + 2px) !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            border: 1px solid #ced4da !important;
-            border-radius: 0.5rem !important;
-        }
-
-        /* Center text di Select2 */
-        .select2-selection__rendered {
-            text-align: center !important;
-            line-height: 1.5rem !important;
-            font-size: 1rem !important;
-            width: 100% !important;
-        }
-
-        /* Panah dropdown sejajar tengah */
-        .select2-selection__arrow {
-            height: 100% !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-        }
-
-        /* Pastikan semua input besar sejajar */
-        .form-control-lg {
-            height: calc(2.875rem + 2px);
-        }
-
-        /* Table cell padding rapi */
-        #detailTable th,
-        #detailTable td {
-            padding: 0.5rem;
-        }
-
-        /* Kolom angka sedikit diperlebar */
-        #detailTable input.gram,
-        #detailTable input.qty,
-        #detailTable input.price {
-            min-width: 110px;
-            text-align: center;
-        }
-
-        /* Subtotal juga center */
-        #detailTable input.subtotal {
-            text-align: center;
-        }
-    </style>
 @stop
 
 @section('js')
@@ -196,6 +141,14 @@
                 });
             }
 
+            function updateGrandTotal() {
+                let total = 0;
+                document.querySelectorAll('.subtotal').forEach(el => {
+                    total += parseFloat(el.value) || 0;
+                });
+                grandTotalEl.textContent = formatNumber(total);
+            }
+
             function createRow(data = {}) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -211,10 +164,7 @@
                     ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
                 </select>
             </td>
-            <td>
-            <input type="number" step="0.01" class="form-control form-control-lg gram"
-                    name="details[][gram]" value="${data.gram || ''}">
-            </td>
+            <td><input type="number" step="0.001" class="form-control form-control-lg gram" name="details[][gram]" value="${data.gram || ''}"></td>
             <td><input type="number" step="1" class="form-control form-control-lg qty" name="details[][qty]" value="${data.qty || ''}"></td>
             <td><input type="number" step="0.01" class="form-control form-control-lg price" name="details[][price_per_gram]" value="${data.price_per_gram || ''}"></td>
             <td><input type="text" readonly class="form-control form-control-lg subtotal" name="details[][subtotal]" value="${data.subtotal || ''}"></td>

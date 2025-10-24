@@ -222,6 +222,17 @@ class UtilityController extends Controller
                 'karat'=> ["name"],
             ]
         ],
+        'bankAccounts' => [
+            'model' => 'App\\Models\\BankAccount',
+            'columns' => [
+                'id',
+                'bank_name',
+                'account_number',
+                'account_holder',
+                'is_active',
+            ],
+            'relations' => []
+        ],
         'transactions' => [
             'model' => 'App\\Models\\Transaction',
             'columns' => [
@@ -399,6 +410,11 @@ class UtilityController extends Controller
         }elseif($modelKey == "productVariants"){
             return response()->json([
                 'table' => view('pages.search.search-product-variant', compact(['data']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "bankAccounts"){
+            return response()->json([
+                'table' => view('pages.search.search-bank-accounts', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "transactions"){

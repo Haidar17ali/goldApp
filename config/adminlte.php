@@ -357,6 +357,11 @@ return [
                     'text' => 'Varian Produk',
                     'url' => 'gold-app/varian-produk',
                     'can' => 'varian-produk.index',
+                ],
+                [
+                    'text' => 'No Rek',
+                    'url' => 'gold-app/rekening',
+                    'can' => 'rekening.index',
                 ]
             ],
         ],

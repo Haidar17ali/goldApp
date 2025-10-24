@@ -53,11 +53,12 @@ class StockHelper
     /**
      * Catat pergerakan stok
      */
-    public static function moveStock($variantId, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null)
+    public static function moveStock($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null)
     {
-        return DB::transaction(function () use ($variantId, $branchId, $storageLocationId, $type, $quantity, $weight, $referenceType, $referenceId, $note, $userId) {
+        return DB::transaction(function () use ($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight, $referenceType, $referenceId, $note, $userId) {
             $movement = StockMovement::create([
-                'product_variant_id' => $variantId,
+                'product_id' => $product_id,
+                'karat_id' => $karat_id,
                 'branch_id' => $branchId,
                 'storage_location_id' => $storageLocationId,
                 'type' => $type,
@@ -71,7 +72,8 @@ class StockHelper
 
             // Update stok utama
             $stock = Stock::firstOrCreate([
-                'product_variant_id' => $variantId,
+                'product_id' => $product_id,
+                'karat_id' => $karat_id,
                 'branch_id' => $branchId,
                 'storage_location_id' => $storageLocationId,
             ], [
