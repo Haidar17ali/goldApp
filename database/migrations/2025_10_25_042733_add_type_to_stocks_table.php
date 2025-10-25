@@ -13,16 +13,20 @@ return new class extends Migration
     {
         Schema::table('stocks', function (Blueprint $table) {
             $table->enum('type', ['new', 'sepuh', 'rosok'])->default('new')->after('karat_id');
+
+            
+            $table->unique(["type"], 'unique_stock_per_location');
         });
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('stocks', function (Blueprint $table) {
-            $table->dropColumn('type');
+            if (Schema::hasColumn('stocks', 'type')) {
+                $table->dropColumn('type');
+            }
         });
     }
 };
