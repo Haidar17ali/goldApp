@@ -53,15 +53,16 @@ class StockHelper
     /**
      * Catat pergerakan stok
      */
-    public static function moveStock($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null)
+    public static function moveStock($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null,$goldType = 'new')
     {
-        return DB::transaction(function () use ($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight, $referenceType, $referenceId, $note, $userId) {
+        return DB::transaction(function () use ($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight, $referenceType, $referenceId, $note, $userId, $goldType) {
             $movement = StockMovement::create([
                 'product_id' => $product_id,
                 'karat_id' => $karat_id,
                 'branch_id' => $branchId,
                 'storage_location_id' => $storageLocationId,
                 'type' => $type,
+                'gold_type' => $goldType,
                 'quantity' => $quantity,
                 'weight' => $weight,
                 'reference_type' => $referenceType,
@@ -76,6 +77,8 @@ class StockHelper
                 'karat_id' => $karat_id,
                 'branch_id' => $branchId,
                 'storage_location_id' => $storageLocationId,
+                'weight' => $weight,
+                'type' => $goldType,
             ], [
                 'quantity' => 0,
             ]);
@@ -97,32 +100,32 @@ class StockHelper
     /**
      * Shortcut untuk stok masuk
      */
-    public static function stockIn($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = null, $refId = null, $note = null, $userId = null)
+    public static function stockIn($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = null, $refId = null, $note = null, $userId = null, $goldType ="new")
     {
-        return self::moveStock($variantId, $branchId, $storageLocationId, 'in', $quantity, $weight, $refType, $refId, $note, $userId);
+        return self::moveStock($variantId, $branchId, $storageLocationId, 'in', $quantity, $weight, $refType, $refId, $note, $userId, $goldType);
     }
 
     /**
      * Shortcut untuk stok keluar
      */
-    public static function stockOut($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = null, $refId = null, $note = null, $userId = null)
+    public static function stockOut($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = null, $refId = null, $note = null, $userId = null, $goldType ="new")
     {
-        return self::moveStock($variantId, $branchId, $storageLocationId, 'out', $quantity, $weight, $refType, $refId, $note, $userId);
+        return self::moveStock($variantId, $branchId, $storageLocationId, 'out', $quantity, $weight, $refType, $refId, $note, $userId, $goldType);
     }
 
     /**
      * Peminjaman emas oleh influencer
      */
-    public static function loanOut($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = 'Loan', $refId = null, $note = 'Dipinjam influencer', $userId = null)
+    public static function loanOut($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = 'Loan', $refId = null, $note = 'Dipinjam influencer', $userId = null, $goldType ="new")
     {
-        return self::moveStock($variantId, $branchId, $storageLocationId, 'loan_out', $quantity, $weight, $refType, $refId, $note, $userId);
+        return self::moveStock($variantId, $branchId, $storageLocationId, 'loan_out', $quantity, $weight, $refType, $refId, $note, $userId, $goldType);
     }
 
     /**
      * Pengembalian emas oleh influencer
      */
-    public static function loanIn($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = 'Loan', $refId = null, $note = 'Dikembalikan influencer', $userId = null)
+    public static function loanIn($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = 'Loan', $refId = null, $note = 'Dikembalikan influencer', $userId = null, $goldType ="new")
     {
-        return self::moveStock($variantId, $branchId, $storageLocationId, 'loan_in', $quantity, $weight, $refType, $refId, $note, $userId);
+        return self::moveStock($variantId, $branchId, $storageLocationId, 'loan_in', $quantity, $weight, $refType, $refId, $note, $userId, $goldType);
     }
 }

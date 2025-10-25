@@ -12,6 +12,7 @@ class StockMovement extends Model
         'branch_id',
         'storage_location_id',
         'type',
+        'gold_type',
         'quantity',
         'weight',
         'reference_type',

@@ -67,6 +67,15 @@
                 <div class="text-end mb-4">
                     <h4><strong>Grand Total: Rp <span id="grandTotal">0</span></strong></h4>
                 </div>
+                @include('components.payment-gateway', [
+                    'bankAccounts' => $bankAccounts,
+                    'payment_method' => $transaction->payment_method ?? null,
+                    'bank_account_id' => $transaction->bank_account_id ?? null,
+                    'transfer_amount' => $transaction->transfer_amount ?? null,
+                    'cash_amount' => $transaction->cash_amount ?? null,
+                    'reference_no' => $transaction->reference_no ?? null,
+                ])
+
 
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary btn-lg px-5">
@@ -123,6 +132,7 @@
 @stop
 
 @section('js')
+    @stack('scripts')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -146,8 +156,22 @@
                 document.querySelectorAll('.subtotal').forEach(el => {
                     total += parseFloat(el.value) || 0;
                 });
-                grandTotalEl.textContent = formatNumber(total);
+
+                // Tampilkan dalam format lokal (sama seperti kamu pakai)
+                const formatted = total.toLocaleString('id-ID', {
+                    minimumFractionDigits: 2
+                });
+                grandTotalEl.textContent = formatted;
+
+                // 👇 dispatch custom event supaya payment form tahu total berubah
+                const evt = new CustomEvent('grandTotalChanged', {
+                    detail: {
+                        total: total // number (float)
+                    }
+                });
+                document.dispatchEvent(evt);
             }
+
 
             function createRow(data = {}) {
                 const tr = document.createElement('tr');

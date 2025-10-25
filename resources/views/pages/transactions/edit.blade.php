@@ -19,7 +19,7 @@
             <form id="transactionForm" method="POST"
                 action="{{ route('transaksi.update', ['type' => $type, 'purchaseType' => $purchaseType, 'id' => $transaction->id]) }}">
                 @csrf
-                @method('patch')
+                @method('PATCH')
 
                 <div class="row mb-4">
                     <div class="col-md-4">
@@ -69,6 +69,16 @@
                     <h4><strong>Grand Total: Rp <span id="grandTotal">0</span></strong></h4>
                 </div>
 
+                {{-- 🔹 Payment Gateway Section --}}
+                @include('components.payment-gateway', [
+                    'bankAccounts' => $bankAccounts,
+                    'payment_method' => $transaction->payment_method ?? null,
+                    'bank_account_id' => $transaction->bank_account_id ?? null,
+                    'transfer_amount' => $transaction->transfer_amount ?? null,
+                    'cash_amount' => $transaction->cash_amount ?? null,
+                    'reference_no' => $transaction->reference_no ?? null,
+                ])
+
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary btn-lg px-5">
                         <i class="fas fa-save me-1"></i> Update Transaksi
@@ -80,17 +90,13 @@
 @stop
 
 @section('css')
-
     <style>
-        /* 🧩 Biar semua input sejajar secara vertikal */
         #detailTable td {
             vertical-align: middle !important;
         }
 
-        /* 🧱 Perbaiki Select2 agar tinggi & posisi teks sejajar input lain */
         .select2-container--default .select2-selection--single {
             height: calc(2.875rem + 2px) !important;
-            /* sesuai .form-control-lg */
             padding: 0.5rem 0.75rem !important;
             display: flex !important;
             align-items: center !important;
@@ -98,46 +104,40 @@
             border-radius: 0.5rem !important;
         }
 
-        /* Teks select2 center */
         .select2-selection__rendered {
             line-height: 1.5rem !important;
             font-size: 1rem !important;
         }
 
-        /* Panah dropdown sejajar tengah */
         .select2-selection__arrow {
             height: 100% !important;
             top: 50% !important;
             transform: translateY(-50%) !important;
         }
 
-        /* Pastikan input besar sejajar semua */
         .form-control-lg {
             height: calc(2.875rem + 2px);
         }
 
-        /* Table cell padding lebih rapi */
         #detailTable th,
         #detailTable td {
             padding: 0.5rem;
         }
     </style>
-    {{-- @include('transaksi._style') bisa reuse dari create --}}
 @stop
 
 @section('js')
+    @stack('scripts')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const variants = @json($variants ?? []);
-            const products = [...new Set(variants.map(v => v.product_name))];
-            const karats = [...new Set(variants.map(v => v.karat_name))];
-
+            const products = @json($products ?? []);
+            const karats = @json($karats ?? []);
+            const existingDetails = @json($details ?? []);
             const tableBody = document.querySelector('#detailTable tbody');
             const grandTotalEl = document.getElementById('grandTotal');
-            const existingDetails = @json($details);
 
             function formatNumber(num) {
                 return num.toLocaleString('id-ID', {
@@ -150,68 +150,59 @@
                 document.querySelectorAll('.subtotal').forEach(el => {
                     total += parseFloat(el.value) || 0;
                 });
-                grandTotalEl.textContent = formatNumber(total);
+
+                const formatted = total.toLocaleString('id-ID', {
+                    minimumFractionDigits: 2
+                });
+                grandTotalEl.textContent = formatted;
+
+                const evt = new CustomEvent('grandTotalChanged', {
+                    detail: {
+                        total: total
+                    }
+                });
+                document.dispatchEvent(evt);
             }
 
             function createRow(data = {}) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-        <td>
-            <select class="form-control form-control-lg select-product" name="details[][product_name]">
-                <option value="">-- pilih / ketik produk --</option>
-                ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
-            </select>
-        </td>
-        <td>
-            <select class="form-control form-control-lg select-karat" name="details[][karat_name]">
-                <option value="">-- pilih / ketik karat --</option>
-                ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
-            </select>
-        </td>
-        <td><input type="number" step="0.001" class="form-control form-control-lg gram" name="details[][gram]" value="${data.gram || ''}"></td>
-        <td><input type="number" step="1" class="form-control form-control-lg qty" name="details[][qty]" value="${data.qty || ''}"></td>
-        <td><input type="number" step="0.01" class="form-control form-control-lg price" name="details[][price_per_gram]" value="${data.price_per_gram || ''}"></td>
-        <td><input type="text" readonly class="form-control form-control-lg subtotal" name="details[][subtotal]" value="${data.subtotal || ''}"></td>
-        <td class="text-center">
-            <button type="button" class="btn btn-danger btn-lg remove-row"><i class="fas fa-trash"></i></button>
-        </td>
-    `;
+                    <td>
+                        <select class="form-control form-control-lg select-product" name="details[][product_name]">
+                            <option value="">-- pilih / ketik produk --</option>
+                            ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-control form-control-lg select-karat" name="details[][karat_name]">
+                            <option value="">-- pilih / ketik karat --</option>
+                            ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td><input type="number" step="0.001" class="form-control form-control-lg gram" name="details[][gram]" value="${data.gram || ''}"></td>
+                    <td><input type="number" step="1" class="form-control form-control-lg qty" name="details[][qty]" value="${data.qty || ''}"></td>
+                    <td><input type="number" step="0.01" class="form-control form-control-lg price" name="details[][price_per_gram]" value="${data.price_per_gram || ''}"></td>
+                    <td><input type="text" readonly class="form-control form-control-lg subtotal" name="details[][subtotal]" value="${data.subtotal || ''}"></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-lg remove-row"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
                 tableBody.appendChild(tr);
 
-                // Inisialisasi Select2
-                const $productSelect = $(tr).find('.select-product');
-                const $karatSelect = $(tr).find('.select-karat');
-
-                $productSelect.select2({
+                $(tr).find('.select-product').select2({
                     tags: true,
                     width: '100%'
                 });
-                $karatSelect.select2({
+                $(tr).find('.select-karat').select2({
                     tags: true,
                     width: '100%'
                 });
 
-                // 🟢 FIX: set nilai setelah Select2 aktif
-                if (data.product_name) {
-                    // tambahkan opsi jika belum ada (kalau user dulu buat custom)
-                    if (!$productSelect.find(`option[value="${data.product_name}"]`).length) {
-                        const newOption = new Option(data.product_name, data.product_name, true, true);
-                        $productSelect.append(newOption).trigger('change');
-                    } else {
-                        $productSelect.val(data.product_name).trigger('change');
-                    }
-                }
+                if (data.product_name)
+                    $(tr).find('.select-product').val(data.product_name).trigger('change');
+                if (data.karat_name)
+                    $(tr).find('.select-karat').val(data.karat_name).trigger('change');
 
-                if (data.karat_name) {
-                    if (!$karatSelect.find(`option[value="${data.karat_name}"]`).length) {
-                        const newOption = new Option(data.karat_name, data.karat_name, true, true);
-                        $karatSelect.append(newOption).trigger('change');
-                    } else {
-                        $karatSelect.val(data.karat_name).trigger('change');
-                    }
-                }
-
-                // Hitung subtotal
                 tr.querySelectorAll('.gram, .qty, .price').forEach(el => {
                     el.addEventListener('input', () => {
                         const gram = parseFloat(tr.querySelector('.gram').value) || 0;
@@ -223,15 +214,13 @@
                     });
                 });
 
-                // Tombol hapus
                 tr.querySelector('.remove-row').addEventListener('click', () => {
                     tr.remove();
                     updateGrandTotal();
                 });
             }
 
-
-            // isi data lama
+            // Isi data existing
             if (existingDetails.length) {
                 existingDetails.forEach(d => createRow(d));
             } else {

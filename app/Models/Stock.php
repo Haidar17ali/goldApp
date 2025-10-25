@@ -11,6 +11,8 @@ class Stock extends Model
         'storage_location_id',
         'product_id',
         'karat_id',
+        'weight',
+        'type',
         'quantity',
     ];
 
@@ -24,8 +26,13 @@ class Stock extends Model
         return $this->belongsTo(StorageLocation::class);
     }
 
-    public function productVariant()
+    public function product()
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(Product::class);
+    }
+
+    public function karat()
+    {
+        return $this->belongsTo(Karat::class);
     }
 }
