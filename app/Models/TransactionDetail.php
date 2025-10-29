@@ -11,9 +11,7 @@ class TransactionDetail extends Model
         'product_id',
         'karat_id',
         'gram',
-        'qty',
         'unit_price',
-        'subtotal',
         'type',
         'note',
     ];

@@ -17,6 +17,7 @@ class Transaction extends Model
         'customer_name',
         'supplier_name',
         'note',
+        'photo',
         'payment_method',
         'bank_account_id',
         'cash_amount',

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class TransactionController extends Controller
 {
@@ -20,30 +21,34 @@ class TransactionController extends Controller
         return view('pages.transactions.index', compact('transactions', "type", "purchaseType"));
     }
 
+    protected function generateUniqueInvoiceNumber(){
+        do {
+            $invoice = 'INV-' . strtoupper(Str::random(6));
+        } while (Transaction::where('invoice_number', $invoice)->exists());
+
+        return $invoice;
+    }
+
     public function create($type, $purchaseType)
     {
         $bankAccounts = BankAccount::orderBy("id", "desc")->get();
-        $variants = \App\Models\ProductVariant::with(['product','karat'])
-        ->orderBy('id', 'desc')
-        ->get()
-        ->map(function($v){
-            return [
-                'id' => $v->id,
-                'label' => ($v->product->name ?? 'Produk') 
-                          . ' - ' . ($v->karat->name ?? '-') 
-                          . ' - ' . ($v->gram ?? '-') . 'g',
-                'product_name' => $v->product->name ?? null,
-                'karat_name'   => $v->karat->name ?? null,
-                'gram'         => $v->gram,
-            ];
-        });
-        return view('pages.transactions.create', compact(["type","purchaseType", "variants", "bankAccounts"]));
+        $invoiceNumber = $this->generateUniqueInvoiceNumber();        
+
+        // ambil daftar products & karats untuk dropdown (kirim sebagai array nama)
+        $products = \App\Models\Product::orderBy('name')->get()->map(function($p){
+            return $p->name;
+        })->values()->toArray();
+
+        $karats = \App\Models\Karat::orderBy('name')->get()->map(function($k){
+            return $k->name;
+        })->values()->toArray();
+        return view('pages.transactions.create', compact(["type","purchaseType", "invoiceNumber", "products", "karats", "bankAccounts"]));
     }
 
     public function store($type, $purchaseType, Request $request){
         $data = $request->all();
 
-        // Decode JSON details dari JS (array of items)
+        // Decode JSON details jika dikirim sebagai string
         if (isset($data['details']) && is_string($data['details'])) {
             $decoded = json_decode($data['details'], true);
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -51,27 +56,33 @@ class TransactionController extends Controller
             }
             $data['details'] = $decoded;
         }
-
-        // Validasi input dasar
+        
+        // ✅ Validasi dasar
         $validator = \Validator::make($data, [
-            'invoice_number'   => 'nullable|string|max:255',
-            'customer_name'    => 'nullable|string|max:255',
-            'note'             => 'nullable|string|max:1000',
-            'payment_method'   => 'required|string|in:cash,transfer,cash_transfer',
-            'bank_account_id'  => 'nullable|exists:bank_accounts,id',
-            'transfer_amount'  => 'nullable|numeric|min:0',
-            'cash_amount'      => 'nullable|numeric|min:0',
-            'reference_no'     => 'nullable|string|max:255',
-            'details'          => 'required|array|min:1',
-            'details.*.product_name'   => 'required|string|max:255',
-            'details.*.karat_name'     => 'required|string|max:100',
-            'details.*.gram'           => 'required|numeric|min:0.001',
-            'details.*.qty'            => 'required|numeric|min:0.001',
-            'details.*.price_per_gram' => 'required|numeric|min:0',
-            'details.*.subtotal'       => 'nullable|numeric|min:0',
+            'invoice_number'  => 'nullable|string|max:255',
+            'customer_name'   => 'nullable|string|max:255',
+            'note'            => 'nullable|string|max:1000',
+            'payment_method'  => 'required|string|in:cash,transfer,cash_transfer',
+            'bank_account_id' => 'nullable|exists:bank_accounts,id',
+            'transfer_amount' => 'nullable|numeric|min:0',
+            'cash_amount'     => 'nullable|numeric|min:0',
+            'reference_no'    => 'nullable|string|max:255',
+            'details'         => 'required|array|min:1',
+            'details.*.product_name' => 'required|string|max:255',
+            'details.*.karat_name'   => 'required|string|max:100',
+            'details.*.gram'         => 'required|numeric|min:0.001',
+            'details.*.harga_beli'   => 'nullable|numeric|min:0',
+            'details.*.harga_jual'   => 'nullable|numeric|min:0',
         ], [
             'details.required' => 'Minimal satu barang harus diisi.',
         ]);
+
+        // Tambah validasi foto jika penjualan
+        if ($type === 'penjualan') {
+            $validator->addRules([
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+        }
 
         if ($validator->fails()) {
             return back()->withInput()->withErrors($validator);
@@ -79,7 +90,13 @@ class TransactionController extends Controller
 
         $validated = $validator->validated();
 
-        // ==== VALIDASI KHUSUS METODE PEMBAYARAN ====
+        // 🔹 Upload foto (hanya untuk penjualan)
+        if ($type === 'penjualan' && $request->hasFile('photo')) {
+            $path = $request->file('photo')->store('public/transaction_photos');
+            $validated['photo'] = str_replace('public/', 'storage/', $path);
+        }
+
+        // 🔸 Validasi metode pembayaran
         if ($validated['payment_method'] === 'transfer') {
             if (empty($validated['bank_account_id'])) {
                 return back()->withInput()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk transfer.']);
@@ -107,25 +124,25 @@ class TransactionController extends Controller
 
         try {
             DB::transaction(function () use ($validated, $type, $purchaseType) {
-                // Buat header transaksi
-                $transaction = \App\Models\Transaction::create([
-                    'type' => $type,
-                    'branch_id' => 2,
-                    'storage_location_id' => 1,
-                    'purchase_type' => $purchaseType,
-                    'transaction_date' => now(),
-                    'invoice_number' => $validated['invoice_number'] ?? null,
-                    'customer_name' => $validated['customer_name'] ?? null,
-                    'note' => $validated['note'] ?? null,
-                    'created_by' => auth()->id(),
-                    'total' => 0,
 
-                    // 🧾 Pembayaran
-                    'payment_method'  => $validated['payment_method'],
-                    'bank_account_id' => $validated['bank_account_id'] ?? null,
-                    'transfer_amount' => $validated['transfer_amount'] ?? 0,
-                    'cash_amount'     => $validated['cash_amount'] ?? 0,
-                    'reference_no'    => $validated['reference_no'] ?? null,
+                // 🧾 Buat header transaksi
+                $transaction = \App\Models\Transaction::create([
+                    'type'                => $type,
+                    'purchase_type'       => $purchaseType,
+                    'branch_id'           => 2,
+                    'storage_location_id' => 1,
+                    'transaction_date'    => now(),
+                    'invoice_number'      => $validated['invoice_number'] ?? null,
+                    'customer_name'       => $validated['customer_name'] ?? null,
+                    'note'                => $validated['note'] ?? null,
+                    'created_by'          => auth()->id(),
+                    'total'               => 0,
+                    'photo'               => $validated['photo'] ?? null, // ✅ Simpan foto jika penjualan
+                    'payment_method'      => $validated['payment_method'],
+                    'bank_account_id'     => $validated['bank_account_id'] ?? null,
+                    'transfer_amount'     => $validated['transfer_amount'] ?? 0,
+                    'cash_amount'         => $validated['cash_amount'] ?? 0,
+                    'reference_no'        => $validated['reference_no'] ?? null,
                 ]);
 
                 $total = 0;
@@ -134,9 +151,17 @@ class TransactionController extends Controller
                     $productName = trim($detail['product_name']);
                     $karatName   = trim($detail['karat_name']);
                     $gram        = (float) $detail['gram'];
-                    $qty         = (float) $detail['qty'];
-                    $price       = (float) $detail['price_per_gram'];
 
+                    // Tentukan harga berdasarkan type transaksi
+                    $price = $type === 'penjualan'
+                        ? (float) ($detail['harga_jual'] ?? 0)
+                        : (float) ($detail['harga_beli'] ?? 0);
+
+                    $qty = 1; // karena tidak ada kolom qty di form baru
+                    $subtotal = $price;
+                    $total += $subtotal;
+
+                    // Buat product dan karat jika belum ada
                     $product = \App\Models\Product::firstOrCreate(
                         ['name' => $productName],
                         ['code' => \Str::slug($productName)]
@@ -144,14 +169,12 @@ class TransactionController extends Controller
 
                     $karat = \App\Models\Karat::firstOrCreate(['name' => $karatName]);
 
-                    $subtotal = $gram * $price * $qty;
-                    $total += $subtotal;
-
-                    // 🔹 Tentukan jenis emas (new / sepuh / rosok)
+                    // Tentukan jenis emas (rosok, sepuh, new)
                     $goldType = $purchaseType === 'sepuh'
                         ? 'sepuh'
                         : ($purchaseType === 'pabrik' ? 'new' : 'rosok');
 
+                    // Simpan detail transaksi
                     \App\Models\TransactionDetail::create([
                         'transaction_id' => $transaction->id,
                         'product_id'     => $product->id,
@@ -159,34 +182,34 @@ class TransactionController extends Controller
                         'gram'           => $gram,
                         'qty'            => $qty,
                         'unit_price'     => $price,
-                        'subtotal'       => $subtotal,
                         'type'           => $goldType,
                         'note'           => $detail['note'] ?? null,
                     ]);
 
+                    // Update stok (in/out)
                     $movementType = $transaction->type === 'purchase' ? 'in' : 'out';
+
                     \App\Helpers\StockHelper::moveStock(
                         $product->id,
                         $karat->id,
                         $transaction->branch_id,
                         $transaction->storage_location_id,
                         $movementType,
-                        $qty,
+                        $qty, // selalu 1
                         $gram,
                         'Transaction',
                         $transaction->id,
                         'create-transaction',
                         auth()->id(),
-                        $goldType // 🟢 kirim jenis emas
+                        $goldType
                     );
                 }
 
-                // Update total transaksi
                 $transaction->update(['total' => $total]);
             });
 
             return redirect()
-                ->route('transaksi.index', ["type" => $type, "purchaseType" => $purchaseType])
+                ->route('transaksi.index', ['type' => $type, 'purchaseType' => $purchaseType])
                 ->with('status', 'saved');
         } catch (\Throwable $e) {
             \Log::error('Gagal menyimpan transaksi', [
@@ -197,6 +220,7 @@ class TransactionController extends Controller
             return back()->withInput()->withErrors(['msg' => 'Transaksi gagal: ' . $e->getMessage()]);
         }
     }
+
 
 
 
