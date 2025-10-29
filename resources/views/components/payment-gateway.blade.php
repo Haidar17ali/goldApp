@@ -1,4 +1,4 @@
-<div class="card mt-3 shadow-sm">
+<div class="mt-3 shadow-sm card">
     <div class="card-header bg-light fw-bold">
         Metode Pembayaran
     </div>

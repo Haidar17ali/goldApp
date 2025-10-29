@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-    <div class="card shadow-lg">
+    <div class="shadow-lg card">
         <div class="card-body">
             @if ($errors->any())
                 <div class="alert alert-danger">
@@ -17,12 +17,12 @@
             @endif
 
             <form id="transactionForm" method="POST"
-                action="{{ route('transaksi.update', ['type' => $type, 'purchaseType' => $purchaseType, 'id' => $transaction->id]) }}"
+                action="{{ route('transaksi.update', ['id' => $transaction->id, 'type' => $type, 'purchaseType' => $purchaseType]) }}"
                 enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
 
-                <div class="row mb-4">
+                <div class="mb-4 row">
                     <div class="col-md-4">
                         <label class="fw-semibold">Nomor Invoice</label>
                         <input type="text" name="invoice_number" class="form-control form-control-lg"
@@ -42,10 +42,10 @@
 
                 <hr class="my-4">
 
-                <h5 class="fw-bold mb-3">Detail Barang</h5>
+                <h5 class="mb-3 fw-bold">Detail Barang</h5>
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle" id="detailTable">
-                        <thead class="table-light text-center">
+                    <table class="table align-middle table-bordered" id="detailTable">
+                        <thead class="text-center table-light">
                             <tr>
                                 <th style="width: 25%">Produk</th>
                                 <th style="width: 15%">Karat</th>
@@ -61,7 +61,7 @@
                         <tbody></tbody>
                     </table>
 
-                    <div class="text-end mb-4 float-right">
+                    <div class="float-right mb-4 text-end">
                         @if ($type == 'penjualan')
                             <h5><strong>Grand Total Jual: Rp <span id="grandTotalJual">0</span></strong></h5>
                         @else
@@ -70,7 +70,7 @@
                     </div>
                 </div>
 
-                <div class="text-end mb-3">
+                <div class="mb-3 text-end">
                     <button type="button" id="addRow" class="btn btn-success btn-lg">
                         <i class="fas fa-plus"></i> Tambah Baris
                     </button>
@@ -94,7 +94,7 @@
                 @endif
 
                 <div class="text-end">
-                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <button type="submit" class="px-5 btn btn-primary btn-lg">
                         <i class="fas fa-save me-1"></i> Update Transaksi
                     </button>
                 </div>
@@ -217,16 +217,20 @@
                 tr.innerHTML = `
                     <td>
                         <select class="form-control form-control-lg select-product"
-                            name="details[${currentIndex}][product_name]">
+                            name="details[${currentIndex}][product_id]">
                             <option value="">-- pilih / ketik produk --</option>
-                            ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
+                            ${products.map(p => 
+                                `<option ${p.id == data.product_id ? "selected" : ""} value="${p.id}">${p.name}</option>`
+                            ).join('')}
                         </select>
                     </td>
                     <td>
                         <select class="form-control form-control-lg select-karat"
-                            name="details[${currentIndex}][karat_name]">
+                            name="details[${currentIndex}][karat_id]">
                             <option value="">-- pilih / ketik karat --</option>
-                            ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
+                            ${karats.map(k => 
+                                `<option ${k.id == data.karat_id ? "selected" : ""} value="${k.id}">${k.name}</option>`
+                            ).join('')}
                         </select>
                     </td>
                     <td>
@@ -242,6 +246,7 @@
                         </button>
                     </td>
                 `;
+
 
                 tableBody.appendChild(tr);
 
@@ -259,8 +264,9 @@
                 });
 
                 // Set value sesuai data existing
-                if (data.product_name) productSelect.val(data.product_name).trigger('change');
-                if (data.karat_name) karatSelect.val(data.karat_name).trigger('change');
+                if (data.product_id) productSelect.val(data.product_id).trigger('change');
+                if (data.karat_id) karatSelect.val(data.karat_id).trigger('change');
+
 
                 tr.querySelectorAll('.gram, .harga-jual, .harga-beli').forEach(el => {
                     el.addEventListener('input', updateGrandTotal);

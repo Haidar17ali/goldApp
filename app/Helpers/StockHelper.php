@@ -53,7 +53,7 @@ class StockHelper
     /**
      * Catat pergerakan stok
      */
-    public static function moveStock($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null,$goldType = 'new')
+    public static function moveStock($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null, $goldType = 'new')
     {
         return DB::transaction(function () use ($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight, $referenceType, $referenceId, $note, $userId, $goldType) {
             $movement = StockMovement::create([
@@ -70,7 +70,7 @@ class StockHelper
                 'note' => $note,
                 'created_by' => $userId,
             ]);
-            
+
             // Update stok utama
             $stock = Stock::firstOrCreate([
                 'product_id' => $product_id,
@@ -82,7 +82,7 @@ class StockHelper
             ], [
                 'quantity' => 0,
             ]);
-            
+
             if (in_array($type, ['in', 'loan_in'])) {
                 $stock->quantity += $quantity;
             } elseif (in_array($type, ['out', 'loan_out'])) {
@@ -90,7 +90,7 @@ class StockHelper
             } elseif ($type === 'adjustment') {
                 $stock->quantity = $quantity;
             }
-            
+
             $stock->save();
 
             return $movement;
@@ -100,7 +100,7 @@ class StockHelper
     /**
      * Shortcut untuk stok masuk
      */
-    public static function stockIn($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = null, $refId = null, $note = null, $userId = null, $goldType ="new")
+    public static function stockIn($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = null, $refId = null, $note = null, $userId = null, $goldType = "new")
     {
         return self::moveStock($variantId, $branchId, $storageLocationId, 'in', $quantity, $weight, $refType, $refId, $note, $userId, $goldType);
     }
@@ -108,7 +108,7 @@ class StockHelper
     /**
      * Shortcut untuk stok keluar
      */
-    public static function stockOut($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = null, $refId = null, $note = null, $userId = null, $goldType ="new")
+    public static function stockOut($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = null, $refId = null, $note = null, $userId = null, $goldType = "new")
     {
         return self::moveStock($variantId, $branchId, $storageLocationId, 'out', $quantity, $weight, $refType, $refId, $note, $userId, $goldType);
     }
@@ -116,7 +116,7 @@ class StockHelper
     /**
      * Peminjaman emas oleh influencer
      */
-    public static function loanOut($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = 'Loan', $refId = null, $note = 'Dipinjam influencer', $userId = null, $goldType ="new")
+    public static function loanOut($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = 'Loan', $refId = null, $note = 'Dipinjam influencer', $userId = null, $goldType = "new")
     {
         return self::moveStock($variantId, $branchId, $storageLocationId, 'loan_out', $quantity, $weight, $refType, $refId, $note, $userId, $goldType);
     }
@@ -124,7 +124,7 @@ class StockHelper
     /**
      * Pengembalian emas oleh influencer
      */
-    public static function loanIn($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = 'Loan', $refId = null, $note = 'Dikembalikan influencer', $userId = null, $goldType ="new")
+    public static function loanIn($variantId, $branchId, $storageLocationId, $quantity, $weight = null, $refType = 'Loan', $refId = null, $note = 'Dikembalikan influencer', $userId = null, $goldType = "new")
     {
         return self::moveStock($variantId, $branchId, $storageLocationId, 'loan_in', $quantity, $weight, $refType, $refId, $note, $userId, $goldType);
     }

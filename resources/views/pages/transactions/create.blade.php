@@ -43,14 +43,9 @@
 
                 <h5 class="mb-3 fw-bold">Detail Barang</h5>
                 <div class="table-responsive">
-<<<<<<< HEAD
                     <!-- Header table: hapus Qty & Subtotal, tambahkan Harga Jual & Harga Beli -->
-                    <table class="table table-bordered align-middle" id="detailTable">
-                        <thead class="table-light text-center">
-=======
                     <table class="table align-middle table-bordered" id="detailTable">
                         <thead class="text-center table-light">
->>>>>>> b8dc535debf890ccebc55cbf37f7c75836aab07c
                             <tr>
                                 <th style="width: 25%">Produk</th>
                                 <th style="width: 15%">Karat</th>
@@ -67,7 +62,7 @@
                     </table>
 
                     <!-- Grand totals: dua nilai terpisah -->
-                    <div class="text-end mb-4 float-right">
+                    <div class="float-right mb-4 text-end">
                         @if ($type == 'penjualan')
                             <h5><strong>Grand Total Jual: Rp <span id="grandTotalJual">0</span></strong></h5>
                         @else
@@ -82,12 +77,6 @@
                     </button>
                 </div>
 
-<<<<<<< HEAD
-=======
-                <div class="mb-4 text-end">
-                    <h4><strong>Grand Total: Rp <span id="grandTotal">0</span></strong></h4>
-                </div>
->>>>>>> b8dc535debf890ccebc55cbf37f7c75836aab07c
                 @include('components.payment-gateway', [
                     'bankAccounts' => $bankAccounts,
                     'payment_method' => $transaction->payment_method ?? null,
@@ -181,14 +170,16 @@
                     total += harga;
                 });
 
-                grandTotalEl.textContent = total.toLocaleString('id-ID', {
-                    minimumFractionDigits: 2
-                });
+                // tampilkan di UI
+                grandTotalEl.textContent = total.toLocaleString('id-ID', { minimumFractionDigits: 2 });
 
-                // Auto set nominal tunai/transfer sesuai total
-                if (cashInput) cashInput.value = total.toFixed(2);
-                if (transferInput) transferInput.value = total.toFixed(2);
+                // 🔹 kirim event ke payment gateway
+                document.dispatchEvent(new CustomEvent('grandTotalChanged', {
+                    detail: { total: total }
+                }));
             }
+
+
 
             // 🔹 Tambah baris tabel
             function createRow(data = {}) {
