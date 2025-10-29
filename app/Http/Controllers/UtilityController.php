@@ -249,6 +249,20 @@ class UtilityController extends Controller
                 'user'=> ["username"],
             ]
         ],
+        'stockAdjustments' => [
+            'model' => 'App\\Models\\StockAdjustment',
+            'columns' => [
+                'id',
+                'branch_id',
+                'storage_location_id',
+                'adjustment_date',
+                'note',
+                'created_by',
+                'approved_by',
+                'approved_at'
+            ],
+            'relations' => []
+        ],
         'rotary' => [
             'model' => 'App\\Models\\Rotary',
             'columns' => [
@@ -420,6 +434,11 @@ class UtilityController extends Controller
         }elseif($modelKey == "transactions"){
             return response()->json([
                 'table' => view('pages.search.search-transactions', compact(['data', "type", "purchaseType"]))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "stockAdjustments"){
+            return response()->json([
+                'table' => view('pages.search.search-stock-adjustments', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }

@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-    <div class="card shadow-lg">
+    <div class="shadow-lg card">
         <div class="card-body">
             @if ($errors->any())
                 <div class="alert alert-danger">
@@ -21,7 +21,7 @@
                 enctype="multipart/form-data">
                 @csrf
 
-                <div class="row mb-4">
+                <div class="mb-4 row">
                     <div class="col-md-4">
                         <label class="fw-semibold">Nomor Invoice</label>
                         <input type="text" name="invoice_number" class="form-control form-control-lg"
@@ -41,11 +41,16 @@
 
                 <hr class="my-4">
 
-                <h5 class="fw-bold mb-3">Detail Barang</h5>
+                <h5 class="mb-3 fw-bold">Detail Barang</h5>
                 <div class="table-responsive">
+<<<<<<< HEAD
                     <!-- Header table: hapus Qty & Subtotal, tambahkan Harga Jual & Harga Beli -->
                     <table class="table table-bordered align-middle" id="detailTable">
                         <thead class="table-light text-center">
+=======
+                    <table class="table align-middle table-bordered" id="detailTable">
+                        <thead class="text-center table-light">
+>>>>>>> b8dc535debf890ccebc55cbf37f7c75836aab07c
                             <tr>
                                 <th style="width: 25%">Produk</th>
                                 <th style="width: 15%">Karat</th>
@@ -71,12 +76,18 @@
                     </div>
                 </div>
 
-                <div class="text-end mb-3">
+                <div class="mb-3 text-end">
                     <button type="button" id="addRow" class="btn btn-success btn-lg">
                         <i class="fas fa-plus"></i> Tambah Baris
                     </button>
                 </div>
 
+<<<<<<< HEAD
+=======
+                <div class="mb-4 text-end">
+                    <h4><strong>Grand Total: Rp <span id="grandTotal">0</span></strong></h4>
+                </div>
+>>>>>>> b8dc535debf890ccebc55cbf37f7c75836aab07c
                 @include('components.payment-gateway', [
                     'bankAccounts' => $bankAccounts,
                     'payment_method' => $transaction->payment_method ?? null,
@@ -91,7 +102,7 @@
                 @endif
 
                 <div class="text-end">
-                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <button type="submit" class="px-5 btn btn-primary btn-lg">
                         <i class="fas fa-save me-1"></i> Simpan Transaksi
                     </button>
                 </div>

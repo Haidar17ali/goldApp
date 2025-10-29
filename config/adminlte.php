@@ -417,6 +417,19 @@ return [
                         ],
                     ],
                 ],
+                [
+                    'text' => 'Manajemen Stok',
+                    'icon' => 'fas fa-boxes',
+                    'submenu' => [
+                        [
+                            'text' => 'Stok Opname',
+                            'url' => 'gold-app/opname',
+                            'icon' => 'fas fa-balance-scale',
+                            'can' => 'opname.index',
+                        ],
+                    ],
+                ],
+
             ],
         ],
         [

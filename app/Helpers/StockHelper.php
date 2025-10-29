@@ -70,7 +70,7 @@ class StockHelper
                 'note' => $note,
                 'created_by' => $userId,
             ]);
-
+            
             // Update stok utama
             $stock = Stock::firstOrCreate([
                 'product_id' => $product_id,
@@ -82,7 +82,7 @@ class StockHelper
             ], [
                 'quantity' => 0,
             ]);
-
+            
             if (in_array($type, ['in', 'loan_in'])) {
                 $stock->quantity += $quantity;
             } elseif (in_array($type, ['out', 'loan_out'])) {
@@ -90,7 +90,7 @@ class StockHelper
             } elseif ($type === 'adjustment') {
                 $stock->quantity = $quantity;
             }
-
+            
             $stock->save();
 
             return $movement;

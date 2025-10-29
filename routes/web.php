@@ -11,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StorageLocationController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
@@ -108,6 +109,14 @@ Route::prefix('gold-app')
         Route::get('/transaksi/{type}/{purchaseType}/{transaction}/ubah', [TransactionController::class, 'edit'])->name('transaksi.ubah');
         Route::patch('/transaksi/{type}/{purchaseType}/{id}/update', [TransactionController::class, 'update'])->name('transaksi.update');
         Route::delete('/transaksi{type}/{purchaseType}/{transaction}/hapus', [TransactionController::class, 'destroy'])->name('transaksi.hapus');
+
+        // opname
+        Route::get("/opname", [StockAdjustmentController::class, 'index'])->name("opname.index");
+        Route::get('/opname/buat', [StockAdjustmentController::class, 'create'])->name('opname.buat');
+        Route::post('/opname/buat', [StockAdjustmentController::class, 'store'])->name('opname.simpan');
+        Route::delete('/opname/{bankAccount}/hapus', [StockAdjustmentController::class, 'destroy'])->name('opname.hapus');
+        Route::get('/opname/get-stock', [StockAdjustmentController::class, 'getStock'])->name('opname.dapatStock');
+
 
         
 
