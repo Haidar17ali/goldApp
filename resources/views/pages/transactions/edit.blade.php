@@ -3,7 +3,7 @@
 @section('title', 'Edit Transaksi')
 
 @section('content_header')
-    <h1 class="fw-bold">Edit Transaksi Pembelian</h1>
+    <h1 class="fw-bold">Edit Transaksi {{ ucfirst($type) }}</h1>
 @stop
 
 @section('content')
@@ -17,7 +17,8 @@
             @endif
 
             <form id="transactionForm" method="POST"
-                action="{{ route('transaksi.update', ['type' => $type, 'purchaseType' => $purchaseType, 'id' => $transaction->id]) }}">
+                action="{{ route('transaksi.update', ['type' => $type, 'purchaseType' => $purchaseType, 'id' => $transaction->id]) }}"
+                enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
 
@@ -48,15 +49,25 @@
                             <tr>
                                 <th style="width: 25%">Produk</th>
                                 <th style="width: 15%">Karat</th>
-                                <th style="width: 10%">Gram</th>
-                                <th style="width: 10%">Qty</th>
-                                <th style="width: 15%">Harga/gr</th>
-                                <th style="width: 15%">Subtotal</th>
+                                <th style="width: 15%">Gram</th>
+                                @if ($type == 'penjualan')
+                                    <th style="width: 15%">Harga Jual</th>
+                                @else
+                                    <th style="width: 15%">Harga Beli</th>
+                                @endif
                                 <th style="width: 5%"></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
+
+                    <div class="text-end mb-4 float-right">
+                        @if ($type == 'penjualan')
+                            <h5><strong>Grand Total Jual: Rp <span id="grandTotalJual">0</span></strong></h5>
+                        @else
+                            <h5><strong>Grand Total Beli: Rp <span id="grandTotalBeli">0</span></strong></h5>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="text-end mb-3">
@@ -65,11 +76,7 @@
                     </button>
                 </div>
 
-                <div class="text-end mb-4">
-                    <h4><strong>Grand Total: Rp <span id="grandTotal">0</span></strong></h4>
-                </div>
-
-                {{-- 🔹 Payment Gateway Section --}}
+                {{-- 🔹 Payment Gateway --}}
                 @include('components.payment-gateway', [
                     'bankAccounts' => $bankAccounts,
                     'payment_method' => $transaction->payment_method ?? null,
@@ -78,6 +85,13 @@
                     'cash_amount' => $transaction->cash_amount ?? null,
                     'reference_no' => $transaction->reference_no ?? null,
                 ])
+
+                {{-- 🔹 Camera (untuk penjualan) --}}
+                @if ($type == 'penjualan')
+                    @include('components.camera', [
+                        'existingPhotos' => $transaction->photos ?? [],
+                    ])
+                @endif
 
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary btn-lg px-5">
@@ -136,82 +150,120 @@
             const products = @json($products ?? []);
             const karats = @json($karats ?? []);
             const existingDetails = @json($details ?? []);
+            const type = "{{ $type }}";
             const tableBody = document.querySelector('#detailTable tbody');
-            const grandTotalEl = document.getElementById('grandTotal');
 
-            function formatNumber(num) {
-                return num.toLocaleString('id-ID', {
-                    minimumFractionDigits: 2
-                });
-            }
+            let grandTotalEl = type === 'penjualan' ?
+                document.getElementById('grandTotalJual') :
+                document.getElementById('grandTotalBeli');
+
+            let rowIndex = 0;
 
             function updateGrandTotal() {
                 let total = 0;
-                document.querySelectorAll('.subtotal').forEach(el => {
-                    total += parseFloat(el.value) || 0;
+                tableBody.querySelectorAll('tr').forEach(tr => {
+                    const harga = parseFloat(
+                        type === 'penjualan' ?
+                        (tr.querySelector('.harga-jual')?.value || 0) :
+                        (tr.querySelector('.harga-beli')?.value || 0)
+                    ) || 0;
+                    total += harga;
                 });
 
-                const formatted = total.toLocaleString('id-ID', {
-                    minimumFractionDigits: 2
-                });
-                grandTotalEl.textContent = formatted;
+                if (grandTotalEl) {
+                    grandTotalEl.textContent = total.toLocaleString('id-ID', {
+                        minimumFractionDigits: 2
+                    });
+                }
 
-                const evt = new CustomEvent('grandTotalChanged', {
+                document.dispatchEvent(new CustomEvent('grandTotalChanged', {
                     detail: {
-                        total: total
+                        total
                     }
-                });
-                document.dispatchEvent(evt);
+                }));
             }
 
             function createRow(data = {}) {
+                const currentIndex = rowIndex++;
                 const tr = document.createElement('tr');
+
+                // Pastikan produk & karat dari existing data ikut dimasukkan ke daftar
+                if (data.product_name && !products.includes(data.product_name)) {
+                    products.push(data.product_name);
+                }
+                if (data.karat_name && !karats.includes(data.karat_name)) {
+                    karats.push(data.karat_name);
+                }
+
+                let hargaColumn = '';
+                if (type === 'penjualan') {
+                    hargaColumn = `
+                        <td>
+                            <input type="number" step="0.01" min="0"
+                                class="form-control form-control-lg harga-jual"
+                                name="details[${currentIndex}][harga_jual]"
+                                value="${data.harga_jual ?? ''}">
+                        </td>`;
+                } else {
+                    hargaColumn = `
+                        <td>
+                            <input type="number" step="0.01" min="0"
+                                class="form-control form-control-lg harga-beli"
+                                name="details[${currentIndex}][harga_beli]"
+                                value="${data.harga_beli ?? ''}">
+                        </td>`;
+                }
+
                 tr.innerHTML = `
                     <td>
-                        <select class="form-control form-control-lg select-product" name="details[][product_name]">
+                        <select class="form-control form-control-lg select-product"
+                            name="details[${currentIndex}][product_name]">
                             <option value="">-- pilih / ketik produk --</option>
                             ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
                         </select>
                     </td>
                     <td>
-                        <select class="form-control form-control-lg select-karat" name="details[][karat_name]">
+                        <select class="form-control form-control-lg select-karat"
+                            name="details[${currentIndex}][karat_name]">
                             <option value="">-- pilih / ketik karat --</option>
                             ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
                         </select>
                     </td>
-                    <td><input type="number" step="0.001" class="form-control form-control-lg gram" name="details[][gram]" value="${data.gram || ''}"></td>
-                    <td><input type="number" step="1" class="form-control form-control-lg qty" name="details[][qty]" value="${data.qty || ''}"></td>
-                    <td><input type="number" step="0.01" class="form-control form-control-lg price" name="details[][price_per_gram]" value="${data.price_per_gram || ''}"></td>
-                    <td><input type="text" readonly class="form-control form-control-lg subtotal" name="details[][subtotal]" value="${data.subtotal || ''}"></td>
+                    <td>
+                        <input type="number" step="0.001" min="0"
+                            class="form-control form-control-lg gram"
+                            name="details[${currentIndex}][gram]"
+                            value="${data.gram ?? ''}">
+                    </td>
+                    ${hargaColumn}
                     <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-lg remove-row"><i class="fas fa-trash"></i></button>
+                        <button type="button" class="btn btn-danger btn-lg remove-row">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
+
                 tableBody.appendChild(tr);
 
-                $(tr).find('.select-product').select2({
+                // Init select2
+                const productSelect = $(tr).find('.select-product');
+                const karatSelect = $(tr).find('.select-karat');
+
+                productSelect.select2({
                     tags: true,
                     width: '100%'
                 });
-                $(tr).find('.select-karat').select2({
+                karatSelect.select2({
                     tags: true,
                     width: '100%'
                 });
 
-                if (data.product_name)
-                    $(tr).find('.select-product').val(data.product_name).trigger('change');
-                if (data.karat_name)
-                    $(tr).find('.select-karat').val(data.karat_name).trigger('change');
+                // Set value sesuai data existing
+                if (data.product_name) productSelect.val(data.product_name).trigger('change');
+                if (data.karat_name) karatSelect.val(data.karat_name).trigger('change');
 
-                tr.querySelectorAll('.gram, .qty, .price').forEach(el => {
-                    el.addEventListener('input', () => {
-                        const gram = parseFloat(tr.querySelector('.gram').value) || 0;
-                        const qty = parseFloat(tr.querySelector('.qty').value) || 0;
-                        const price = parseFloat(tr.querySelector('.price').value) || 0;
-                        const subtotal = gram * qty * price;
-                        tr.querySelector('.subtotal').value = subtotal.toFixed(2);
-                        updateGrandTotal();
-                    });
+                tr.querySelectorAll('.gram, .harga-jual, .harga-beli').forEach(el => {
+                    el.addEventListener('input', updateGrandTotal);
                 });
 
                 tr.querySelector('.remove-row').addEventListener('click', () => {
@@ -220,51 +272,15 @@
                 });
             }
 
-            // Isi data existing
+
             if (existingDetails.length) {
                 existingDetails.forEach(d => createRow(d));
             } else {
                 createRow();
             }
 
-            updateGrandTotal();
-
             document.getElementById('addRow').addEventListener('click', () => createRow());
-
-            document.getElementById('transactionForm').addEventListener('submit', function(e) {
-                const rows = [];
-                tableBody.querySelectorAll('tr').forEach(tr => {
-                    const product = tr.querySelector('.select-product').value;
-                    const karat = tr.querySelector('.select-karat').value;
-                    const gram = tr.querySelector('.gram').value;
-                    const qty = tr.querySelector('.qty').value;
-                    const price = tr.querySelector('.price').value;
-                    const subtotal = tr.querySelector('.subtotal').value;
-
-                    if (product && karat && gram && qty && price) {
-                        rows.push({
-                            product_name: product,
-                            karat_name: karat,
-                            gram,
-                            qty,
-                            price_per_gram: price,
-                            subtotal
-                        });
-                    }
-                });
-
-                if (rows.length === 0) {
-                    e.preventDefault();
-                    alert('Tambahkan minimal satu detail barang.');
-                    return;
-                }
-
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'details';
-                input.value = JSON.stringify(rows);
-                this.appendChild(input);
-            });
+            updateGrandTotal();
         });
     </script>
 @stop

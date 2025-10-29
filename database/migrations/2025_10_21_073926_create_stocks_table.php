@@ -14,11 +14,13 @@ return new class extends Migration
             $table->foreignId('storage_location_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('karat_id')->constrained()->cascadeOnDelete();
+            $table->decimal('weight', 12, 3);
+            $table->enum('type', ['new', 'sepuh', 'rosok'])->default('new');
 
             $table->decimal('quantity', 15, 3)->default(0); // dalam gram, bisa pecahan
             $table->timestamps();
 
-            $table->unique(['branch_id', 'storage_location_id', 'product_id', "karat_id"], 'unique_stock_per_location');
+            $table->unique(['branch_id', 'storage_location_id', 'product_id', "karat_id", "weight", "type"], 'unique_stock_per_location');
         });
     }
 

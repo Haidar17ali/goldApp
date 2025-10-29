@@ -153,103 +153,72 @@
         document.addEventListener('DOMContentLoaded', function() {
             const products = @json($products ?? []);
             const karats = @json($karats ?? []);
-
-            const type = "{{ $type }}"; // ambil type dari controller
+            const existingDetails = @json($details ?? []);
+            const type = "{{ $type }}";
             const tableBody = document.querySelector('#detailTable tbody');
+            const grandTotalEl = document.getElementById('grandTotalBeli');
+            const cashInput = document.querySelector('input[name="cash_amount"]');
+            const transferInput = document.querySelector('input[name="transfer_amount"]');
 
-            // deklarasi grandTotalEl di scope yang benar
-            let grandTotalEl = null;
-            if (type === 'penjualan') {
-                grandTotalEl = document.getElementById('grandTotalJual');
-            } else {
-                grandTotalEl = document.getElementById('grandTotalBeli');
-            }
+            let rowIndex = 0;
 
+            // 🔹 Hitung ulang total dan update nominal pembayaran
             function updateGrandTotal() {
                 let total = 0;
                 tableBody.querySelectorAll('tr').forEach(tr => {
-                    const gram = parseFloat(tr.querySelector('.gram')?.value) || 0;
-                    const harga = parseFloat(
-                        type === 'penjualan' ?
-                        (tr.querySelector('.harga-jual')?.value || 0) :
-                        (tr.querySelector('.harga-beli')?.value || 0)
-                    ) || 0;
-
+                    const harga = parseFloat(tr.querySelector('.harga-beli')?.value || 0);
                     total += harga;
                 });
 
-                // pastikan element ada sebelum menulis
-                if (grandTotalEl) {
-                    grandTotalEl.textContent = total.toLocaleString('id-ID', {
-                        minimumFractionDigits: 2
-                    });
-                }
+                grandTotalEl.textContent = total.toLocaleString('id-ID', {
+                    minimumFractionDigits: 2
+                });
 
-                // dispatch event jika ada listener lain
-                document.dispatchEvent(new CustomEvent('grandTotalChanged', {
-                    detail: {
-                        total
-                    }
-                }));
+                // Auto set nominal tunai/transfer sesuai total
+                if (cashInput) cashInput.value = total.toFixed(2);
+                if (transferInput) transferInput.value = total.toFixed(2);
             }
 
-            let rowIndex = 0; // tambahkan variabel global di atas semua fungsi
-
+            // 🔹 Tambah baris tabel
             function createRow(data = {}) {
+                const index = rowIndex++;
                 const tr = document.createElement('tr');
-                const currentIndex = rowIndex++; // gunakan dan increment index
-
-                // tampilkan kolom harga sesuai type
-                let hargaColumn = '';
-                if (type === 'penjualan') {
-                    hargaColumn = `
-        <td>
-            <input type="number" step="0.01" min="0"
-                class="form-control form-control-lg harga-jual"
-                name="details[${currentIndex}][harga_jual]"
-                value="${data.harga_jual ?? ''}">
-        </td>`;
-                } else {
-                    hargaColumn = `
-        <td>
-            <input type="number" step="0.01" min="0"
-                class="form-control form-control-lg harga-beli"
-                name="details[${currentIndex}][harga_beli]"
-                value="${data.harga_beli ?? ''}">
-        </td>`;
-                }
 
                 tr.innerHTML = `
-    <td>
-        <select class="form-control form-control-lg select-product"
-            name="details[${currentIndex}][product_name]">
-            <option value="">-- pilih / ketik produk --</option>
-            ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
-        </select>
-    </td>
-    <td>
-        <select class="form-control form-control-lg select-karat"
-            name="details[${currentIndex}][karat_name]">
-            <option value="">-- pilih / ketik karat --</option>
-            ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
-        </select>
-    </td>
-    <td>
-        <input type="number" step="0.001" min="0"
-            class="form-control form-control-lg gram"
-            name="details[${currentIndex}][gram]" value="${data.gram ?? ''}">
-    </td>
-    ${hargaColumn}
-    <td class="text-center">
-        <button type="button" class="btn btn-danger btn-lg remove-row">
-            <i class="fas fa-trash"></i>
-        </button>
-    </td>
-    `;
+            <td>
+                <select class="form-control form-control-lg select-product"
+                    name="details[${index}][product_name]">
+                    <option value="">-- pilih / ketik produk --</option>
+                    ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
+                </select>
+            </td>
+            <td>
+                <select class="form-control form-control-lg select-karat"
+                    name="details[${index}][karat_name]">
+                    <option value="">-- pilih / ketik karat --</option>
+                    ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
+                </select>
+            </td>
+            <td>
+                <input type="number" step="0.001" min="0"
+                    class="form-control form-control-lg gram"
+                    name="details[${index}][gram]" value="${data.gram ?? ''}">
+            </td>
+            <td>
+                <input type="number" step="0.01" min="0"
+                    class="form-control form-control-lg harga-beli"
+                    name="details[${index}][harga_beli]" value="${data.harga_beli ?? ''}">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-danger btn-lg remove-row">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
 
                 tableBody.appendChild(tr);
 
-                // inisialisasi Select2
+                // Init select2
                 $(tr).find('.select-product').select2({
                     tags: true,
                     width: '100%'
@@ -259,8 +228,12 @@
                     width: '100%'
                 });
 
-                // update total saat input berubah
-                tr.querySelectorAll('.gram, .harga-jual, .harga-beli').forEach(el => {
+                // Set nilai default
+                if (data.product_name) $(tr).find('.select-product').val(data.product_name).trigger('change');
+                if (data.karat_name) $(tr).find('.select-karat').val(data.karat_name).trigger('change');
+
+                // Event listener update total
+                tr.querySelectorAll('.gram, .harga-beli').forEach(el => {
                     el.addEventListener('input', updateGrandTotal);
                 });
 
@@ -268,13 +241,20 @@
                     tr.remove();
                     updateGrandTotal();
                 });
-
-                return tr;
             }
 
+            // 🔹 Load existing detail dari DB
+            if (existingDetails.length) {
+                existingDetails.forEach(d => createRow(d));
+            } else {
+                createRow();
+            }
 
+            // 🔹 Tombol tambah baris
             document.getElementById('addRow').addEventListener('click', () => createRow());
-            createRow(); // buat baris awal
+
+            // 🔹 Hitung total awal
+            updateGrandTotal();
         });
     </script>
 
