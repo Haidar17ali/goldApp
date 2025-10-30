@@ -9,8 +9,8 @@ return new class extends Migration {
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['purchase', 'sale']); // pembelian / penjualan
-            $table->enum('purchase_type', ['sepuh', 'pabrik', 'rosok'])->nullable(); // hanya berlaku jika type=purchase
+            $table->enum('type', ['purchase', 'penjualan']); // pembelian / penjualan
+            $table->enum('purchase_type', ['sepuh', 'pabrik', 'rosok', "new"])->nullable(); // hanya berlaku jika type=purchase
             $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('storage_location_id')->nullable()->constrained()->nullOnDelete();
             $table->date('transaction_date');

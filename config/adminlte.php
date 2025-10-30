@@ -393,9 +393,9 @@ return [
                         ],
                         [
                             'text' => 'Penjualan',
-                            'url' => 'gold-app/penjualan',
+                            'url' => 'gold-app/transaction/penjualan/emas',
                             'icon' => 'fas fa-cash-register',
-                            // 'can' => 'penjualan.index',
+                            'can' => 'penjualan.index',
                         ],
                     ],
                 ],

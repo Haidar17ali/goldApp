@@ -11,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StorageLocationController;
 use App\Http\Controllers\TransactionController;
@@ -82,7 +83,7 @@ Route::prefix('gold-app')
         Route::patch('/cabang/{branch}/ubah', [BranchController::class, 'update'])->name('cabang.update');
         Route::delete('/cabang/{branch}/hapus', [BranchController::class, 'destroy'])->name('cabang.hapus');
 
-        // branch
+        // rekening
         Route::get("/rekening", [BankAccountController::class, 'index'])->name("rekening.index");
         Route::get('/rekening/buat', [BankAccountController::class, 'create'])->name('rekening.buat');
         Route::post('/rekening/buat', [BankAccountController::class, 'store'])->name('rekening.simpan');
@@ -110,15 +111,20 @@ Route::prefix('gold-app')
         Route::patch('/transaksi/{type}/{purchaseType}/{id}/update', [TransactionController::class, 'update'])->name('transaksi.update');
         Route::delete('/transaksi{type}/{purchaseType}/{transaction}/hapus', [TransactionController::class, 'destroy'])->name('transaksi.hapus');
 
+        // rekening
+        Route::get("/transaction/{type}/emas", [SalesController::class, 'index'])->name("penjualan.index");
+        Route::get('/transaction/{type}/emas/buat', [SalesController::class, 'create'])->name('penjualan.buat');
+        Route::post('/transaction/{type}/emas/buat', [SalesController::class, 'store'])->name('penjualan.simpan');
+        Route::get('/transaction/{type}/emas/{id}/ubah', [SalesController::class, 'edit'])->name('penjualan.ubah');
+        Route::patch('/transaction/{type}/emas/{id}/ubah', [SalesController::class, 'update'])->name('penjualan.update');
+        Route::delete('/transaction/{type}/emas/{id}/hapus', [SalesController::class, 'destroy'])->name('penjualan.hapus');
+
         // opname
         Route::get("/opname", [StockAdjustmentController::class, 'index'])->name("opname.index");
         Route::get('/opname/buat', [StockAdjustmentController::class, 'create'])->name('opname.buat');
         Route::post('/opname/buat', [StockAdjustmentController::class, 'store'])->name('opname.simpan');
         Route::delete('/opname/{bankAccount}/hapus', [StockAdjustmentController::class, 'destroy'])->name('opname.hapus');
         Route::get('/opname/get-stock', [StockAdjustmentController::class, 'getStock'])->name('opname.dapatStock');
-
-
-        
 
         // utility
             // ajax
