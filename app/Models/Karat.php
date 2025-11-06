@@ -13,4 +13,9 @@ class Karat extends Model
     public function variants(){
         return $this->hasMany(ProductVariant::class);
     }
+
+    public function stocks(){
+        return $this->hasMany(\App\Models\Stock::class);
+    }
+
 }

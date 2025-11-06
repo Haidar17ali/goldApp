@@ -374,22 +374,16 @@ return [
                     'icon' => 'fas fa-shopping-cart',
                     'submenu' => [
                         [
-                            'text' => 'Pembelian Sepuh',
-                            'url' => 'gold-app/transaksi/purchase/sepuh',
+                            'text' => 'Pembelian Customer',
+                            'url' => 'gold-app/transaksi/purchase/customer',
                             'icon' => 'fas fa-ring',
                             // 'can' => 'pembelian.sepuh.index',
                         ],
                         [
-                            'text' => 'Pembelian Pabrik',
-                            'url' => 'gold-app/transaksi/purchase/pabrik',
+                            'text' => 'Pembelian Baru',
+                            'url' => 'gold-app/transaksi/purchase/new',
                             'icon' => 'fas fa-industry',
                             // 'can' => 'pembelian.pabrik.index',
-                        ],
-                        [
-                            'text' => 'Pembelian Rosok',
-                            'url' => 'gold-app/transaksi/purchase/rosok',
-                            'icon' => 'fas fa-recycle',
-                            // 'can' => 'pembelian.rosok.index',
                         ],
                         [
                             'text' => 'Penjualan',
@@ -426,6 +420,12 @@ return [
                             'url' => 'gold-app/opname',
                             'icon' => 'fas fa-balance-scale',
                             'can' => 'opname.index',
+                        ],
+                        [
+                            'text' => 'Pengelolaan Emas',
+                            'url' => 'gold-app/pengelolaan-emas',
+                            'icon' => 'fas fa-tools',
+                            'can' => 'pengelolaan-emas.index',
                         ],
                     ],
                 ],

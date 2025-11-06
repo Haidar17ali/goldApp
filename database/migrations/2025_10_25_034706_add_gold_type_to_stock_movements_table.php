@@ -8,7 +8,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stock_movements', function (Blueprint $table) {
-            $table->enum('gold_type', ['new', 'sepuh', 'rosok'])->default('new')->after('type');
+            $table->enum('gold_type', ['new', 'customer'])->default('new')->after('type');
         });
     }
 

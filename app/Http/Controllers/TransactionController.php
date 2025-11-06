@@ -175,9 +175,9 @@ class TransactionController extends Controller
                     $karat = \App\Models\Karat::firstOrCreate(['name' => $karatName]);
 
                     // Tentukan jenis emas (rosok, sepuh, new)
-                    $goldType = $purchaseType === 'sepuh'
-                        ? 'sepuh'
-                        : ($purchaseType === 'pabrik' ? 'new' : 'rosok');
+                    // $goldType = $purchaseType === 'sepuh'
+                    //     ? 'sepuh'
+                    //     : ($purchaseType === 'pabrik' ? 'new' : 'rosok');
 
                     // Simpan detail transaksi
                     \App\Models\TransactionDetail::create([
@@ -186,12 +186,15 @@ class TransactionController extends Controller
                         'karat_id'       => $karat->id,
                         'gram'           => $gram,
                         'unit_price'     => $price,
-                        'type'           => $goldType,
+                        'type'           => $purchaseType,
                         'note'           => $detail['note'] ?? null,
                     ]);
 
                     // Update stok (in/out)
                     $movementType = $transaction->type === 'purchase' ? 'in' : 'out';
+                    if($purchaseType == "customer"){
+                        $product = Product::where("name", "emas")->first();
+                    }
 
                     \App\Helpers\StockHelper::moveStock(
                         $product->id,
@@ -205,7 +208,7 @@ class TransactionController extends Controller
                         $transaction->id,
                         'create-transaction',
                         auth()->id(),
-                        $goldType
+                        $purchaseType
                     );
                 }
 
