@@ -7,16 +7,16 @@
 @stop
 
 @section('content')
-    <div class="card shadow-sm">
+    <div class="shadow-sm card">
         <div class="card-header">
-            <h4 class="mb-0 float-left">Riwayat Pengelolaan</h4>
-            <a href="{{ route('pengelolaan-emas.buat') }}" class="btn btn-primary btn-sm float-right">
+            <h4 class="float-left mb-0">Riwayat Pengelolaan</h4>
+            <a href="{{ route('pengelolaan-emas.buat') }}" class="float-right btn btn-primary btn-sm">
                 <i class="fas fa-plus-circle"></i> Tambah Pengelolaan
             </a>
         </div>
 
-        <div class="card-body table-responsive p-5">
-            <table class="table table-hover table-striped text-center align-middle mb-0">
+        <div class="p-5 card-body table-responsive">
+            <table class="table mb-0 text-center align-middle table-hover table-striped">
                 <thead class="table-dark">
                     <tr>
                         <th width="5%">No</th>
@@ -26,6 +26,7 @@
                         <th>Karat</th>
                         <th>Gram Masuk (Customer)</th>
                         <th>Gram Hasil</th>
+                        <th>Susut</th>
                         <th>Catatan</th>
                         <th>Dibuat Oleh</th>
                         <th width="10%">Aksi</th>
@@ -49,22 +50,33 @@
                             </td>
                             <td>{{ $m->product->name ?? '-' }}</td>
                             <td>{{ $m->karat->name ?? '-' }}</td>
-                            <td>{{ number_format($m->gram_in, 3) }} gr</td>
                             <td>{{ number_format($m->gram_out, 3) }} gr</td>
+                            <td>{{ number_format($m->gram_in, 3) }} gr</td>
+                            <td>{{ number_format($m->gram_out - $m->gram_in, 3) }} gr</td>
                             <td>{{ $m->note ?? '-' }}</td>
-                            <td>{{ $m->creator->name ?? '-' }}</td>
+                            <td>{{ $m->creator->username ?? '-' }}</td>
                             <td>
                                 {{-- <a href="{{ route('pengelolaan-emas.show', $m->id) }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a> --}}
-                                <a href="{{ route('pengelolaan-emas.ubah', $m->id) }}" class="btn btn-sm btn-warning">
+                                <a href="{{ route('pengelolaan-emas.ubah', $m->id) }}"
+                                    class="badge badge-sm badge-success">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                <form action="{{ route('pengelolaan-emas.hapus', $m->id) }}" class="d-inline"
+                                    method="post">
+                                    @csrf
+                                    @method('DELETE')
+                                    <a href="#" data-id="{{ $m->id }}"
+                                        class="badge badge-pill badge-delete badge-danger d-inline">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </form>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="text-muted py-3">Belum ada data pengelolaan emas</td>
+                            <td colspan="10" class="py-3 text-muted">Belum ada data pengelolaan emas</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -77,4 +89,70 @@
             </div>
         </div>
     </div>
+@stop
+
+@section('js')
+
+    <script>
+        // toast
+        @section('plugins.Toast', true)
+            var status = "{{ session('status') }}";
+            if (status == "saved") {
+                Toastify({
+                    text: "Data baru berhasil ditambahkan!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
+            } else if (status == 'edited') {
+                Toastify({
+                    text: "Data berhasil diubah!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
+            } else if (status == 'deleted') {
+                Toastify({
+                    text: "Data berhasil dihapus!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
+            } else if (status == "used") {
+                Toastify({
+                    text: "Data LPB Terpakai Dan Stock Berkurang!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#17a2b8",
+                    }
+                }).showToast();
+            }
+            $(document).ready(function() {
+                // delete 
+                $(document).on("click", ".badge-delete", function(e) {
+                    e.preventDefault();
+                    var form = $(this).closest("form");
+                    Swal.fire({
+                        title: 'Hapus Data!',
+                        text: "Apakah anda yakin akan menghapus data ini?",
+                        icon: 'warning',
+                        confirmButtonColor: '#3085d6',
+                        showCancelButton: true,
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Hapus!!'
+                    }).then((result) => {
+                        if (result.value) {
+                            form.submit();
+                        }
+                    });
+                });
+            })
+    </script>
 @stop

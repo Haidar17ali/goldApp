@@ -70,9 +70,9 @@ class StockHelper
                 'note' => $note,
                 'created_by' => $userId,
             ]);
-            
 
-            if($goldType == "customer"){
+
+            if ($goldType == "customer" || $goldType == "new" || $goldType == "second" || $goldType == "batangan") {
                 $stock = Stock::firstOrCreate([
                     'product_id' => $product_id,
                     'karat_id' => $karat_id,
@@ -91,7 +91,7 @@ class StockHelper
                 } elseif ($type === 'adjustment') {
                     $stock->weight = $weight;
                 }
-            }else{
+            } else {
                 // Update stok utama
                 $stock = Stock::firstOrCreate([
                     'product_id' => $product_id,

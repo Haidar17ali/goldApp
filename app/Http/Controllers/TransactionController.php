@@ -192,12 +192,12 @@ class TransactionController extends Controller
 
                     // Update stok (in/out)
                     $movementType = $transaction->type === 'purchase' ? 'in' : 'out';
-                    if($purchaseType == "customer"){
-                        $product = Product::where("name", "emas")->first();
+                    if ($purchaseType == "customer" || $purchaseType == "new") {
+                        $productStock = Product::where("name", "emas")->first();
                     }
 
                     \App\Helpers\StockHelper::moveStock(
-                        $product->id,
+                        $productStock->id,
                         $karat->id,
                         $transaction->branch_id,
                         $transaction->storage_location_id,
@@ -346,10 +346,15 @@ class TransactionController extends Controller
                 $transaction = \App\Models\Transaction::findOrFail($id);
 
                 // 🔄 Kembalikan stok lama terlebih dahulu
+                if ($purchaseType == "customer" || $purchaseType == "new") {
+                    $productStock = Product::where("name", "emas")->first();
+                }
+
                 foreach ($transaction->details as $oldDetail) {
                     $movementType = $transaction->type === 'purchase' ? 'out' : 'in'; // kebalikan dari store
+
                     \App\Helpers\StockHelper::moveStock(
-                        $oldDetail->product_id,
+                        $productStock->id,
                         $oldDetail->karat_id,
                         $transaction->branch_id,
                         $transaction->storage_location_id,
@@ -397,24 +402,20 @@ class TransactionController extends Controller
                     $subtotal = $price;
                     $total += $subtotal;
 
-                    $goldType = $purchaseType === 'sepuh'
-                        ? 'sepuh'
-                        : ($purchaseType === 'pabrik' ? 'new' : 'rosok');
-
                     \App\Models\TransactionDetail::create([
                         'transaction_id' => $transaction->id,
                         'product_id'     => $product->id,
                         'karat_id'       => $karat->id,
                         'gram'           => $gram,
                         'unit_price'     => $price,
-                        'type'           => $goldType,
+                        'type'           => $purchaseType,
                         'note'           => $detail['note'] ?? null,
                     ]);
 
                     $movementType = $transaction->type === 'purchase' ? 'in' : 'out';
 
                     \App\Helpers\StockHelper::moveStock(
-                        $product->id,
+                        $productStock->id,
                         $karat->id,
                         $transaction->branch_id,
                         $transaction->storage_location_id,
@@ -425,7 +426,7 @@ class TransactionController extends Controller
                         $transaction->id,
                         'update-transaction',
                         auth()->id(),
-                        $goldType
+                        $purchaseType
                     );
                 }
 
@@ -454,8 +455,11 @@ class TransactionController extends Controller
             DB::transaction(function () use ($transaction, $purchaseType) {
                 // rollback semua stok
                 foreach ($transaction->details as $detail) {
+                    if ($purchaseType == "customer" || $purchaseType == "new") {
+                        $productStock = Product::where("name", "emas")->first();
+                    }
                     \App\Helpers\StockHelper::moveStock(
-                        $detail->product_id,
+                        $productStock->id,
                         $detail->karat_id,
                         2,
                         1,

@@ -1,292 +1,133 @@
 @extends('adminlte::page')
 
-@section('title', 'Edit Transaksi')
+@section('title', 'Edit Pengelolaan Emas')
 
 @section('content_header')
-    <h1 class="fw-bold">Edit Transaksi {{ ucfirst($type) }}</h1>
+    <h1>Edit Pengelolaan Emas</h1>
 @stop
 
 @section('content')
-    <div class="shadow-lg card">
-        <div class="card-body">
+    <div class="card">
+        <div class="card-header">
             @if ($errors->any())
                 <div class="alert alert-danger">
-                    <strong>Terjadi kesalahan!</strong><br>
-                    {{ $errors->first('msg') }}
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
+        </div>
 
-            <form id="transactionForm" method="POST"
-                action="{{ route('transaksi.update', ['id' => $transaction->id, 'type' => $type, 'purchaseType' => $purchaseType]) }}"
-                enctype="multipart/form-data">
+        <div class="card-body">
+            <form action="{{ route('pengelolaan-emas.update', $management->id) }}" method="POST">
                 @csrf
-                @method('PATCH')
+                @method('patch')
 
-                <div class="mb-4 row">
-                    <div class="col-md-4">
-                        <label class="fw-semibold">Nomor Invoice</label>
-                        <input type="text" name="invoice_number" class="form-control form-control-lg"
-                            value="{{ old('invoice_number', $transaction->invoice_number) }}" required>
+                <div class="row">
+                    {{-- Kolom kiri --}}
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="date">Tanggal</label>
+                            <input type="date" name="date" id="date" class="form-control"
+                                value="{{ old('date', $management->date) }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="type">Jenis Pengelolaan</label>
+                            <select name="type" id="type" class="form-control" required>
+                                <option value="">-- Pilih Jenis --</option>
+                                @foreach ($types as $key => $label)
+                                    <option value="{{ $key }}"
+                                        {{ old('type', $management->type) == $key ? 'selected' : '' }}>
+                                        {{ ucfirst($label) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="karat_id">Karat Asal (Stok Customer)</label>
+                            <select name="karat_id" id="karat_id" class="form-control select2" required>
+                                <option value="">-- Pilih Karat --</option>
+                                @foreach ($karats as $karat)
+                                    <option value="{{ $karat->id }}"
+                                        {{ old('karat_id', $management->karat_id) == $karat->id ? 'selected' : '' }}>
+                                        {{ $karat->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small id="karat_info" class="mt-1 text-muted d-block"></small>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="fw-semibold">Nama Customer</label>
-                        <input type="text" name="customer_name" class="form-control form-control-lg"
-                            value="{{ old('customer_name', $transaction->customer_name) }}" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="fw-semibold">Catatan</label>
-                        <input type="text" name="note" class="form-control form-control-lg"
-                            value="{{ old('note', $transaction->note) }}" placeholder="Catatan tambahan (opsional)">
+
+                    {{-- Kolom kanan --}}
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="gram_out">Gram Keluar (Bahan dari Customer)</label>
+                            <input type="number" step="0.01" min="0" name="gram_out" id="gram_out"
+                                value="{{ old('gram_out', $management->gram_out) }}" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gram_in">Gram Masuk (Hasil Pengelolaan)</label>
+                            <input type="number" step="0.01" min="0" name="gram_in" id="gram_in"
+                                value="{{ old('gram_in', $management->gram_in) }}" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="note">Catatan</label>
+                            <textarea name="note" id="note" class="form-control" rows="3" placeholder="Tulis catatan tambahan...">{{ old('note', $management->note) }}</textarea>
+                        </div>
                     </div>
                 </div>
 
-                <hr class="my-4">
-
-                <h5 class="mb-3 fw-bold">Detail Barang</h5>
-                <div class="table-responsive">
-                    <table class="table align-middle table-bordered" id="detailTable">
-                        <thead class="text-center table-light">
-                            <tr>
-                                <th style="width: 25%">Produk</th>
-                                <th style="width: 15%">Karat</th>
-                                <th style="width: 15%">Gram</th>
-                                @if ($type == 'penjualan')
-                                    <th style="width: 15%">Harga Jual</th>
-                                @else
-                                    <th style="width: 15%">Harga Beli</th>
-                                @endif
-                                <th style="width: 5%"></th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-
-                    <div class="float-right mb-4 text-end">
-                        @if ($type == 'penjualan')
-                            <h5><strong>Grand Total Jual: Rp <span id="grandTotalJual">0</span></strong></h5>
-                        @else
-                            <h5><strong>Grand Total Beli: Rp <span id="grandTotalBeli">0</span></strong></h5>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="mb-3 text-end">
-                    <button type="button" id="addRow" class="btn btn-success btn-lg">
-                        <i class="fas fa-plus"></i> Tambah Baris
+                <div class="mt-4 text-right">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Perbarui
                     </button>
-                </div>
-
-                {{-- 🔹 Payment Gateway --}}
-                @include('components.payment-gateway', [
-                    'bankAccounts' => $bankAccounts,
-                    'payment_method' => $transaction->payment_method ?? null,
-                    'bank_account_id' => $transaction->bank_account_id ?? null,
-                    'transfer_amount' => $transaction->transfer_amount ?? null,
-                    'cash_amount' => $transaction->cash_amount ?? null,
-                    'reference_no' => $transaction->reference_no ?? null,
-                ])
-
-                {{-- 🔹 Camera (untuk penjualan) --}}
-                @if ($type == 'penjualan')
-                    @include('components.camera', [
-                        'existingPhotos' => $transaction->photos ?? [],
-                    ])
-                @endif
-
-                <div class="text-end">
-                    <button type="submit" class="px-5 btn btn-primary btn-lg">
-                        <i class="fas fa-save me-1"></i> Update Transaksi
-                    </button>
+                    <a href="{{ route('pengelolaan-emas.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </a>
                 </div>
             </form>
         </div>
     </div>
 @stop
 
-@section('css')
-    <style>
-        #detailTable td {
-            vertical-align: middle !important;
-        }
-
-        .select2-container--default .select2-selection--single {
-            height: calc(2.875rem + 2px) !important;
-            padding: 0.5rem 0.75rem !important;
-            display: flex !important;
-            align-items: center !important;
-            border: 1px solid #ced4da !important;
-            border-radius: 0.5rem !important;
-        }
-
-        .select2-selection__rendered {
-            line-height: 1.5rem !important;
-            font-size: 1rem !important;
-        }
-
-        .select2-selection__arrow {
-            height: 100% !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-        }
-
-        .form-control-lg {
-            height: calc(2.875rem + 2px);
-        }
-
-        #detailTable th,
-        #detailTable td {
-            padding: 0.5rem;
-        }
-    </style>
-@stop
-
 @section('js')
-    @stack('scripts')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const products = @json($products ?? []);
-            const karats = @json($karats ?? []);
-            const existingDetails = @json($details ?? []);
-            const type = "{{ $type }}";
-            const tableBody = document.querySelector('#detailTable tbody');
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%'
+            });
 
-            let grandTotalEl = type === 'penjualan' ?
-                document.getElementById('grandTotalJual') :
-                document.getElementById('grandTotalBeli');
+            // Ketika user memilih karat, tampilkan info stok customer
+            $('#karat_id').on('change', function() {
+                let karatId = $(this).val();
+                if (!karatId) return;
 
-            let rowIndex = 0;
-
-            function updateGrandTotal() {
-                let total = 0;
-                tableBody.querySelectorAll('tr').forEach(tr => {
-                    const harga = parseFloat(
-                        type === 'penjualan' ?
-                        (tr.querySelector('.harga-jual')?.value || 0) :
-                        (tr.querySelector('.harga-beli')?.value || 0)
-                    ) || 0;
-                    total += harga;
-                });
-
-                if (grandTotalEl) {
-                    grandTotalEl.textContent = total.toLocaleString('id-ID', {
-                        minimumFractionDigits: 2
-                    });
-                }
-
-                document.dispatchEvent(new CustomEvent('grandTotalChanged', {
-                    detail: {
-                        total
+                $.ajax({
+                    url: '/gold-app/stock/info/' + karatId,
+                    method: 'GET',
+                    success: function(data) {
+                        $('#karat_info').html('Tersedia: <strong>' + data.weight +
+                            ' gram</strong> dari stok customer');
+                    },
+                    error: function() {
+                        $('#karat_info').html(
+                            '<span class="text-danger">Gagal memuat informasi stok.</span>');
                     }
-                }));
+                });
+            });
+
+            // Trigger info stok awal saat halaman pertama kali dibuka
+            const currentKarat = $('#karat_id').val();
+            if (currentKarat) {
+                $('#karat_id').trigger('change');
             }
-
-            function createRow(data = {}) {
-                const currentIndex = rowIndex++;
-                const tr = document.createElement('tr');
-
-                // Pastikan produk & karat dari existing data ikut dimasukkan ke daftar
-                if (data.product_name && !products.includes(data.product_name)) {
-                    products.push(data.product_name);
-                }
-                if (data.karat_name && !karats.includes(data.karat_name)) {
-                    karats.push(data.karat_name);
-                }
-
-                let hargaColumn = '';
-                if (type === 'penjualan') {
-                    hargaColumn = `
-                        <td>
-                            <input type="number" step="0.01" min="0"
-                                class="form-control form-control-lg harga-jual"
-                                name="details[${currentIndex}][harga_jual]"
-                                value="${data.harga_jual ?? ''}">
-                        </td>`;
-                } else {
-                    hargaColumn = `
-                        <td>
-                            <input type="number" step="0.01" min="0"
-                                class="form-control form-control-lg harga-beli"
-                                name="details[${currentIndex}][harga_beli]"
-                                value="${data.harga_beli ?? ''}">
-                        </td>`;
-                }
-
-                tr.innerHTML = `
-                    <td>
-                        <select class="form-control form-control-lg select-product"
-                            name="details[${currentIndex}][product_id]">
-                            <option value="">-- pilih / ketik produk --</option>
-                            ${products.map(p => 
-                                `<option ${p.id == data.product_id ? "selected" : ""} value="${p.id}">${p.name}</option>`
-                            ).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <select class="form-control form-control-lg select-karat"
-                            name="details[${currentIndex}][karat_id]">
-                            <option value="">-- pilih / ketik karat --</option>
-                            ${karats.map(k => 
-                                `<option ${k.id == data.karat_id ? "selected" : ""} value="${k.id}">${k.name}</option>`
-                            ).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" step="0.001" min="0"
-                            class="form-control form-control-lg gram"
-                            name="details[${currentIndex}][gram]"
-                            value="${data.gram ?? ''}">
-                    </td>
-                    ${hargaColumn}
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-lg remove-row">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-
-
-                tableBody.appendChild(tr);
-
-                // Init select2
-                const productSelect = $(tr).find('.select-product');
-                const karatSelect = $(tr).find('.select-karat');
-
-                productSelect.select2({
-                    tags: true,
-                    width: '100%'
-                });
-                karatSelect.select2({
-                    tags: true,
-                    width: '100%'
-                });
-
-                // Set value sesuai data existing
-                if (data.product_id) productSelect.val(data.product_id).trigger('change');
-                if (data.karat_id) karatSelect.val(data.karat_id).trigger('change');
-
-
-                tr.querySelectorAll('.gram, .harga-jual, .harga-beli').forEach(el => {
-                    el.addEventListener('input', updateGrandTotal);
-                });
-
-                tr.querySelector('.remove-row').addEventListener('click', () => {
-                    tr.remove();
-                    updateGrandTotal();
-                });
-            }
-
-
-            if (existingDetails.length) {
-                existingDetails.forEach(d => createRow(d));
-            } else {
-                createRow();
-            }
-
-            document.getElementById('addRow').addEventListener('click', () => createRow());
-            updateGrandTotal();
         });
     </script>
 @stop

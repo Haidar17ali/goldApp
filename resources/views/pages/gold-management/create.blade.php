@@ -8,6 +8,18 @@
 
 @section('content')
     <div class="card">
+        <div class="card-header">
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+        </div>
         <div class="card-body">
             <form action="{{ route('pengelolaan-emas.simpan') }}" method="POST">
                 @csrf
@@ -44,7 +56,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <small id="karat_info" class="text-muted d-block mt-1"></small>
+                            <small id="karat_info" class="mt-1 text-muted d-block"></small>
                         </div>
                     </div>
 
