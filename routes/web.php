@@ -30,7 +30,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::prefix('gold-app')
     ->middleware(['auth'])
-    ->group(function(){
+    ->group(function () {
 
         // permissions
         Route::get('/permission', [PermissionController::class, 'index'])->name('permission.index');
@@ -67,7 +67,7 @@ Route::prefix('gold-app')
         Route::get('/karat/{id}/ubah', [KaratController::class, 'edit'])->name('karat.ubah');
         Route::patch('/karat/{id}/ubah', [KaratController::class, 'update'])->name('karat.update');
         Route::delete('/karat/{id}/hapus', [KaratController::class, 'destroy'])->name('karat.hapus');
-        
+
         // storage location
         Route::get("/penyimpanan", [StorageLocationController::class, 'index'])->name("penyimpanan.index");
         Route::get('/penyimpanan/buat', [StorageLocationController::class, 'create'])->name('penyimpanan.buat');
@@ -75,7 +75,7 @@ Route::prefix('gold-app')
         Route::get('/penyimpanan/{id}/ubah', [StorageLocationController::class, 'edit'])->name('penyimpanan.ubah');
         Route::patch('/penyimpanan/{id}/ubah', [StorageLocationController::class, 'update'])->name('penyimpanan.update');
         Route::delete('/penyimpanan/{id}/hapus', [StorageLocationController::class, 'destroy'])->name('penyimpanan.hapus');
-        
+
         // branch
         Route::get("/cabang", [BranchController::class, 'index'])->name("cabang.index");
         Route::get('/cabang/buat', [BranchController::class, 'create'])->name('cabang.buat');
@@ -91,7 +91,7 @@ Route::prefix('gold-app')
         Route::get('/rekening/{bankAccount}/ubah', [BankAccountController::class, 'edit'])->name('rekening.ubah');
         Route::patch('/rekening/{bankAccount}/ubah', [BankAccountController::class, 'update'])->name('rekening.update');
         Route::delete('/rekening/{bankAccount}/hapus', [BankAccountController::class, 'destroy'])->name('rekening.hapus');
-        
+
 
         // product variant
         Route::get("/varian-produk", [ProductVariantController::class, 'index'])->name("varian-produk.index");
@@ -119,6 +119,8 @@ Route::prefix('gold-app')
         Route::get('/transaction/{type}/emas/{id}/ubah', [SalesController::class, 'edit'])->name('penjualan.ubah');
         Route::patch('/transaction/{type}/emas/{id}/ubah', [SalesController::class, 'update'])->name('penjualan.update');
         Route::delete('/transaction/{type}/emas/{id}/hapus', [SalesController::class, 'destroy'])->name('penjualan.hapus');
+        // cetak penjualan
+        Route::get('penjualan/cetak/{id}', [SalesController::class, "print"])->name("penjualan.cetak");
 
         // opname
         Route::get("/opname", [StockAdjustmentController::class, 'index'])->name("opname.index");
@@ -126,7 +128,7 @@ Route::prefix('gold-app')
         Route::post('/opname/buat', [StockAdjustmentController::class, 'store'])->name('opname.simpan');
         Route::delete('/opname/{bankAccount}/hapus', [StockAdjustmentController::class, 'destroy'])->name('opname.hapus');
         Route::get('/opname/get-stock', [StockAdjustmentController::class, 'getStock'])->name('opname.dapatStock');
-        
+
         // pengelolaan emas
         Route::get("/pengelolaan-emas", [GoldManagementController::class, 'index'])->name("pengelolaan-emas.index");
         Route::get('/pengelolaan-emas/buat', [GoldManagementController::class, 'create'])->name('pengelolaan-emas.buat');
@@ -147,26 +149,26 @@ Route::prefix('gold-app')
 
 
         // utility
-            // ajax
+        // ajax
         Route::get('no-rek-id/ajax', [UtilityController::class, 'getNumberAccount'])->name('utility.ajax-no-rek');
         Route::get('npwp-id/ajax', [UtilityController::class, 'getByID'])->name('utility.getById');
         Route::get('npwp-id/ajax/multiple-data', [UtilityController::class, 'getMultipleData'])->name('utility.getMultipleData');
         Route::get('surat-jalan-id/ajax', [UtilityController::class, 'getByID'])->name('utility.suratJalanId');
-            // po
+        // po
         Route::get('/persetujuan-po/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-po');
         Route::get('/aktivasi-po/{modelType}/{id}/{status}', [UtilityController::class, 'activation'])->name('utility.activation-po');
 
-            // dp
+        // dp
         Route::get('/aktivasi-dp/{modelType}/{id}/{status}', [UtilityController::class, 'activation'])->name('utility.activation-dp');
         Route::get('/dp-menunggu-pembayaran/', [UtilityController::class, 'getByType'])->name('utility.dp-type'); //get dp for payment
 
-            // LPB
+        // LPB
         Route::get('/persetujuan-LPB/{modelType}/{id}/{status}', [UtilityController::class, 'approve'])->name('utility.approve-lpb');
         Route::get('/get-lpb-detail/detail', [UtilityController::class, 'getById'])->name('utility.lpb-ajax-detail');
 
 
         // search data
-        Route::get('data/search',[UtilityController::class, 'search'])->name('search');
+        Route::get('data/search', [UtilityController::class, 'search'])->name('search');
 
         // print data
         Route::get('cetak/surat-jalan', [UtilityController::class, 'getByID'])->name('utility.cetak-surat-jalan');

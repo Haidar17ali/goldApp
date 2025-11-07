@@ -23,6 +23,9 @@
                     <td>{{ money_format($item->total) }}</td>
                     <td>{{ $item->note }}</td>
                     <td>
+                        <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank" class="badge badge-success">
+                            <i class="fas fa-print"></i>
+                        </a>
                         <a href="{{ route('penjualan.ubah', ['type' => $type, 'id' => $item->id]) }}"
                             class="badge badge-success">
                             <i class="fas fa-pencil-alt"></i>

@@ -62,7 +62,7 @@ class SalesController extends Controller
             'details.*.harga_jual'   => 'required|numeric|min:0',
             'photo_base64'           => 'nullable',
         ]);
-        
+
         if ($request->photo_base64) {
             $image = $request->photo_base64;
 
@@ -173,9 +173,8 @@ class SalesController extends Controller
                 }
 
                 $transaction->update(['total' => $total]);
+                return redirect()->route('penjualan.cetak', $transaction->id);
             });
-
-            return redirect()->route('penjualan.index', "penjualan")->with('status', 'Transaksi penjualan berhasil disimpan.');
         } catch (\Throwable $e) {
             \Log::error('Gagal menyimpan penjualan', [
                 'error' => $e->getMessage(),
@@ -185,7 +184,14 @@ class SalesController extends Controller
         }
     }
 
-    public function edit($type,$id){
+    public function print($id)
+    {
+        $transaction = Transaction::with('details')->findOrFail($id);
+        return view('pages.sales.print', compact('transaction'));
+    }
+
+    public function edit($type, $id)
+    {
         $transaction = Transaction::with(['details.product', 'details.karat'])->findOrFail($id);
 
         $bankAccounts = BankAccount::orderBy("id", "desc")->get();
@@ -215,7 +221,8 @@ class SalesController extends Controller
         ));
     }
 
-    public function update(Request $request, $type, $id){
+    public function update(Request $request, $type, $id)
+    {
         $transaction = Transaction::with('details')->findOrFail($id);
         $photo = $transaction->photo;
 
@@ -374,7 +381,7 @@ class SalesController extends Controller
     {
         $transaction = Transaction::findOrFail($id);
         try {
-            DB::transaction(function () use ($transaction, ) {
+            DB::transaction(function () use ($transaction,) {
                 // rollback semua stok
                 foreach ($transaction->details as $detail) {
                     \App\Helpers\StockHelper::moveStock(
