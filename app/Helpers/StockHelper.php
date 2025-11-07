@@ -70,26 +70,29 @@ class StockHelper
                 'note' => $note,
                 'created_by' => $userId,
             ]);
-
-
-            if ($goldType == "customer" || $goldType == "new" || $goldType == "second" || $goldType == "batangan") {
-                $stock = Stock::firstOrCreate([
-                    'product_id' => $product_id,
-                    'karat_id' => $karat_id,
-                    'branch_id' => $branchId,
-                    'storage_location_id' => $storageLocationId,
-                    'type' => $goldType,
-                ], [
-                    'weight' => 0,
-                    'quantity' => 0,
-                ]);
-
-                if (in_array($type, ['in', 'loan_in'])) {
-                    $stock->weight += $weight;
-                } elseif (in_array($type, ['out', 'loan_out'])) {
-                    $stock->weight -= $weight;
-                } elseif ($type === 'adjustment') {
-                    $stock->weight = $weight;
+            
+            
+            $product = Product::where("id", $product_id)->first();
+            if($product->name == "emas"){
+                if ($goldType == "customer" || $goldType == "new" || $goldType == "second" || $goldType == "batangan") {
+                    $stock = Stock::firstOrCreate([
+                        'product_id' => $product_id,
+                        'karat_id' => $karat_id,
+                        'branch_id' => $branchId,
+                        'storage_location_id' => $storageLocationId,
+                        'type' => $goldType,
+                    ], [
+                        'weight' => 0,
+                        'quantity' => 0,
+                    ]);
+    
+                    if (in_array($type, ['in', 'loan_in'])) {
+                        $stock->weight += $weight;
+                    } elseif (in_array($type, ['out', 'loan_out'])) {
+                        $stock->weight -= $weight;
+                    } elseif ($type === 'adjustment') {
+                        $stock->weight = $weight;
+                    }
                 }
             } else {
                 // Update stok utama

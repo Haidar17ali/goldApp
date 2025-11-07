@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->decimal('qty', 12, 3);
             $table->decimal('unit_price', 18, 2);
             $table->decimal('subtotal', 18, 2);
-            $table->enum('type', ["new","customer"]);
+            $table->enum('type', ["new","customer", "second", "batangan"]);
             $table->string('note')->nullable();
             $table->timestamps();
         });

@@ -5,27 +5,36 @@
     <video id="cameraPreview" autoplay playsinline class="rounded border"
         style="width: 320px; height: 240px; display:none;"></video>
     <canvas id="photoCanvas" style="display:none;"></canvas>
-    <img id="photoResult" class="rounded border mt-3" style="max-width: 320px; display:none;">
+
+    {{-- Jika sudah ada foto di database --}}
+    @if (!empty($transaction->photo))
+        <img id="photoResult" src="{{ asset($transaction->photo) }}" class="rounded border mt-3"
+            style="max-width: 320px;">
+    @else
+        <img id="photoResult" class="rounded border mt-3" style="max-width: 320px; display:none;">
+    @endif
 </div>
 
 <div class="text-center mb-4">
-    <button type="button" id="openCamera" class="btn btn-success btn-lg">
+    {{-- Jika sudah ada foto, langsung tampil tombol "Ambil Ulang" --}}
+    <button type="button" id="openCamera" class="btn btn-success btn-lg"
+        style="display: {{ empty($transaction->photo) ? 'inline-block' : 'none' }};">
         <i class="fas fa-camera"></i> Buka Kamera
     </button>
     <button type="button" id="takePhoto" class="btn btn-primary btn-lg" style="display:none;">
         <i class="fas fa-circle"></i> Ambil Foto
     </button>
-    <button type="button" id="retakePhoto" class="btn btn-warning btn-lg" style="display:none;">
+    <button type="button" id="retakePhoto" class="btn btn-warning btn-lg"
+        style="display: {{ !empty($transaction->photo) ? 'inline-block' : 'none' }};">
         <i class="fas fa-redo"></i> Ambil Ulang
     </button>
 </div>
 
-<input type="hidden" name="photo_base64" id="photoBase64">
+{{-- Hidden input base64 --}}
+<input type="hidden" name="photo_base64" id="photoBase64"
+    value="{{ old('photo_base64', $transaction->photo_base64 ?? '') }}">
 
 <script>
-    // ======================
-    // 📸 Kamera & Foto Logic
-    // ======================
     const openCameraBtn = document.getElementById('openCamera');
     const takePhotoBtn = document.getElementById('takePhoto');
     const retakePhotoBtn = document.getElementById('retakePhoto');
@@ -43,7 +52,7 @@
                     facingMode: {
                         ideal: "environment"
                     }
-                }, // kamera belakang
+                },
                 audio: false
             });
             cameraPreview.srcObject = stream;
@@ -58,9 +67,14 @@
         }
     }
 
-    openCameraBtn.addEventListener('click', startCamera);
+    openCameraBtn?.addEventListener('click', startCamera);
+    retakePhotoBtn?.addEventListener('click', () => {
+        photoResult.style.display = 'none';
+        retakePhotoBtn.style.display = 'none';
+        startCamera();
+    });
 
-    takePhotoBtn.addEventListener('click', () => {
+    takePhotoBtn?.addEventListener('click', () => {
         const context = photoCanvas.getContext('2d');
         photoCanvas.width = cameraPreview.videoWidth;
         photoCanvas.height = cameraPreview.videoHeight;
@@ -70,7 +84,6 @@
         stream.getTracks().forEach(track => track.stop());
         cameraPreview.style.display = 'none';
         takePhotoBtn.style.display = 'none';
-        openCameraBtn.style.display = 'none';
         retakePhotoBtn.style.display = 'inline-block';
 
         // Ambil data base64
@@ -78,13 +91,5 @@
         photoResult.src = photoData;
         photoResult.style.display = 'block';
         photoBase64Input.value = photoData;
-    });
-
-    retakePhotoBtn.addEventListener('click', () => {
-        // Sembunyikan hasil, buka kamera lagi
-        photoResult.style.display = 'none';
-        retakePhotoBtn.style.display = 'none';
-        openCameraBtn.style.display = 'none';
-        startCamera();
     });
 </script>

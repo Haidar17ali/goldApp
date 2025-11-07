@@ -112,7 +112,7 @@ Route::prefix('gold-app')
         Route::patch('/transaksi/{type}/{purchaseType}/{id}/update', [TransactionController::class, 'update'])->name('transaksi.update');
         Route::delete('/transaksi{type}/{purchaseType}/{transaction}/hapus', [TransactionController::class, 'destroy'])->name('transaksi.hapus');
 
-        // rekening
+        // Penjualan
         Route::get("/transaction/{type}/emas", [SalesController::class, 'index'])->name("penjualan.index");
         Route::get('/transaction/{type}/emas/buat', [SalesController::class, 'create'])->name('penjualan.buat');
         Route::post('/transaction/{type}/emas/buat', [SalesController::class, 'store'])->name('penjualan.simpan');
