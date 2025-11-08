@@ -133,6 +133,7 @@
     </style>
 @stop
 
+@section('plugins.Toast', true)
 @section('js')
     @stack('scripts')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -252,5 +253,65 @@
             updateGrandTotal();
         });
     </script>
+    <script>
+        $('#transactionForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const formData = new FormData(this); // penting kalau ada file/base64
+
+            $.ajax({
+                url: form.attr('action'),
+                method: form.attr('method'),
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Transaksi Berhasil Disimpan!',
+                            timer: 1200,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Setelah alert hilang
+                            window.open(res.redirect_print,
+                                '_blank'); // buka nota di tab baru
+                            window.location.href = res
+                                .redirect_index; // lalu redirect ke index
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        // Ini error validasi Laravel
+                        let errors = xhr.responseJSON.errors;
+                        let message = 'Periksa kembali input Anda:\n';
+                        for (let field in errors) {
+                            message += `• ${errors[field][0]}\n`;
+                        }
+
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Validasi Gagal',
+                            text: message,
+                            customClass: {
+                                popup: 'text-start'
+                            } // biar teks rata kiri
+                        });
+                    } else {
+                        // Error lain (misal server error, dsb)
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal menyimpan transaksi!',
+                            text: xhr.responseJSON?.message ||
+                                'Terjadi kesalahan tak terduga.'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+
 
 @stop

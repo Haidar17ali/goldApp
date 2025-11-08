@@ -161,6 +161,16 @@ class UtilityController extends Controller
             ],
             'relations' => []
         ],
+        'customerSuppliers' => [
+            'model' => 'App\\Models\\CustomerSupplier',
+            'columns' => [
+                'id',
+                'name',
+                'phone_number',
+                'address',
+            ],
+            'relations' => []
+        ],
         'products' => [
             'model' => 'App\\Models\\Product',
             'columns' => [
@@ -279,54 +289,6 @@ class UtilityController extends Controller
             ],
             'relations' => []
         ],
-        'rotary' => [
-            'model' => 'App\\Models\\Rotary',
-            'columns' => [
-                        'id',
-                        'date',
-                        'shift',
-                        'wood_type',
-                        'tally_id',
-                        "created_by",
-                        "edited_by"
-                    ],
-            'relations' => [
-                'createdBy' => ['username'],
-                'editedBy' => ['username'],
-                'details' => ['no_kitir'],
-                'rotariSources' => ['rotary_id'],
-            ]
-        ],
-        'wood-management' => [
-            'model' => 'App\\Models\\WoodManagement',
-            'columns' => [
-                        'id',
-                        "date",
-                        "no_kitir",
-                        "grade",
-                        "type",
-                        "from",
-                        "to",
-                        "tally_id",
-                        "created_by",
-                        "edited_by"
-                    ],
-            'relations' => []
-        ],
-        'purchase_jurnals' => [
-            'model' => 'App\\Models\\PurchaseJurnal',
-            'columns' => [
-                'id',
-                'pj_code',
-                'date',
-                'created_by',
-                'edited_by',
-                'status',
-            ],
-            'relations' => [
-                'createdBy' => ['username'],
-            ]
-        ],
     ];
 
     public function search(Request $request){
@@ -405,6 +367,11 @@ class UtilityController extends Controller
         if($modelKey  == "fabrics"){
             return response()->json([
                 'table' => view('pages.search.search-fabrics', compact('data'))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "customerSuppliers"){
+           return response()->json([
+                'table' => view('pages.search.search-customer-supliers', compact(['data', 'type']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "products"){

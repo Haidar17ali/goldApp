@@ -47,7 +47,7 @@ class SalesController extends Controller
 
         // Validasi
         $validated = $request->validate([
-            'invoice_number'  => 'nullable|string|max:255',
+            'invoice_number'  => 'nullable|string|max:255|unique:transactions,invoice_number',
             'customer_name'   => 'nullable|string|max:255',
             'note'            => 'nullable|string|max:1000',
             'payment_method'  => 'required|string|in:cash,transfer,cash_transfer',
@@ -109,10 +109,12 @@ class SalesController extends Controller
                 return back()->withInput()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk kombinasi.']);
             }
         }
-
+        
         // Simpan transaksi
         try {
-            DB::transaction(function () use ($validated, $photo) {
+            $transactionId = 0;
+            
+            DB::transaction(function () use ($validated, $photo, &$transactionId) {
                 $transaction = Transaction::create([
                     'type' => 'penjualan',
                     'purchase_type' => 'new', // bisa set default
@@ -129,8 +131,9 @@ class SalesController extends Controller
                     'bank_account_id' => $validated['bank_account_id'] ?? null,
                     'transfer_amount' => $validated['transfer_amount'] ?? 0,
                     'cash_amount' => $validated['cash_amount'] ?? 0,
-                    'reference_no' => $validated['reference_no'] ?? null,
                 ]);
+                
+                $transactionId = $transaction->id;
 
                 $total = 0;
 
@@ -154,7 +157,7 @@ class SalesController extends Controller
                         'unit_price' => $price,
                         'type' => 'new',
                     ]);
-
+                    
                     // kurangi stok
                     StockHelper::moveStock(
                         $product->id,
@@ -173,8 +176,14 @@ class SalesController extends Controller
                 }
 
                 $transaction->update(['total' => $total]);
-                return redirect()->route('penjualan.cetak', $transaction->id);
             });
+            
+            return response()->json([
+                'success' => true,
+                'redirect_print' => route('penjualan.cetak', $transactionId),
+                'redirect_index' => route('penjualan.index', "penjualan"),
+            ]);
+
         } catch (\Throwable $e) {
             \Log::error('Gagal menyimpan penjualan', [
                 'error' => $e->getMessage(),
@@ -227,7 +236,7 @@ class SalesController extends Controller
         $photo = $transaction->photo;
 
         $validated = $request->validate([
-            'invoice_number'  => 'nullable|string|max:255',
+            'invoice_number' => 'nullable|string|max:255|unique:transactions,invoice_number,' . $transaction->id,
             'customer_name'   => 'nullable|string|max:255',
             'note'            => 'nullable|string|max:1000',
             'payment_method'  => 'required|string|in:cash,transfer,cash_transfer',

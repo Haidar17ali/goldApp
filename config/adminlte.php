@@ -334,6 +334,16 @@ return [
             'icon' => 'fas fa-database',
             'submenu' => [
                 [
+                    'text' => 'Customer',
+                    'url' => 'gold-app/customer-supplier/customer',
+                    'can' => 'customer-supplier.index',
+                ],
+                [
+                    'text' => 'Supplier',
+                    'url' => '/gold-app/customer-supplier/supplier',
+                    'can' => 'customer-supplier.index',
+                ],
+                [
                     'text' => 'Cabang',
                     'url' => 'gold-app/cabang',
                     'can' => 'cabang.index',

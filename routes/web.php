@@ -11,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\CustomerSupplierController;
 use App\Http\Controllers\GoldManagementController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StockAdjustmentController;
@@ -91,6 +92,14 @@ Route::prefix('gold-app')
         Route::get('/rekening/{bankAccount}/ubah', [BankAccountController::class, 'edit'])->name('rekening.ubah');
         Route::patch('/rekening/{bankAccount}/ubah', [BankAccountController::class, 'update'])->name('rekening.update');
         Route::delete('/rekening/{bankAccount}/hapus', [BankAccountController::class, 'destroy'])->name('rekening.hapus');
+
+        // customer & supplier
+        Route::get("/customer-supplier/{type}", [CustomerSupplierController::class, 'index'])->name("customer-supplier.index");
+        Route::get('/customer-supplier/{type}/buat', [CustomerSupplierController::class, 'create'])->name('customer-supplier.buat');
+        Route::post('/customer-supplier/{type}/buat', [CustomerSupplierController::class, 'store'])->name('customer-supplier.simpan');
+        Route::get('/customer-supplier/{type}/{id}/ubah', [CustomerSupplierController::class, 'edit'])->name('customer-supplier.ubah');
+        Route::patch('/customer-supplier/{type}/{id}/ubah', [CustomerSupplierController::class, 'update'])->name('customer-supplier.update');
+        Route::delete('/customer-supplier/{type}/{id}/hapus', [CustomerSupplierController::class, 'destroy'])->name('customer-supplier.hapus');
 
 
         // product variant
