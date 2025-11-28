@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\App;
 
-class UtilityController extends Controller
+class UtilityController extends BaseController
 {
     public function approve($modelType, $id, $status){
         $modelClass = 'App\Models\\' . ucfirst($modelType);

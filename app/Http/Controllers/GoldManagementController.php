@@ -12,7 +12,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-class GoldManagementController extends Controller
+class GoldManagementController extends BaseController
 {
     public function index()
     {

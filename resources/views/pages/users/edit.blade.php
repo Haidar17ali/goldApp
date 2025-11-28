@@ -85,22 +85,6 @@
                             </div>
                         </div>
 
-                        <!-- Employee -->
-                        <div class="form-group row">
-                            <label for="employee_id" class="col-sm-2 col-form-label">Pilih Karyawan</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="employee_id" id="employee_id">
-                                    <option value="">Silahkan Pilih Karyawan</option>
-                                    @foreach ($employees as $employee)
-                                        <option value="{{ $employee->id }}"
-                                            {{ $employee->id == $user->employee_id ? 'selected' : '' }}>
-                                            {{ $employee->nik }} || {{ $employee->fullname }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
                         <!-- Tombol -->
                         <div class="float-right mt-3">
                             <a href="{{ route('pengguna.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>

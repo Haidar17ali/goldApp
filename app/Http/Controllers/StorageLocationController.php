@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\StorageLocation;
 use Illuminate\Http\Request;
 
-class StorageLocationController extends Controller
+class StorageLocationController extends BaseController
 {
     public function index()
     {

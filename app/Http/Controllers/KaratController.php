@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Karat;
 use Illuminate\Http\Request;
 
-class KaratController extends Controller
+class KaratController extends BaseController
 {
     public function index(){
         return view("pages.karat.index");

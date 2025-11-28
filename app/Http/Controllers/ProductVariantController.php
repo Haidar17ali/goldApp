@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ProductVariantImport;
 
-class ProductVariantController extends Controller
+class ProductVariantController extends BaseController
 {
     public function index()
     {

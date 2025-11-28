@@ -13,7 +13,7 @@ use App\Models\StorageLocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class StockAdjustmentController extends Controller
+class StockAdjustmentController extends BaseController
 {
     public function index()
     {

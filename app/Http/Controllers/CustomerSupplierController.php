@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CustomerSupplier;
 use Illuminate\Http\Request;
 
-class CustomerSupplierController extends Controller
+class CustomerSupplierController extends BaseController
 {
     public function index($type){
         return view("pages.customer-suppliers.index", compact("type"));

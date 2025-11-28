@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-class SalesController extends Controller
+class SalesController extends BaseController
 {
     public function index($type)
     {

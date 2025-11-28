@@ -28,6 +28,7 @@
 
         .overlay {
             position: relative;
+            margin-top: 12px;
             width: 21cm;
             height: 11cm;
         }
@@ -35,9 +36,9 @@
         /* Foto pelanggan / barang (satu foto saja) */
         .photo {
             position: absolute;
-            top: 4.5cm;
+            top: 5cm;
             /* sesuaikan posisi Y foto */
-            left: 1.6cm;
+            left: 0.8cm;
             /* sesuaikan posisi X foto */
             width: 3cm;
             /* ukuran foto */
@@ -51,7 +52,7 @@
             position: absolute;
             top: 0.5cm;
             /* posisi area info */
-            left: 15.8cm;
+            left: 16.4cm;
             /* posisi X area info */
             width: 6.5cm;
             font-size: 0.38cm;
@@ -62,15 +63,16 @@
         .info .label {
             font-weight: bold !important;
             margin-top: 0.1cm;
+            margin-left: 3px;
             text-align: left;
         }
 
         /* Note di bawah alamat */
         .note {
             position: absolute;
-            top: 2.8cm;
+            top: 3cm;
             /* jarak dari atas untuk area note */
-            left: 15.8cm;
+            left: 16.3cm;
             width: 6.5cm;
             font-size: 0.33cm;
             line-height: 1.05;
@@ -78,9 +80,9 @@
 
         .note-label {
             position: absolute;
-            top: 2.8cm;
+            top: 3cm;
             /* jarak dari atas untuk area note */
-            left: 13.3cm;
+            left: 14cm;
             color: #004aad;
             width: 6.5cm;
             font-size: 0.33cm;
@@ -89,9 +91,9 @@
 
         .note-double-dot {
             position: absolute;
-            top: 2.8cm;
+            top: 3cm;
             /* jarak dari atas untuk area note */
-            left: 15.4cm;
+            left: 16cm;
             color: #004aad;
             width: 6.5cm;
             font-size: 0.33cm;
@@ -101,9 +103,9 @@
         /* Area tabel / daftar produk: gunakan posisi absolut dan perbaris dihitung */
         .items-area {
             position: absolute;
-            top: 4.0cm;
+            top: 4.5cm;
             /* posisi awal baris pertama */
-            left: 0cm;
+            left: -1cm;
             /* posisi kolom paling kiri (setelah foto) */
             width: 18.6cm;
             /* lebar area item */
@@ -132,28 +134,30 @@
         .col-weight {
             width: 3.0cm;
             text-align: right;
+            position: relative;
+            left: 1cm;
         }
 
         .col-karat {
             width: 3cm;
             text-align: right;
             position: relative;
-            left: 0.2cm;
+            left: 1cm;
         }
 
         .col-price {
             width: 2.5cm;
             text-align: right;
             position: relative;
-            left: 2cm;
+            left: 2.5cm;
             padding-right: 0.2cm;
         }
 
         .total {
             position: absolute;
-            top: 8.45cm;
+            top: 9.2cm;
             /* sesuaikan posisi total */
-            left: 17.5cm;
+            left: 17.8cm;
             /* sejajar kanan */
             font-size: 0.45cm;
             font-weight: 700;
@@ -189,13 +193,13 @@
             <div class="label"> {{ $transaction->customer_name }}</div>
             <div class="label"> {{ $transaction->address }}</div>
         </div>
-
         {{-- NOTE di bawah alamat --}}
         <span class="note-label">Catatan</span>
         <span class="note-double-dot">:</span>
         <div class="note">
             {!! nl2br(e($transaction->note ?? '-')) !!}
         </div>
+
 
         {{-- DAFTAR ITEM: per baris dihitung top secara dinamis --}}
         @php
@@ -218,8 +222,8 @@
                 @endphp
 
                 <div class="item-row" style="top: {{ $top }}cm;">
-                    <div class="col-name nowrap">{{ strtoupper($detail->product?->name) . ':' ?? '-' }}</div>
-                    <div class="col-weight">{{ $detail->gram ?? '-' }}</div>
+                    <div class="col-name nowrap">{{ strtoupper($detail->product?->name) ?? '-' }} {{ $detail->karat?->name ?? '-' }} :</div>
+                    <div class="col-weight">{{ $detail->gram ?? '-' }}g</div>
                     <div class="col-karat">{{ $detail->karat?->name ?? '-' }}</div>
                     <div class="col-price">Rp.{{ number_format($detail->unit_price ?? 0, 0, ',', '.') }}</div>
                 </div>
