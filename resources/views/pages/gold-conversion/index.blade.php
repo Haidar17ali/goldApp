@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Stock Opname')
+@section('title', 'Input Etalase')
 
 @section('content_header')
-    <h1>Stock Opname</h1>
+    <h1>Input Etalase</h1>
 @stop
 
 @section('content')
@@ -19,13 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('opname.import-form') }}" class="float-right btn btn-success ml-1"><i
-                    class="fas fa-file-excel"></i>
-                Import</a>
-            <a href="{{ route('opname.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
-                Stock Opname</a>
+            <a href="{{ route('konversi-emas.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
+                Etalase</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="stockAdjustments" class="float-right mb-3 form-control"
+                <input type="text" id="searchBox" data-model="goldConversions" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -128,15 +125,19 @@
                         search: search,
                         columns: [
                             'id',
-                            'branch_id',
-                            'storage_location_id',
-                            'adjustment_date',
+                            'stock_id',
+                            'product_id',
+                            'karat_id',
+                            'input_weight',
                             'note',
                             'created_by',
-                            'approved_by',
-                            'approved_at'
+                            'edited_by',
+                            'created_at',
                         ],
-                        relations: {},
+                        relations: {
+                            'product': ["name"],
+                            'kadar': ["name"],
+                        },
                         page: page
                     },
                     success: function(response) {
@@ -146,7 +147,7 @@
                     }
                 });
             }
-            fetchData("", 1, "stockAdjustments");
+            fetchData("", 1, "goldConversions");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -160,11 +161,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'stockAdjustments');
+                fetchData(inputElement, page, 'goldConversions');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'stockAdjustments');
+                fetchData(this, 1, 'goldConversions');
             });
         });
     </script>

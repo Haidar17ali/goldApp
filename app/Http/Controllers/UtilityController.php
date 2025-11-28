@@ -275,6 +275,24 @@ class UtilityController extends Controller
                 'user'=> ["username"],
             ]
         ],
+        'goldConversions' => [
+            'model' => 'App\\Models\\GoldConversion',
+            'columns' => [
+                'id',
+                'stock_id',
+                'karat_id',
+                'input_weight',
+                'total_output_weight',
+                'loss_weight',
+                'note',
+                'created_by',
+                'edited_by'
+            ],
+            'relations' => [
+                'product'=> ["username"],
+                'kadar'=> ["username"],
+            ]
+        ],
         'stockAdjustments' => [
             'model' => 'App\\Models\\StockAdjustment',
             'columns' => [
@@ -422,6 +440,11 @@ class UtilityController extends Controller
         }elseif($modelKey == "sales"){
             return response()->json([
                 'table' => view('pages.search.search-sales', compact(['data', "type"]))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "goldConversions"){
+            return response()->json([
+                'table' => view('pages.search.search-gold-conversions', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "stockAdjustments"){

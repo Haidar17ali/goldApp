@@ -35,4 +35,10 @@ class Stock extends Model
     {
         return $this->belongsTo(Karat::class);
     }
+
+    public function conversions()
+    {
+        return $this->hasMany(GoldConversion::class, 'stock_id');
+    }
+
 }

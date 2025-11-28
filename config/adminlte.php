@@ -413,12 +413,12 @@ return [
                             'icon' => 'fas fa-hand-holding',
                             // 'can' => 'peminjaman.index',
                         ],
-                        [
-                            'text' => 'Pengembalian Emas',
-                            'url' => 'gold-app/pengembalian',
-                            'icon' => 'fas fa-undo',
-                            // 'can' => 'pengembalian.index',
-                        ],
+                        // [
+                        //     'text' => 'Pengembalian Emas',
+                        //     'url' => 'gold-app/pengembalian',
+                        //     'icon' => 'fas fa-undo',
+                        //     // 'can' => 'pengembalian.index',
+                        // ],
                     ],
                 ],
                 [
@@ -436,6 +436,12 @@ return [
                             'url' => 'gold-app/pengelolaan-emas',
                             'icon' => 'fas fa-tools',
                             'can' => 'pengelolaan-emas.index',
+                        ],
+                        [
+                            'text' => 'Input Etalase',
+                            'url' => 'gold-app/konversi-emas',
+                            'icon' => 'fas fa-tools',
+                            'can' => 'konversi-emas.index',
                         ],
                     ],
                 ],
