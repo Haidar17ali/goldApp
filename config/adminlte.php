@@ -300,7 +300,7 @@ return [
     |
     */
 
-    
+
     'menu' => [
         [
             'type' => 'navbar-search',
@@ -413,53 +413,40 @@ return [
                             'icon' => 'fas fa-hand-holding',
                             // 'can' => 'peminjaman.index',
                         ],
+                        // [
+                        //     'text' => 'Pengembalian Emas',
+                        //     'url' => 'gold-app/pengembalian',
+                        //     'icon' => 'fas fa-undo',
+                        //     // 'can' => 'pengembalian.index',
+                        // ],
+                    ],
+                ],
+                [
+                    'text' => 'Manajemen Stok',
+                    'icon' => 'fas fa-boxes',
+                    'submenu' => [
                         [
-                            'text' => 'Pengembalian Emas',
-                            'url' => 'gold-app/pengembalian',
-                            'icon' => 'fas fa-undo',
-                            // 'can' => 'pengembalian.index',
+                            'text' => 'Stok Opname',
+                            'url' => 'gold-app/opname',
+                            'icon' => 'fas fa-balance-scale',
+                            'can' => 'opname.index',
+                        ],
+                        [
+                            'text' => 'Pengelolaan Emas',
+                            'url' => 'gold-app/pengelolaan-emas',
+                            'icon' => 'fas fa-tools',
+                            'can' => 'pengelolaan-emas.index',
+                        ],
+                        [
+                            'text' => 'Input Etalase',
+                            'url' => 'gold-app/konversi-emas',
+                            'icon' => 'fas fa-tools',
+                            'can' => 'konversi-emas.index',
                         ],
                     ],
                 ],
             ],
         ],
-            [
-                'text' => 'Manajemen Stok',
-                'icon' => 'fas fa-boxes',
-                'submenu' => [
-                    [
-                        'text' => 'Stok Opname',
-                        'url' => 'gold-app/opname',
-                        'icon' => 'fas fa-balance-scale',
-                        'can' => 'opname.index',
-                    ],
-                    [
-                        'text' => 'Pengelolaan Emas',
-                        'url' => 'gold-app/pengelolaan-emas',
-                        'icon' => 'fas fa-tools',
-                        'can' => 'pengelolaan-emas.index',
-                    ],
-                    [
-                        'text' => 'Manajemen Etalase',
-                        // 'url' => 'gold-app/pengelolaan-emas',
-                        'icon' => 'fas fa-box',
-                        'submenu' => [
-                            [
-                                'text' => 'Masuk',
-                                'url' => 'gold-app/opname',
-                                'icon' => 'fas fa-arrow-down',
-                                'can' => 'opname.index',
-                            ],
-                            [
-                                'text' => 'Keluar',
-                                'url' => 'gold-app/opname',
-                                'icon' => 'fas fa-arrow-up',
-                                'can' => 'opname.index',
-                            ],
-                        ]
-                    ],
-                ],
-            ],
         [
             'text' => 'Laporan',
             'icon' => 'fas fa-book',

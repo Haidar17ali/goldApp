@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerSupplierController;
+use App\Http\Controllers\GoldConversionController;
 use App\Http\Controllers\GoldManagementController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StockAdjustmentController;
@@ -135,6 +136,8 @@ Route::prefix('gold-app')
         Route::get("/opname", [StockAdjustmentController::class, 'index'])->name("opname.index");
         Route::get('/opname/buat', [StockAdjustmentController::class, 'create'])->name('opname.buat');
         Route::post('/opname/buat', [StockAdjustmentController::class, 'store'])->name('opname.simpan');
+        Route::get('/opname/import', [StockAdjustmentController::class, 'importForm'])->name('opname.import-form');
+        Route::post('/opname/import', [StockAdjustmentController::class, 'import'])->name('opname.import');
         Route::delete('/opname/{bankAccount}/hapus', [StockAdjustmentController::class, 'destroy'])->name('opname.hapus');
         Route::get('/opname/get-stock', [StockAdjustmentController::class, 'getStock'])->name('opname.dapatStock');
 
@@ -145,6 +148,15 @@ Route::prefix('gold-app')
         Route::get('/pengelolaan-emas/{id}/ubah', [GoldManagementController::class, 'edit'])->name('pengelolaan-emas.ubah');
         Route::patch('/pengelolaan-emas/{id}/ubah', [GoldManagementController::class, 'update'])->name('pengelolaan-emas.update');
         Route::delete('/pengelolaan-emas/{id}/hapus', [GoldManagementController::class, 'destroy'])->name('pengelolaan-emas.hapus');
+
+        // conversi emas
+        Route::get("/konversi-emas", [GoldConversionController::class, 'index'])->name("konversi-emas.index");
+        Route::get('/konversi-emas/buat', [GoldConversionController::class, 'create'])->name('konversi-emas.buat');
+        Route::post('/konversi-emas/buat', [GoldConversionController::class, 'store'])->name('konversi-emas.simpan');
+        Route::get('/konversi-emas/{id}/ubah', [GoldConversionController::class, 'edit'])->name('konversi-emas.ubah');
+        Route::get('/konversi-emas/{id}/detail', [GoldConversionController::class, 'show'])->name('konversi-emas.detail');
+        Route::patch('/konversi-emas/{id}/ubah', [GoldConversionController::class, 'update'])->name('konversi-emas.update');
+        Route::delete('/konversi-emas/{id}/hapus', [GoldConversionController::class, 'destroy'])->name('konversi-emas.hapus');
 
         // 🔹 Tambahkan ini untuk AJAX info stok per karat
         Route::get('/stock/info/{karat}', function ($karatId) {

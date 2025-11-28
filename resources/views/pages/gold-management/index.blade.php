@@ -24,7 +24,7 @@
                         <th>Jenis</th>
                         <th>Produk</th>
                         <th>Karat</th>
-                        <th>Gram Masuk (Customer)</th>
+                        <th>Gram Proses (Customer)</th>
                         <th>Gram Hasil</th>
                         <th>Susut</th>
                         <th>Catatan</th>
