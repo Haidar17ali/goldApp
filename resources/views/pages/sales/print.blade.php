@@ -1,254 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 
 <head>
     <meta charset="utf-8">
-    <title>Nota Penjualan</title>
+    <title>Nota Penjualan A5 Landscape</title>
+
     <style>
         @page {
-            size: 21cm 11cm;
+            size: A5 landscape;
             margin: 0;
         }
 
         html,
         body {
+            width: 21cm;
+            height: 14cm;
             margin: 0;
             padding: 0;
-            width: 21cm;
-            height: 11cm;
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
         }
 
         body {
-            /* background sebagai gambar nota fisik */
-            background: url('{{ asset('assets/images/nota.jpg') }}') no-repeat left top;
-            background-size: 21cm 11cm;
-            /* pastikan ukurannya 100% halaman */
-        }
-
-        .overlay {
             position: relative;
-            margin-top: 12px;
-            width: 21cm;
-            height: 11cm;
         }
 
-        /* Foto pelanggan / barang (satu foto saja) */
-        .photo {
-            position: absolute;
-            top: 5cm;
-            /* sesuaikan posisi Y foto */
-            left: 0.8cm;
-            /* sesuaikan posisi X foto */
-            width: 3cm;
-            /* ukuran foto */
-            height: 3cm;
-            object-fit: cover;
-            border: 0.02cm solid rgba(0, 0, 0, 0.1);
-        }
-
-        /* Area alamat & nama di kanan atas (sesuaikan) */
+        /* ================= */
+        /* INFO KANAN ATAS */
+        /* ================= */
         .info {
             position: absolute;
-            top: 0.5cm;
-            /* posisi area info */
-            left: 16.4cm;
-            /* posisi X area info */
-            width: 6.5cm;
+            top: 1.7cm;
+            left: 23.8cm;
+            width: 4.5cm;
             font-size: 0.38cm;
-            /* ukuran font (cm untuk stabil di print) */
-            line-height: 1.1;
+            line-height: 1.15;
         }
 
-        .info .label {
-            font-weight: bold !important;
-            margin-top: 0.1cm;
-            margin-left: 3px;
-            text-align: left;
+        .info .row {
+            margin-bottom: 0.5cm;
         }
 
-        /* Note di bawah alamat */
-        .note {
+        /* ================= */
+        /* HEADER TABEL */
+        /* ================= */
+        .table-header {
             position: absolute;
-            top: 3cm;
-            /* jarak dari atas untuk area note */
-            left: 16.3cm;
-            width: 6.5cm;
-            font-size: 0.33cm;
-            line-height: 1.05;
-        }
-
-        .note-label {
-            position: absolute;
-            top: 3cm;
-            /* jarak dari atas untuk area note */
-            left: 14cm;
-            color: #004aad;
-            width: 6.5cm;
-            font-size: 0.33cm;
-            line-height: 1.05;
-        }
-
-        .note-double-dot {
-            position: absolute;
-            top: 3cm;
-            /* jarak dari atas untuk area note */
-            left: 16cm;
-            color: #004aad;
-            width: 6.5cm;
-            font-size: 0.33cm;
-            line-height: 1.05;
-        }
-
-        /* Area tabel / daftar produk: gunakan posisi absolut dan perbaris dihitung */
-        .items-area {
-            position: absolute;
-            top: 4.5cm;
-            /* posisi awal baris pertama */
-            left: -1cm;
-            /* posisi kolom paling kiri (setelah foto) */
-            width: 18.6cm;
-            /* lebar area item */
-            /* height tidak perlu ditentukan — tapi kamu harus batasi jumlah baris */
-        }
-
-        /* Per baris item menggunakan kelas .item-row, namun top dihitung per baris via inline style */
-        .item-row {
-            position: absolute;
-            left: 0;
-            width: 18.6cm;
-            font-size: 0.36cm;
-            display: flex;
-            align-items: center;
-        }
-
-        /* lebar kolom — sesuaikan left di dalam .item-row */
-        .col-name {
-            width: 18.0cm;
-            padding-left: 0cm;
-            position: relative;
-            left: 5cm;
-        }
-
-        /* nama produk */
-        .col-weight {
-            width: 3.0cm;
-            text-align: right;
-            position: relative;
+            top: 5.3cm;
             left: 1cm;
+            display: flex;
+            font-size: 0.36cm;
+            font-weight: bold;
+        }
+
+        /* ================= */
+        /* KOLOM TABEL */
+        /* ================= */
+        .col-name {
+            width: 7.5cm;
+        }
+
+        .col-weight {
+            width: 5.5cm;
+            text-align: center;
         }
 
         .col-karat {
-            width: 3cm;
-            text-align: right;
-            position: relative;
-            left: 1cm;
+            width: 4.2cm;
+            text-align: center;
         }
 
         .col-price {
-            width: 2.5cm;
-            text-align: right;
-            position: relative;
-            left: 2.5cm;
-            padding-right: 0.2cm;
+            width: 4.7cm;
+            text-align: center;
         }
 
+        /* ================= */
+        /* AREA ITEM */
+        /* ================= */
+        .items {
+            position: absolute;
+            top: 7.9cm;
+            left: 8cm;
+            width: 21cm;
+            height: 7.2cm;
+        }
+
+        .item-row {
+            display: flex;
+            font-size: 0.5cm;
+            height: 0.9cm;
+            align-items: center;
+        }
+
+        /* ================= */
+        /* TOTAL */
+        /* ================= */
         .total {
             position: absolute;
-            top: 9.2cm;
-            /* sesuaikan posisi total */
-            left: 17.8cm;
-            /* sejajar kanan */
-            font-size: 0.45cm;
-            font-weight: 700;
-            text-align: right;
+            width: 100%;
+            top: 17.2cm;
+            left: 25.6cm;
+            font-size: 0.5cm;
+            font-weight: bold;
         }
 
-        /* fallback agar teks tidak pecah */
-        .nowrap {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .main-photo {
+            position: absolute;
+            top: 2cm;
+            /* sesuaikan posisi */
+            left: -6cm;
+            /* posisi kiri */
+            width: 5cm;
+            /* UKURAN JELAS */
+            height: 5cm;
+            object-fit: cover;
+            border: 0.05cm solid #000;
         }
 
+
+        /* PRINT */
         @media print {
             button {
-                display: none !important;
+                display: none;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="overlay">
-        {{-- FOTO: hanya 1 foto --}}
+
+    <!-- INFO -->
+    <div class="info">
+        <div class="row">{{ \Carbon\Carbon::parse($transaction->date)->format('d-m-Y') }}</div>
+        <div class="row">{{ $transaction->customer_name }}</div>
+        <div class="row">{{ $transaction->address }}</div>
+        <div class="row">{{ $transaction->note }}</div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="table-header">
+        {{-- <div class="col-name">Perhiasan Emas</div>
+        <div class="col-weight">Berat</div>
+        <div class="col-karat">Kadar</div>
+        <div class="col-price">Harga</div> --}}
+    </div>
+
+    <!-- ITEMS -->
+    <div class="items">
+        <!-- FOTO BARANG (SATU KALI) -->
         @if ($transaction->photo)
-            <img src="{{ asset($transaction->photo) }}" class="photo" alt="Foto Barang">
+            <img src="{{ asset($transaction->photo) }}" class="main-photo">
         @endif
 
-        {{-- INFO KIRI/ATAS (nama, tanggal, alamat ringkas) --}}
-        <div class="info">
-            <div class="label">
-                {{ \Carbon\Carbon::parse($transaction->date ?? now())->format('d-m-Y') }}</div>
-            <div class="label"> {{ $transaction->customer_name }}</div>
-            <div class="label"> {{ $transaction->address }}</div>
-        </div>
-        {{-- NOTE di bawah alamat --}}
-        <span class="note-label">Catatan</span>
-        <span class="note-double-dot">:</span>
-        <div class="note">
-            {!! nl2br(e($transaction->note ?? '-')) !!}
-        </div>
-
-
-        {{-- DAFTAR ITEM: per baris dihitung top secara dinamis --}}
-        @php
-            // Konfigurasi: posisi awal top (cm) dan tinggi tiap baris (cm).
-            $startTopCm = 0.6; // top untuk baris pertama (sama dengan .items-area top)
-            $rowHeightCm = 0.7; // tinggi tiap baris; sesuaikan agar pas di kotak
-            // batasi baris supaya tidak keluar kotak nota
-            $maxRows = 8;
-        @endphp
-
-        <div class="items-area">
-            @foreach ($transaction->details as $detail)
-                @if ($loop->index >= $maxRows)
-                    {{-- jika lebih dari maxRows, kamu bisa membuat halaman/nota baru atau trim --}}
-                    @break
-                @endif
-
-                @php
-                    $top = $startTopCm + $loop->index * $rowHeightCm; // dalam cm
-                @endphp
-
-                <div class="item-row" style="top: {{ $top }}cm;">
-                    <div class="col-name nowrap">{{ strtoupper($detail->product?->name) ?? '-' }} {{ $detail->karat?->name ?? '-' }} :</div>
-                    <div class="col-weight">{{ $detail->gram ?? '-' }}g</div>
-                    <div class="col-karat">{{ $detail->karat?->name ?? '-' }}</div>
-                    <div class="col-price">Rp.{{ number_format($detail->unit_price ?? 0, 0, ',', '.') }}</div>
-                </div>
-            @endforeach
-        </div>
-
-        {{-- TOTAL (di bawah area item, kanan) --}}
-        <div class="total">
-            Rp. {{ number_format($transaction->total ?? 0, 0, ',', '.') }}
-        </div>
-    </div>
-    <div class="print-button">
-        <!-- Konten nota di sini -->
-
-        <button onclick="window.print()"
-            style="display:block;: absolute; top: 0.3cm; right: 0.3cm;
-               background: #004aad; color: white; border: none;
-               padding: 0.25cm 0.7cm; font-size: 0.4cm;
-               border-radius: 0.2cm; cursor: pointer;
-               box-shadow: 0 0 4px rgba(0,0,0,0.3); z-index: 999; float:right;">
-            🖨️ Cetak Nota
-        </button>
+        @foreach ($transaction->details as $detail)
+            <div class="item-row">
+                <div class="product-image"></div>
+                <div class="col-name">{{ $detail->product->name }}</div>
+                <div class="col-weight">{{ $detail->gram }} g</div>
+                <div class="col-karat">{{ $detail->karat->name }}</div>
+                <div class="col-price">Rp {{ number_format($detail->unit_price, 0, ',', '.') }}</div>
+            </div>
+            <hr width="100%">
+        @endforeach
     </div>
 
+    <!-- TOTAL -->
+    <div class="total">
+        Rp {{ number_format($transaction->total, 0, ',', '.') }}
+    </div>
 
+    <button onclick="window.print()"
+        style="
+position:absolute;
+top:0.4cm;
+right:0.4cm;
+padding:0.25cm 0.6cm;
+font-size:0.35cm;
+">
+        🖨 Cetak
+    </button>
 
 </body>
 
