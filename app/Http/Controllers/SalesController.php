@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\StockHelper;
 use App\Models\BankAccount;
+use App\Models\CustomerSupplier;
 use App\Models\Karat;
 use App\Models\Product;
 use App\Models\Transaction;
@@ -36,62 +37,56 @@ class SalesController extends BaseController
 
         $products = Product::orderBy('name')->pluck('name')->toArray();
         $karats = Karat::orderBy('name')->pluck('name')->toArray();
+        $customers = CustomerSupplier::orderBy("id", "desc")->get();
 
-        return view('pages.sales.create', compact('invoiceNumber', 'products', 'karats', 'bankAccounts', "type"));
+        return view('pages.sales.create', compact('invoiceNumber', 'products', 'karats', 'bankAccounts', "type", "customers"));
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->all();
+    public function store(Request $request){
         $photo = "";
 
-        // Validasi
+        // ================= VALIDASI =================
         $validated = $request->validate([
             'invoice_number'  => 'nullable|string|max:255|unique:transactions,invoice_number',
             'customer_name'   => 'nullable|string|max:255',
+            'customer_phone'  => 'nullable|string|max:50',
+            'customer_address'=> 'nullable|string|max:255',
             'note'            => 'nullable|string|max:1000',
+
             'payment_method'  => 'required|string|in:cash,transfer,cash_transfer',
             'bank_account_id' => 'nullable|exists:bank_accounts,id',
             'transfer_amount' => 'nullable|numeric|min:0',
             'cash_amount'     => 'nullable|numeric|min:0',
             'reference_no'    => 'nullable|string|max:255',
-            'details'         => 'required|array|min:1',
-            'details.*.product_name' => 'required|string|max:255',
-            'details.*.karat_name'   => 'required|string|max:100',
-            'details.*.gram'         => 'required|numeric|min:0.001',
-            'details.*.harga_jual'   => 'required|numeric|min:0',
-            'photo_base64'           => 'nullable',
+
+            'details'                 => 'required|array|min:1',
+            'details.*.product_name'  => 'required|string|max:255',
+            'details.*.karat_name'    => 'required|string|max:100',
+            'details.*.gram'          => 'required|numeric|min:0.001',
+            'details.*.harga_jual'    => 'required|numeric|min:0',
+
+            'photo_base64' => 'nullable',
         ]);
 
+        // ================= FOTO =================
         if ($request->photo_base64) {
-            $image = $request->photo_base64;
-
-            // Ambil bagian base64 setelah koma
-            @list($type, $fileData) = explode(';', $image);
+            @list($type, $fileData) = explode(';', $request->photo_base64);
             @list(, $fileData) = explode(',', $fileData);
 
-            if ($fileData != "") {
-                $fileData = base64_decode($fileData);
-
+            if ($fileData) {
                 $fileName = 'sales_' . time() . '.png';
                 $folder = public_path('assets/images/penjualan');
 
-                // Pastikan folder ada
                 if (!file_exists($folder)) {
                     mkdir($folder, 0777, true);
                 }
 
-                $filePath = $folder . '/' . $fileName;
-
-                file_put_contents($filePath, $fileData);
-
-                // Simpan path ke database (relatif ke public)
+                file_put_contents($folder . '/' . $fileName, base64_decode($fileData));
                 $photo = 'assets/images/penjualan/' . $fileName;
             }
         }
 
-
-        // Validasi metode pembayaran
+        // ================= VALIDASI PEMBAYARAN =================
         if ($validated['payment_method'] === 'transfer' && empty($validated['bank_account_id'])) {
             return back()->withInput()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk transfer.']);
         }
@@ -109,45 +104,67 @@ class SalesController extends BaseController
                 return back()->withInput()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk kombinasi.']);
             }
         }
-        
-        // Simpan transaksi
+
+        // ================= SIMPAN TRANSAKSI =================
         try {
             $transactionId = 0;
-            
+
             DB::transaction(function () use ($validated, $photo, &$transactionId) {
+
+                // 🔹 CUSTOMER: ambil atau buat baru
+                $customer = null;
+                if (!empty($validated['customer_name'])) {
+                    $customer = CustomerSupplier::firstOrCreate(
+                        ['name' => trim($validated['customer_name'])],
+                        [
+                            'phone_number'   => $validated['customer_phone'] ?? null,
+                            'address' => $validated['customer_address'] ?? null,
+                            'type' => "customer",
+                        ]
+                    );
+                }
+
+                // 🔹 TRANSAKSI
                 $transaction = Transaction::create([
                     'type' => 'penjualan',
-                    'purchase_type' => 'new', // bisa set default
+                    'purchase_type' => 'new',
                     'branch_id' => 2,
                     'storage_location_id' => 1,
                     'transaction_date' => now(),
+
                     'invoice_number' => $validated['invoice_number'] ?? null,
-                    'customer_name' => $validated['customer_name'] ?? null,
+
+                    'customer_id' => $customer?->id,
+
                     'note' => $validated['note'] ?? null,
                     'created_by' => auth()->id(),
                     'total' => 0,
-                    'photo' => $photo ?? null,
+                    'photo' => $photo,
+
                     'payment_method' => $validated['payment_method'],
                     'bank_account_id' => $validated['bank_account_id'] ?? null,
                     'transfer_amount' => $validated['transfer_amount'] ?? 0,
                     'cash_amount' => $validated['cash_amount'] ?? 0,
                 ]);
-                
-                $transactionId = $transaction->id;
 
+                $transactionId = $transaction->id;
                 $total = 0;
 
+                // 🔹 DETAIL
                 foreach ($validated['details'] as $detail) {
                     $product = Product::firstOrCreate(
                         ['name' => trim($detail['product_name'])],
                         ['code' => Str::slug($detail['product_name'])]
                     );
-                    $karat = Karat::firstOrCreate(['name' => trim($detail['karat_name'])]);
+
+                    $karat = Karat::firstOrCreate([
+                        'name' => trim($detail['karat_name'])
+                    ]);
 
                     $price = (float) $detail['harga_jual'];
-                    $gram = (float) $detail['gram'];
-                    $subtotal = $price;
-                    $total += $subtotal;
+                    $gram  = (float) $detail['gram'];
+
+                    $total += $price;
 
                     TransactionDetail::create([
                         'transaction_id' => $transaction->id,
@@ -157,8 +174,8 @@ class SalesController extends BaseController
                         'unit_price' => $price,
                         'type' => 'new',
                     ]);
-                    
-                    // kurangi stok
+
+                    // 🔹 KURANGI STOK
                     StockHelper::moveStock(
                         $product->id,
                         $karat->id,
@@ -177,7 +194,7 @@ class SalesController extends BaseController
 
                 $transaction->update(['total' => $total]);
             });
-            
+
             return response()->json([
                 'success' => true,
                 'redirect_print' => route('penjualan.cetak', $transactionId),
@@ -189,9 +206,14 @@ class SalesController extends BaseController
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return back()->withInput()->withErrors(['msg' => 'Transaksi gagal: ' . $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi gagal: ' . $e->getMessage()
+            ], 500);
         }
     }
+
 
     public function print($id)
     {
@@ -201,13 +223,14 @@ class SalesController extends BaseController
 
     public function edit($type, $id)
     {
-        $transaction = Transaction::with(['details.product', 'details.karat'])->findOrFail($id);
+        $transaction = Transaction::with(['details.product', 'details.karat', 'customer'])->findOrFail($id);
 
         $bankAccounts = BankAccount::orderBy("id", "desc")->get();
         $invoiceNumber = $transaction->invoice_number;
         $products = Product::orderBy('name')->pluck('name')->toArray();
         $karats = Karat::orderBy('name')->pluck('name')->toArray();
         $type = 'penjualan';
+        $customers = CustomerSupplier::orderBy("id", "desc")->get();
 
         // Format details untuk frontend
         $details = $transaction->details->map(function ($d) {
@@ -226,7 +249,8 @@ class SalesController extends BaseController
             'karats',
             'bankAccounts',
             'details',
-            'type'
+            'type',
+            'customers',
         ));
     }
 
