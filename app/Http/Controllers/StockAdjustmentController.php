@@ -13,6 +13,7 @@ use App\Models\StorageLocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\StockOpnameImport;
 
 class StockAdjustmentController extends BaseController
 {
@@ -128,112 +129,29 @@ class StockAdjustmentController extends BaseController
             'file' => 'required|mimes:xlsx,xls'
         ]);
 
-        // Gunakan toCollection (bukan toArray)
-        $rows = Excel::toCollection(new \stdClass, $request->file('file'))->first();
-
-        if ($rows->count() < 2) {
-            return back()->with('error', 'File kosong atau format tidak valid.');
-        }
-
-        DB::beginTransaction();
-
         try {
-            // 1️⃣ Buat Header Stock Adjustment
-            $adjustment = StockAdjustment::create([
-                'branch_id' => auth()->user()->branch_id ?? 2,
-                'storage_location_id' => 1,
-                'adjustment_date' => now(),
-                'note' => 'Import Stock Opname',
-                'created_by' => auth()->id(),
-            ]);
-
-            foreach ($rows as $index => $row) {
-
-                // Skip header
-                if ($index == 0) continue;
-
-                if (!$row[0]) continue; // Skip baris kosong
-
-                $productName = trim($row[0]);                 // kolom A
-                $karatName   = trim($row[1]);                 // kolom B
-                $goldType    = strtolower(trim($row[2] ?? 'new')); // kolom C
-                $actualQty   = (float) ($row[3] ?? 0);         // kolom D
-                $weight      = isset($row[4]) ? (float) $row[4] : null; // kolom E
-
-                // 2️⃣ Ambil product & karat
-                $product = Product::firstOrCreate(['name' => $productName]);
-                $karat   = Karat::firstOrCreate(['name' => $karatName]);
-
-                // 3️⃣ Ambil system qty dari STOCK
-                $stock = Stock::where('product_id', $product->id)
-                            ->where('karat_id', $karat->id)
-                            ->where('weight', $weight)
-                            ->where('type', $goldType)          // new / second
-                            ->first();
-
-                $systemQty = $stock?->quantity ?? 0;
-
-                // 4️⃣ Hitung selisih
-                $difference = $actualQty - $systemQty;
-
-                // 5️⃣ Simpan detail opname
-                StockAdjustmentDetail::create([
-                    'stock_adjustment_id' => $adjustment->id,
-                    'product_id' => $product->id,
-                    'karat_id' => $karat->id,
-                    'system_qty' => $systemQty,
-                    'actual_qty' => $actualQty,
-                    'difference' => $difference,
-                    'type' => $goldType,        // <-- simpan gold type, bukan 'in'/'out'
-                    'weight' => $weight,
-                ]);
-
-                // 6️⃣ Catat stock movement jika ada perubahan
-                if ($difference != 0) {
-                    $movementType = $difference > 0 ? 'in' : 'out';
-
-                    StockHelper::moveStock(
-                        product_id: $product->id,
-                        karat_id: $karat->id,
-                        branchId: $adjustment->branch_id,
-                        storageLocationId: $adjustment->storage_location_id,
-                        type: $movementType,
-                        quantity: $actualQty,
-                        weight: $weight,
-                        referenceType: 'StockAdjustment',
-                        referenceId: $adjustment->id,
-                        note: "Stock Opname Import",
-                        userId: auth()->id(),
-                        goldType: $goldType
-                    );
-                }
-            }
-
-            DB::commit();
-
-            return redirect()->route('opname.index')
-                ->with('status', 'saved');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Error: ' . $e->getMessage());
+            Excel::import(new StockOpnameImport, $request->file('file'));
+            return redirect()->route('opname.index')->with('status', 'saved');
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
         }
     }
 
+
     public function destroy($id){
-        $adjustment = StockAdjustment::with('details')->findOrFail($id);
+        $adjustment = StockAdjustment::with('details.productVariant')->findOrFail($id);
 
         DB::transaction(function () use ($adjustment) {
             foreach ($adjustment->details as $detail) {
                 $difference = $detail->difference;
-                $weight = $detail->weight;
+                $weight = $detail->productVariant?->gram??0;
 
                 if ($difference != 0) {
                     $typeMove = $difference > 0 ? 'out' : 'in';
                     // rollback stok
                     \App\Helpers\StockHelper::moveStock(
-                        $detail->product_id,
-                        $detail->karat_id,
+                        $detail->product_variant_id,
+                        // $detail->karat_id,
                         $adjustment->branch_id,
                         $adjustment->storage_location_id,
                         $typeMove,
@@ -260,7 +178,7 @@ class StockAdjustmentController extends BaseController
             $adjustment->delete();
         });
 
-        return redirect()->route('opname.index')->with('status', 'Stock opname berhasil dihapus.');
+        return redirect()->route('opname.index')->with('status', 'deleted');
     }
 
 

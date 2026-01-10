@@ -7,6 +7,7 @@ use App\Models\BankAccount;
 use App\Models\CustomerSupplier;
 use App\Models\Karat;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use Illuminate\Http\Request;
@@ -35,184 +36,173 @@ class SalesController extends BaseController
         $bankAccounts = BankAccount::orderBy("id", "desc")->get();
         $invoiceNumber = $this->generateUniqueInvoiceNumber();
 
-        $products = Product::orderBy('name')->pluck('name')->toArray();
-        $karats = Karat::orderBy('name')->pluck('name')->toArray();
+        // $products = Product::orderBy('name')->pluck('name')->toArray();
+        // $karats = Karat::orderBy('name')->pluck('name')->toArray();
+        $productVariants = ProductVariant::with([
+            'product:id,name',
+            'karat:id,name',
+            'stocks' => function ($q) {
+                $q->where('quantity', '>', 0);
+            }
+        ])->get();
         $customers = CustomerSupplier::orderBy("id", "desc")->get();
 
-        return view('pages.sales.create', compact('invoiceNumber', 'products', 'karats', 'bankAccounts', "type", "customers"));
+        return view('pages.sales.create', compact('invoiceNumber', 'bankAccounts', "type", "customers", "productVariants"));
     }
 
-    public function store(Request $request){
-        $photo = "";
-
+    public function store(Request $request, $type)
+    {
         // ================= VALIDASI =================
         $validated = $request->validate([
-            'invoice_number'  => 'nullable|string|max:255|unique:transactions,invoice_number',
-            'customer_name'   => 'nullable|string|max:255',
-            'customer_phone'  => 'nullable|string|max:50',
-            'customer_address'=> 'nullable|string|max:255',
-            'note'            => 'nullable|string|max:1000',
+            'invoice_number' => 'required|string|max:255|unique:transactions,invoice_number',
 
-            'payment_method'  => 'required|string|in:cash,transfer,cash_transfer',
+            'customer_name' => 'nullable|string|max:255',
+            'customer_phone' => 'nullable|string|max:50',
+            'customer_address' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:1000',
+
+            'payment_method' => 'required|in:cash,transfer,cash_transfer',
             'bank_account_id' => 'nullable|exists:bank_accounts,id',
+            'cash_amount' => 'nullable|numeric|min:0',
             'transfer_amount' => 'nullable|numeric|min:0',
-            'cash_amount'     => 'nullable|numeric|min:0',
-            'reference_no'    => 'nullable|string|max:255',
 
-            'details'                 => 'required|array|min:1',
-            'details.*.product_name'  => 'required|string|max:255',
-            'details.*.karat_name'    => 'required|string|max:100',
-            'details.*.gram'          => 'required|numeric|min:0.001',
-            'details.*.harga_jual'    => 'required|numeric|min:0',
+            'details' => 'required|array|min:1',
+            'details.*.variant_id' => 'required|exists:product_variants,id',
+            'details.*.harga_jual' => 'required|numeric|min:0',
 
             'photo_base64' => 'nullable',
         ]);
 
         // ================= FOTO =================
+        $photo = null;
         if ($request->photo_base64) {
-            @list($type, $fileData) = explode(';', $request->photo_base64);
-            @list(, $fileData) = explode(',', $fileData);
-
+            @list(, $fileData) = explode(',', $request->photo_base64);
             if ($fileData) {
                 $fileName = 'sales_' . time() . '.png';
-                $folder = public_path('assets/images/penjualan');
-
-                if (!file_exists($folder)) {
-                    mkdir($folder, 0777, true);
+                $path = public_path('assets/images/penjualan');
+                if (!file_exists($path)) {
+                    mkdir($path, 0777, true);
                 }
-
-                file_put_contents($folder . '/' . $fileName, base64_decode($fileData));
+                file_put_contents($path . '/' . $fileName, base64_decode($fileData));
                 $photo = 'assets/images/penjualan/' . $fileName;
             }
         }
 
-        // ================= VALIDASI PEMBAYARAN =================
-        if ($validated['payment_method'] === 'transfer' && empty($validated['bank_account_id'])) {
-            return back()->withInput()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk transfer.']);
-        }
+        // ================= HITUNG TOTAL =================
+        $total = collect($validated['details'])
+            ->sum(fn($d) => (float) $d['harga_jual']);
+
+        // ================= NORMALISASI PEMBAYARAN =================
+        $cash = (float) ($validated['cash_amount'] ?? 0);
+        $transfer = (float) ($validated['transfer_amount'] ?? 0);
 
         if ($validated['payment_method'] === 'cash') {
-            $validated['transfer_amount'] = 0;
+            $cash = $total;
+            $transfer = 0;
             $validated['bank_account_id'] = null;
         }
 
-        if ($validated['payment_method'] === 'cash_transfer') {
-            if (($validated['cash_amount'] ?? 0) + ($validated['transfer_amount'] ?? 0) <= 0) {
-                return back()->withInput()->withErrors(['cash_amount' => 'Nominal tunai & transfer wajib diisi.']);
+        if ($validated['payment_method'] === 'transfer') {
+            if (!$validated['bank_account_id']) {
+                return back()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk transfer']);
             }
-            if (empty($validated['bank_account_id'])) {
-                return back()->withInput()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk kombinasi.']);
+            $cash = 0;
+            $transfer = $total;
+        }
+
+        if ($validated['payment_method'] === 'cash_transfer') {
+            if (!$validated['bank_account_id']) {
+                return back()->withErrors(['bank_account_id' => 'Rekening wajib diisi']);
+            }
+            if (($cash + $transfer) != $total) {
+                return back()->withErrors([
+                    'cash_amount' => 'Total tunai + transfer harus sama dengan total transaksi'
+                ]);
             }
         }
 
-        // ================= SIMPAN TRANSAKSI =================
+        // ================= SIMPAN =================
+        DB::beginTransaction();
         try {
-            $transactionId = 0;
 
-            DB::transaction(function () use ($validated, $photo, &$transactionId) {
+            // 🔹 CUSTOMER
+            $customer = null;
+            if (!empty($validated['customer_name'])) {
+                $customer = CustomerSupplier::firstOrCreate(
+                    ['name' => trim($validated['customer_name'])],
+                    [
+                        'phone_number' => $validated['customer_phone'],
+                        'address' => $validated['customer_address'],
+                        'type' => 'customer',
+                    ]
+                );
+            }
 
-                // 🔹 CUSTOMER: ambil atau buat baru
-                $customer = null;
-                if (!empty($validated['customer_name'])) {
-                    $customer = CustomerSupplier::firstOrCreate(
-                        ['name' => trim($validated['customer_name'])],
-                        [
-                            'phone_number'   => $validated['customer_phone'] ?? null,
-                            'address' => $validated['customer_address'] ?? null,
-                            'type' => "customer",
-                        ]
-                    );
-                }
+            // 🔹 TRANSACTION
+            $transaction = Transaction::create([
+                'type' => 'penjualan',
+                'purchase_type' => 'new',
+                'branch_id' => 2,
+                'storage_location_id' => 1,
+                'transaction_date' => now(),
 
-                // 🔹 TRANSAKSI
-                $transaction = Transaction::create([
-                    'type' => 'penjualan',
-                    'purchase_type' => 'new',
-                    'branch_id' => 2,
-                    'storage_location_id' => 1,
-                    'transaction_date' => now(),
+                'invoice_number' => $validated['invoice_number'],
+                'customer_id' => $customer?->id,
+                'note' => $validated['note'],
+                'photo' => $photo,
 
-                    'invoice_number' => $validated['invoice_number'] ?? null,
+                'payment_method' => $validated['payment_method'],
+                'bank_account_id' => $validated['bank_account_id'],
+                'cash_amount' => $cash,
+                'transfer_amount' => $transfer,
 
-                    'customer_id' => $customer?->id,
+                'total' => $total,
+                'created_by' => auth()->id(),
+            ]);
 
-                    'note' => $validated['note'] ?? null,
-                    'created_by' => auth()->id(),
-                    'total' => 0,
-                    'photo' => $photo,
+            // 🔹 DETAIL + STOCK MOVEMENT
+            foreach ($validated['details'] as $detail) {
 
-                    'payment_method' => $validated['payment_method'],
-                    'bank_account_id' => $validated['bank_account_id'] ?? null,
-                    'transfer_amount' => $validated['transfer_amount'] ?? 0,
-                    'cash_amount' => $validated['cash_amount'] ?? 0,
+                TransactionDetail::create([
+                    'transaction_id' => $transaction->id,
+                    'product_variant_id' => $detail['variant_id'],
+                    'unit_price' => $detail['harga_jual'],
+                    'type' => 'new',
                 ]);
 
-                $transactionId = $transaction->id;
-                $total = 0;
+                // === STOCK KELUAR ===
+                StockHelper::stockOut(
+                    $detail['variant_id'],
+                    $transaction->branch_id,
+                    $transaction->storage_location_id,
+                    1, // qty
+                    null,
+                    'Transaction',
+                    $transaction->id,
+                    'Penjualan',
+                    auth()->id(),
+                    'new'
+                );
+            }
 
-                // 🔹 DETAIL
-                foreach ($validated['details'] as $detail) {
-                    $product = Product::firstOrCreate(
-                        ['name' => trim($detail['product_name'])],
-                        ['code' => Str::slug($detail['product_name'])]
-                    );
-
-                    $karat = Karat::firstOrCreate([
-                        'name' => trim($detail['karat_name'])
-                    ]);
-
-                    $price = (float) $detail['harga_jual'];
-                    $gram  = (float) $detail['gram'];
-
-                    $total += $price;
-
-                    TransactionDetail::create([
-                        'transaction_id' => $transaction->id,
-                        'product_id' => $product->id,
-                        'karat_id' => $karat->id,
-                        'gram' => $gram,
-                        'unit_price' => $price,
-                        'type' => 'new',
-                    ]);
-
-                    // 🔹 KURANGI STOK
-                    StockHelper::moveStock(
-                        $product->id,
-                        $karat->id,
-                        $transaction->branch_id,
-                        $transaction->storage_location_id,
-                        'out',
-                        1,
-                        $gram,
-                        'Transaction',
-                        $transaction->id,
-                        'create-sale',
-                        auth()->id(),
-                        "new"
-                    );
-                }
-
-                $transaction->update(['total' => $total]);
-            });
+            DB::commit();
 
             return response()->json([
                 'success' => true,
-                'redirect_print' => route('penjualan.cetak', $transactionId),
-                'redirect_index' => route('penjualan.index', "penjualan"),
+                'redirect_print' => route('penjualan.cetak', $transaction->id),
+                'redirect_index' => route('penjualan.index', $type),
             ]);
-
         } catch (\Throwable $e) {
-            \Log::error('Gagal menyimpan penjualan', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            DB::rollBack();
+            \Log::error('Gagal simpan penjualan', ['error' => $e]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Transaksi gagal: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
+
 
 
     public function print($id)
@@ -223,230 +213,246 @@ class SalesController extends BaseController
 
     public function edit($type, $id)
     {
-        $transaction = Transaction::with(['details.product', 'details.karat', 'customer'])->findOrFail($id);
+        $transaction = Transaction::with([
+            'details.productVariant.product',
+            'details.productVariant.karat',
+            'customer'
+        ])->findOrFail($id);
 
         $bankAccounts = BankAccount::orderBy("id", "desc")->get();
-        $invoiceNumber = $transaction->invoice_number;
-        $products = Product::orderBy('name')->pluck('name')->toArray();
-        $karats = Karat::orderBy('name')->pluck('name')->toArray();
-        $type = 'penjualan';
+
+        $productVariants = ProductVariant::with([
+            'product:id,name',
+            'karat:id,name',
+            'stocks' => function ($q) {
+                $q->where('quantity', '>', 0);
+            }
+        ])->get();
+
         $customers = CustomerSupplier::orderBy("id", "desc")->get();
 
-        // Format details untuk frontend
+        // === FORMAT DETAIL UNTUK FRONTEND (SAMA SEPERTI ADD ITEM)
         $details = $transaction->details->map(function ($d) {
             return [
-                'product_name' => $d->product->name ?? '',
-                'karat_name' => $d->karat->name ?? '',
-                'gram' => $d->gram,
-                'harga_jual' => $d->unit_price,
+                'id' => $d->product_variant_id,
+                'barcode' => $d->productVariant->barcode,
+                'sku' => $d->productVariant->sku,
+                'gram' => $d->productVariant->gram,
+                'default_price' => $d->unit_price,
+                'product' => [
+                    'name' => $d->productVariant->product->name ?? '',
+                ],
+                'karat' => [
+                    'name' => $d->productVariant->karat->name ?? '',
+                ],
             ];
         });
 
         return view('pages.sales.edit', compact(
             'transaction',
-            'invoiceNumber',
-            'products',
-            'karats',
             'bankAccounts',
+            'productVariants',
             'details',
             'type',
-            'customers',
+            'customers'
         ));
     }
+
 
     public function update(Request $request, $type, $id)
     {
         $transaction = Transaction::with('details')->findOrFail($id);
         $photo = $transaction->photo;
 
+        /* ================= VALIDASI ================= */
         $validated = $request->validate([
             'invoice_number' => 'nullable|string|max:255|unique:transactions,invoice_number,' . $transaction->id,
-            'customer_name'   => 'nullable|string|max:255',
-            'note'            => 'nullable|string|max:1000',
-            'payment_method'  => 'required|string|in:cash,transfer,cash_transfer',
+
+            'customer_name' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:1000',
+
+            'payment_method' => 'required|in:cash,transfer,cash_transfer',
             'bank_account_id' => 'nullable|exists:bank_accounts,id',
+            'cash_amount' => 'nullable|numeric|min:0',
             'transfer_amount' => 'nullable|numeric|min:0',
-            'cash_amount'     => 'nullable|numeric|min:0',
-            'reference_no'    => 'nullable|string|max:255',
-            'details'         => 'required|array|min:1',
-            'details.*.product_name' => 'required|string|max:255',
-            'details.*.karat_name'   => 'required|string|max:100',
-            'details.*.gram'         => 'required|numeric|min:0.001',
-            'details.*.harga_jual'   => 'required|numeric|min:0',
-            'photo_base64'           => 'nullable',
+            // 'reference_no' => 'nullable|string|max:255',
+
+            'details' => 'required|array|min:1',
+            'details.*.variant_id' => 'required|exists:product_variants,id',
+            'details.*.harga_jual' => 'required|numeric|min:0',
+
+            'photo_base64' => 'nullable',
         ]);
 
-        // 🔸 Update foto jika ada foto baru
+        /* ================= FOTO ================= */
         if ($request->photo_base64) {
-            $image = $request->photo_base64;
-
-            // Ambil bagian base64 setelah koma
-            @list($type, $fileData) = explode(';', $image);
-            @list(, $fileData) = explode(',', $fileData);
-
-            if ($fileData != "") {
-                $fileData = base64_decode($fileData);
-
+            @list(, $fileData) = explode(',', $request->photo_base64);
+            if ($fileData) {
                 $fileName = 'sales_' . time() . '.png';
-                $folder = public_path('assets/images/penjualan');
+                $path = public_path('assets/images/penjualan');
 
-                // Pastikan folder ada
-                if (!file_exists($folder)) {
-                    mkdir($folder, 0777, true);
+                if (!file_exists($path)) {
+                    mkdir($path, 0777, true);
                 }
 
-                $filePath = $folder . '/' . $fileName;
-
-                file_put_contents($filePath, $fileData);
-
-                // Simpan path ke database (relatif ke public)
+                file_put_contents($path . '/' . $fileName, base64_decode($fileData));
                 $photo = 'assets/images/penjualan/' . $fileName;
             }
         }
 
-        // Validasi metode pembayaran (sama seperti store)
-        if ($validated['payment_method'] === 'transfer' && empty($validated['bank_account_id'])) {
-            return back()->withInput()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk transfer.']);
-        }
+        /* ================= HITUNG TOTAL ================= */
+        $total = collect($validated['details'])
+            ->sum(fn($d) => (float) $d['harga_jual']);
+
+        /* ================= NORMALISASI PEMBAYARAN ================= */
+        $cash = (float) ($validated['cash_amount'] ?? 0);
+        $transfer = (float) ($validated['transfer_amount'] ?? 0);
 
         if ($validated['payment_method'] === 'cash') {
-            $validated['transfer_amount'] = 0;
+            $cash = $total;
+            $transfer = 0;
             $validated['bank_account_id'] = null;
         }
 
-        if ($validated['payment_method'] === 'cash_transfer') {
-            if (($validated['cash_amount'] ?? 0) + ($validated['transfer_amount'] ?? 0) <= 0) {
-                return back()->withInput()->withErrors(['cash_amount' => 'Nominal tunai & transfer wajib diisi.']);
+        if ($validated['payment_method'] === 'transfer') {
+            if (!$validated['bank_account_id']) {
+                return back()->withErrors(['bank_account_id' => 'Rekening wajib diisi']);
             }
-            if (empty($validated['bank_account_id'])) {
-                return back()->withInput()->withErrors(['bank_account_id' => 'Rekening wajib diisi untuk kombinasi.']);
+            $cash = 0;
+            $transfer = $total;
+        }
+
+        if ($validated['payment_method'] === 'cash_transfer') {
+            if (!$validated['bank_account_id']) {
+                return back()->withErrors(['bank_account_id' => 'Rekening wajib diisi']);
+            }
+            if (($cash + $transfer) != $total) {
+                return back()->withErrors([
+                    'cash_amount' => 'Total tunai + transfer harus sama dengan total transaksi'
+                ]);
             }
         }
 
+        /* ================= UPDATE TRANSAKSI ================= */
+        DB::beginTransaction();
         try {
-            DB::transaction(function () use ($transaction, $validated, $photo) {
-                // 🔹 Kembalikan stok lama sebelum diubah
-                foreach ($transaction->details as $old) {
-                    StockHelper::moveStock(
-                        $old->product_id,
-                        $old->karat_id,
-                        $transaction->branch_id,
-                        $transaction->storage_location_id,
-                        'in',
-                        1,
-                        $old->gram,
-                        'Transaction',
-                        $transaction->id,
-                        'rollback-sale',
-                        auth()->id(),
-                        $old->type
-                    );
-                }
 
-                // 🔹 Hapus semua detail lama
-                $transaction->details()->delete();
+            /* === ROLLBACK STOK LAMA === */
+            foreach ($transaction->details as $oldDetail) {
+                StockHelper::stockIn(
+                    $oldDetail->product_variant_id,
+                    $transaction->branch_id,
+                    $transaction->storage_location_id,
+                    1,
+                    null,
+                    'Transaction',
+                    $transaction->id,
+                    'Rollback Update Penjualan',
+                    auth()->id(),
+                    $oldDetail->type
+                );
+            }
 
-                // 🔹 Update transaksi utama
-                $transaction->update([
-                    'invoice_number' => $validated['invoice_number'],
-                    'customer_name' => $validated['customer_name'],
-                    'note' => $validated['note'] ?? null,
-                    'payment_method' => $validated['payment_method'],
-                    'bank_account_id' => $validated['bank_account_id'] ?? null,
-                    'transfer_amount' => $validated['transfer_amount'] ?? 0,
-                    'cash_amount' => $validated['cash_amount'] ?? 0,
-                    'reference_no' => $validated['reference_no'] ?? null,
-                    'photo' => $photo,
-                    'updated_by' => auth()->id(),
+            /* === HAPUS DETAIL LAMA === */
+            $transaction->details()->delete();
+
+            /* === UPDATE HEADER === */
+            $transaction->update([
+                'invoice_number' => $validated['invoice_number'],
+                'customer_name' => $validated['customer_name'],
+                'note' => $validated['note'],
+                'photo' => $photo,
+
+                'payment_method' => $validated['payment_method'],
+                'bank_account_id' => $validated['bank_account_id'],
+                'cash_amount' => $cash,
+                'transfer_amount' => $transfer,
+                // 'reference_no' => $validated['reference_no'],
+
+                'total' => $total,
+                'updated_by' => auth()->id(),
+            ]);
+
+            /* === SIMPAN DETAIL BARU + STOCK OUT === */
+            foreach ($validated['details'] as $detail) {
+
+                TransactionDetail::create([
+                    'transaction_id' => $transaction->id,
+                    'product_variant_id' => $detail['variant_id'],
+                    'unit_price' => $detail['harga_jual'],
+                    'type' => 'new',
                 ]);
 
-                // 🔹 Simpan ulang detail baru
-                $total = 0;
-                foreach ($validated['details'] as $detail) {
-                    $product = Product::firstOrCreate(
-                        ['name' => trim($detail['product_name'])],
-                        ['code' => Str::slug($detail['product_name'])]
-                    );
-                    $karat = Karat::firstOrCreate(['name' => trim($detail['karat_name'])]);
+                StockHelper::stockOut(
+                    $detail['variant_id'],
+                    $transaction->branch_id,
+                    $transaction->storage_location_id,
+                    1,
+                    null,
+                    'Transaction',
+                    $transaction->id,
+                    'Update Penjualan',
+                    auth()->id(),
+                    'new'
+                );
+            }
 
-                    $price = (float) $detail['harga_jual'];
-                    $gram = (float) $detail['gram'];
-                    $subtotal = $price;
-                    $total += $subtotal;
+            DB::commit();
 
-                    TransactionDetail::create([
-                        'transaction_id' => $transaction->id,
-                        'product_id' => $product->id,
-                        'karat_id' => $karat->id,
-                        'gram' => $gram,
-                        'unit_price' => $price,
-                        'type' => 'new',
-                    ]);
-
-                    // 🔹 Kurangi stok baru
-                    StockHelper::moveStock(
-                        $product->id,
-                        $karat->id,
-                        $transaction->branch_id,
-                        $transaction->storage_location_id,
-                        'out',
-                        1,
-                        $gram,
-                        'Transaction',
-                        $transaction->id,
-                        'update-sale',
-                        auth()->id(),
-                        "new"
-                    );
-                }
-
-                $transaction->update(['total' => $total]);
-            });
-
-            return redirect()->route('penjualan.index', 'penjualan')->with('status', 'Transaksi berhasil diperbarui.');
+            return redirect()
+                ->route('penjualan.index', $type)
+                ->with('status', 'Transaksi berhasil diperbarui');
         } catch (\Throwable $e) {
-            \Log::error('Gagal update penjualan', ['error' => $e->getMessage()]);
-            return back()->withInput()->withErrors(['msg' => 'Update gagal: ' . $e->getMessage()]);
+            DB::rollBack();
+            \Log::error('Update penjualan gagal', ['error' => $e]);
+
+            return back()->withErrors(['msg' => $e->getMessage()]);
         }
     }
 
     public function destroy($type, $id)
     {
-        $transaction = Transaction::findOrFail($id);
+        $transaction = Transaction::with('details')->findOrFail($id);
+
         try {
-            DB::transaction(function () use ($transaction,) {
-                // rollback semua stok
+            DB::transaction(function () use ($transaction) {
+
+                /* === ROLLBACK STOK === */
                 foreach ($transaction->details as $detail) {
-                    \App\Helpers\StockHelper::moveStock(
-                        $detail->product_id,
-                        $detail->karat_id,
-                        2,
-                        1,
-                        'in',
-                        1,
-                        $detail->gram ?? null,
+
+                    StockHelper::stockIn(
+                        $detail->product_variant_id,
+                        $transaction->branch_id,
+                        $transaction->storage_location_id,
+                        1, // qty
+                        null,
                         'Transaction',
                         $transaction->id,
-                        "deleted",
-                        Auth::id(),
-                        "new"
+                        'Delete Penjualan',
+                        auth()->id(),
+                        $detail->type ?? 'new'
                     );
                 }
 
-                // hapus detail
+                /* === HAPUS DETAIL === */
                 $transaction->details()->delete();
 
-                // hapus header
+                /* === HAPUS HEADER === */
                 $transaction->delete();
             });
 
-            return redirect()->route('transaksi.index', ['type' => $type])->with('status', 'deleted');
+            return redirect()
+                ->route('penjualan.index', ['type' => $type])
+                ->with('status', 'Transaksi berhasil dihapus');
         } catch (\Throwable $e) {
             \Log::error('Gagal hapus transaksi', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return back()->withErrors(['msg' => 'Hapus gagal: ' . $e->getMessage()]);
+
+            return back()->withErrors([
+                'msg' => 'Hapus gagal: ' . $e->getMessage()
+            ]);
         }
     }
 }

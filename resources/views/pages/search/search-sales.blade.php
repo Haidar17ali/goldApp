@@ -18,7 +18,7 @@
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ $item->invoice_number }}</td>
                     <td>{{ $item->transaction_date }}</td>
-                    <td>{{ $item->customer->name }}</td>
+                    <td>{{ $item->customer?->name ?? "null" }}</td>
                     <td>0g</td>
                     <td>{{ money_format($item->total) }}</td>
                     <td>{{ $item->note }}</td>

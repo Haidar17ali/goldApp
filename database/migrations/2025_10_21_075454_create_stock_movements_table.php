@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('stock_movements', function (Blueprint $table) {
         $table->id();
-        $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-        $table->foreignId('karat_id')->constrained('karats')->cascadeOnDelete();
+        $table->foreignId('product_variant_id')->constrained('product_Variants')->cascadeOnDelete();
+        // $table->foreignId('karat_id')->constrained('karats')->cascadeOnDelete();
 
         $table->enum('type', [
             'in',         // stok masuk
@@ -23,6 +23,8 @@ return new class extends Migration
             'loan_out',   // dipinjam influencer
             'loan_in',    // dikembalikan influencer
         ]);
+        
+        $table->enum('gold_type', ['new', 'customer', 'sepuh', 'batangan'])->default('new');
 
         $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
         $table->foreignId('storage_location_id')->constrained()->cascadeOnDelete();

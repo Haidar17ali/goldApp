@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Stock;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class HomeController extends BaseController
@@ -26,8 +30,60 @@ class HomeController extends BaseController
     {
         $users = User::all();
 
+        $stocks = Stock::query()
+            ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
+            ->join('products as p', 'p.id', '=', 'pv.product_id')
+            ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+            ->where('p.name', '!=', 'emas')
+            ->select(
+                'pv.product_id',
+                'pv.type',
+                'p.name as product_name',
+                'pv.karat_id',
+                'k.name as karat_name',
+                'pv.type as variant_type',
+                DB::raw('SUM(stocks.quantity * pv.gram) as total_gram')
+            )
+            ->groupBy(
+                'pv.product_id',
+                'p.name',
+                'pv.karat_id',
+                'k.name',
+                'pv.type'
+            )
+            ->get();
+
+        $emasId = Product::where('name', 'emas')->value('id');
+
+        $stockBrankas = Stock::query()
+            ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
+            ->join('products as p', 'p.id', '=', 'pv.product_id')
+            ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+            ->where('pv.product_id', $emasId)
+            ->select(
+                'pv.product_id',
+                'pv.type',
+                'p.name as product_name',
+                'pv.karat_id',
+                'k.name as karat_name',
+                'pv.type as variant_type',
+                DB::raw('SUM(stocks.quantity * pv.gram) as total_gram')
+            )
+            ->groupBy(
+                'pv.product_id',
+                'p.name',
+                'pv.karat_id',
+                'k.name',
+                'pv.type'
+            )
+            ->get();
+
+
+
         return view('home', compact([
             'users',
+            'stocks',
+            'stockBrankas',
         ]));
     }
 
@@ -120,7 +176,7 @@ class HomeController extends BaseController
     //             }
     //         }
     //     }
-        
+
 
     //     return response()->json([
     //         'stok_terpakai' => $stokTerpakai,

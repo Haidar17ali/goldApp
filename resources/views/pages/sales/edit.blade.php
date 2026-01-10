@@ -7,265 +7,360 @@
 @stop
 
 @section('content')
-<div class="shadow-lg card">
-    <div class="card-body">
+    <div class="shadow-lg card">
+        <div class="card-body">
 
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <strong>Terjadi kesalahan!</strong><br>
-                {{ $errors->first('msg') }}
-            </div>
-        @endif
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <strong>Terjadi kesalahan!</strong><br>
+                    {{ $errors->first('msg') }}
+                </div>
+            @endif
 
-        <form id="transactionForm" method="POST"
-            action="{{ route('penjualan.update', ['type' => $type, 'id' => $transaction->id]) }}"
-            enctype="multipart/form-data">
-            @csrf
-            @method('patch')
+            <form id="transactionForm" method="POST"
+                action="{{ route('penjualan.update', ['type' => $type, 'id' => $transaction->id]) }}"
+                enctype="multipart/form-data">
+                @csrf
+                @method('patch')
 
-            {{-- ================= HEADER ================= --}}
-            <div class="mb-4 row">
-                <div class="col-md-4">
-                    <label class="fw-semibold">Nomor Invoice</label>
-                    <input type="text" name="invoice_number"
-                        class="form-control form-control-lg"
-                        value="{{ old('invoice_number', $transaction->invoice_number) }}"
-                        required>
+                {{-- ================= HEADER ================= --}}
+                <div class="mb-4 row">
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Nomor Invoice</label>
+                        <input type="text" name="invoice_number" class="form-control form-control-lg"
+                            value="{{ old('invoice_number', $transaction->invoice_number) }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Customer</label>
+                        <select name="customer_name" id="customerSelect" class="form-control form-control-lg" required>
+                            <option value="">-- pilih / ketik customer --</option>
+                            @foreach ($customers as $c)
+                                <option value="{{ $c->name }}" data-phone="{{ $c->phone_number }}"
+                                    data-address="{{ $c->address }}"
+                                    {{ $c->id == $transaction->customer_id ? 'selected' : '' }}>
+                                    {{ $c->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Catatan</label>
+                        <input type="text" name="note" class="form-control form-control-lg"
+                            value="{{ old('note', $transaction->note) }}" placeholder="Catatan tambahan (opsional)">
+                    </div>
                 </div>
 
-                <div class="col-md-4">
-                    <label class="fw-semibold">Customer</label>
-                    <select name="customer_name" id="customerSelect"
-                        class="form-control form-control-lg" required>
-                        <option value="">-- pilih / ketik customer --</option>
-                        @foreach ($customers as $c)
-                            <option value="{{ $c->name }}"
-                                data-phone="{{ $c->phone_number }}"
-                                data-address="{{ $c->address }}"
-                                {{ $c->id == $transaction->customer_id ? 'selected' : '' }}>
-                                {{ $c->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                {{-- ================= CUSTOMER DETAIL ================= --}}
+                <div class="mb-4 row">
+                    <div class="col-md-4">
+                        <label class="fw-semibold">No. Telp</label>
+                        <input type="text" name="customer_phone" id="customerPhone" class="form-control form-control-lg"
+                            value="{{ old('customer_phone', $transaction->customer?->phone_number) }}"
+                            placeholder="Nomor telepon customer">
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="fw-semibold">Alamat</label>
+                        <input type="text" name="customer_address" id="customerAddress"
+                            class="form-control form-control-lg"
+                            value="{{ old('customer_address', $transaction->customer?->address) }}"
+                            placeholder="Alamat customer">
+                    </div>
                 </div>
 
-                <div class="col-md-4">
-                    <label class="fw-semibold">Catatan</label>
-                    <input type="text" name="note"
-                        class="form-control form-control-lg"
-                        value="{{ old('note', $transaction->note) }}"
-                        placeholder="Catatan tambahan (opsional)">
+                <hr class="my-4">
+
+                <div x-data="barcodeInput()" class="mb-4 position-relative">
+                    <label class="fw-semibold">Scan Barcode / Ketik Barang</label>
+
+                    <input type="text" x-model="query" @input="search" @keydown.enter.prevent="selectFirst"
+                        class="form-control form-control-lg" placeholder="Scan barcode atau ketik nama barang">
+
+                    <div class="shadow list-group position-absolute w-100" x-show="showDropdown"
+                        @click.outside="showDropdown = false" style="z-index:1050">
+
+                        <template x-for="item in results" :key="item.id">
+                            <button type="button" class="list-group-item list-group-item-action" @click="select(item)">
+                                <strong x-text="item.barcode ?? item.sku"></strong>
+                                —
+                                <span x-text="item.product.name"></span>
+                                —
+                                <span x-text="item.gram + 'gr'"></span>
+                            </button>
+                        </template>
+
+                        <div class="list-group-item text-muted" x-show="results.length === 0">
+                            Tidak ditemukan
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            {{-- ================= CUSTOMER DETAIL ================= --}}
-            <div class="mb-4 row">
-                <div class="col-md-4">
-                    <label class="fw-semibold">No. Telp</label>
-                    <input type="text" name="customer_phone"
-                        id="customerPhone"
-                        class="form-control form-control-lg"
-                        value="{{ old('customer_phone', $transaction->customer?->phone_number) }}"
-                        placeholder="Nomor telepon customer">
+
+                {{-- ================= DETAIL BARANG ================= --}}
+                <h5 class="mb-3 fw-bold">Detail Barang</h5>
+
+                <div class="table-responsive">
+                    <table class="table align-middle table-bordered" id="detailTable">
+                        <thead class="text-center table-light">
+                            <tr>
+                                <th style="width:25%">Produk</th>
+                                <th style="width:15%">Karat</th>
+                                <th style="width:15%">Gram</th>
+                                <th style="width:15%">Harga Jual</th>
+                                <th style="width:5%"></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <div class="mb-4 text-end">
+                        <h5>
+                            <strong>Grand Total Jual:
+                                Rp <span id="grandTotalJual">0</span>
+                            </strong>
+                        </h5>
+                    </div>
                 </div>
 
-                <div class="col-md-8">
-                    <label class="fw-semibold">Alamat</label>
-                    <input type="text" name="customer_address"
-                        id="customerAddress"
-                        class="form-control form-control-lg"
-                        value="{{ old('customer_address', $transaction->customer?->address) }}"
-                        placeholder="Alamat customer">
+                {{-- ================= PAYMENT ================= --}}
+                @include('components.payment-gateway', [
+                    'bankAccounts' => $bankAccounts,
+                    'payment_method' => $transaction->payment_method,
+                    'bank_account_id' => $transaction->bank_account_id,
+                    'transfer_amount' => $transaction->transfer_amount,
+                    'cash_amount' => $transaction->cash_amount,
+                    'reference_no' => $transaction->reference_no,
+                ])
+
+                @include('components.camera', ['transaction' => $transaction])
+
+                <div class="text-end">
+                    <button type="submit" class="px-5 btn btn-primary btn-lg">
+                        <i class="fas fa-save me-1"></i> Update Transaksi
+                    </button>
                 </div>
-            </div>
-
-            <hr class="my-4">
-
-            {{-- ================= DETAIL BARANG ================= --}}
-            <h5 class="mb-3 fw-bold">Detail Barang</h5>
-
-            <div class="table-responsive">
-                <table class="table align-middle table-bordered" id="detailTable">
-                    <thead class="text-center table-light">
-                        <tr>
-                            <th style="width:25%">Produk</th>
-                            <th style="width:15%">Karat</th>
-                            <th style="width:15%">Gram</th>
-                            <th style="width:15%">Harga Jual</th>
-                            <th style="width:5%"></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-
-                <div class="mb-4 text-end">
-                    <h5>
-                        <strong>Grand Total Jual:
-                            Rp <span id="grandTotalJual">0</span>
-                        </strong>
-                    </h5>
-                </div>
-            </div>
-
-            <div class="mb-3 text-end">
-                <button type="button" id="addRow"
-                    class="btn btn-success btn-lg">
-                    <i class="fas fa-plus"></i> Tambah Baris
-                </button>
-            </div>
-
-            {{-- ================= PAYMENT ================= --}}
-            @include('components.payment-gateway', [
-                'bankAccounts' => $bankAccounts,
-                'payment_method' => $transaction->payment_method,
-                'bank_account_id' => $transaction->bank_account_id,
-                'transfer_amount' => $transaction->transfer_amount,
-                'cash_amount' => $transaction->cash_amount,
-                'reference_no' => $transaction->reference_no,
-            ])
-
-            @include('components.camera', ['transaction' => $transaction])
-
-            <div class="text-end">
-                <button type="submit"
-                    class="px-5 btn btn-primary btn-lg">
-                    <i class="fas fa-save me-1"></i> Update Transaksi
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 @stop
 
 {{-- ================= CSS ================= --}}
 @section('css')
-<style>
-    #detailTable td { vertical-align: middle !important; }
+    <style>
+        #detailTable td {
+            vertical-align: middle !important;
+        }
 
-    .select2-container--default .select2-selection--single {
-        height: calc(2.875rem + 2px) !important;
-        padding: 0.5rem 0.75rem !important;
-        display: flex !important;
-        align-items: center !important;
-        border-radius: 0.5rem !important;
-    }
+        .select2-container--default .select2-selection--single {
+            height: calc(2.875rem + 2px) !important;
+            padding: 0.5rem 0.75rem !important;
+            display: flex !important;
+            align-items: center !important;
+            border-radius: 0.5rem !important;
+        }
 
-    .select2-selection__rendered {
-        font-size: 1rem !important;
-    }
+        .select2-selection__rendered {
+            font-size: 1rem !important;
+        }
 
-    .form-control-lg {
-        height: calc(2.875rem + 2px);
-    }
-</style>
+        .form-control-lg {
+            height: calc(2.875rem + 2px);
+        }
+    </style>
 @stop
 
 {{-- ================= JS ================= --}}
 @section('js')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
-    rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const products = @json($products ?? []);
-    const karats = @json($karats ?? []);
-    const existingDetails = @json($details ?? []);
-    const tableBody = document.querySelector('#detailTable tbody');
-    const grandTotalEl = document.getElementById('grandTotalJual');
-    let rowIndex = 0;
+    <script>
+        /* ======================================================
+           GLOBAL DATA
+        ====================================================== */
+        window.PRODUCT_VARIANTS = @json($productVariants);
+        window.EXISTING_DETAILS = @json($details);
 
-    function updateGrandTotal() {
-        let total = 0;
-        tableBody.querySelectorAll('.harga-jual').forEach(el => {
-            total += parseFloat(el.value || 0);
+        let tableBody, grandTotalEl;
+
+        /* ======================================================
+           DOM READY
+        ====================================================== */
+        document.addEventListener('DOMContentLoaded', function() {
+
+            tableBody = document.querySelector('#detailTable tbody');
+            grandTotalEl = document.getElementById('grandTotalJual');
+
+            // ===== Customer Select2 =====
+            $('#customerSelect').select2({
+                tags: true,
+                width: '100%',
+                placeholder: '-- pilih / ketik customer --'
+            });
+
+            $('#customerSelect').on('change', function() {
+                const selected = $(this).find(':selected');
+                $('#customerPhone').val(selected.data('phone') || '');
+                $('#customerAddress').val(selected.data('address') || '');
+            });
+
+            // ===== PRELOAD EDIT DATA =====
+            if (window.EXISTING_DETAILS?.length) {
+                window.EXISTING_DETAILS.forEach(item => {
+                    addItemToTable(item, true);
+                });
+            }
+
+            updateGrandTotal();
         });
 
-        grandTotalEl.textContent = total.toLocaleString('id-ID', {
-            minimumFractionDigits: 2
-        });
+        /* ======================================================
+           GRAND TOTAL
+        ====================================================== */
+        window.updateGrandTotal = function() {
+            let total = 0;
 
-        document.dispatchEvent(new CustomEvent('grandTotalChanged', {
-            detail: { total }
-        }));
-    }
+            tableBody.querySelectorAll('.harga-jual').forEach(el => {
+                total += parseFloat(el.value || 0);
+            });
 
-    function createRow(data = {}) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+            grandTotalEl.textContent = total.toLocaleString('id-ID', {
+                minimumFractionDigits: 2
+            });
+
+            document.dispatchEvent(new CustomEvent('grandTotalChanged', {
+                detail: {
+                    total
+                }
+            }));
+        };
+
+        /* ======================================================
+           ADD ITEM TO TABLE (EDIT + CREATE)
+        ====================================================== */
+        window.addItemToTable = function(item, fromEdit = false) {
+
+            const rowIndex = tableBody.children.length;
+
+            // ===== CEGAH DUPLIKAT =====
+            if ([...tableBody.querySelectorAll('input[name$="[variant_id]"]')]
+                .some(i => i.value == (item.variant_id ?? item.id))) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Barang sudah ditambahkan'
+                });
+                return;
+            }
+
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
             <td>
-                <select class="form-control form-control-lg select-product"
-                    name="details[${rowIndex}][product_name]">
-                    <option value="">-- pilih / ketik produk --</option>
-                    ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
-                </select>
+                <input type="text" class="form-control"
+                    value="${item.product?.name ?? item.product_name}" readonly>
             </td>
+
             <td>
-                <select class="form-control form-control-lg select-karat"
-                    name="details[${rowIndex}][karat_name]">
-                    <option value="">-- pilih / ketik karat --</option>
-                    ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
-                </select>
+                <input type="text" class="form-control"
+                    value="${item.karat?.name ?? item.karat_name ?? '-'}" readonly>
             </td>
+
             <td>
-                <input type="number" step="0.001"
-                    class="form-control form-control-lg gram"
-                    name="details[${rowIndex}][gram]"
-                    value="${data.gram ?? ''}">
+                <input type="text" class="form-control"
+                    value="${item.gram}" readonly>
             </td>
+
             <td>
-                <input type="number" step="0.01"
-                    class="form-control form-control-lg harga-jual"
+                <input type="number"
+                    class="form-control harga-jual"
                     name="details[${rowIndex}][harga_jual]"
-                    value="${data.harga_jual ?? ''}">
+                    value="${item.harga_jual ?? item.default_price ?? 0}">
             </td>
+
             <td class="text-center">
-                <button type="button"
-                    class="btn btn-danger btn-lg remove-row">
+                <button type="button" class="btn btn-danger btn-lg remove-row">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
+
+            <input type="hidden"
+                name="details[${rowIndex}][variant_id]"
+                value="${item.variant_id ?? item.id}">
         `;
-        tableBody.appendChild(tr);
 
-        $(tr).find('select').select2({ tags: true, width: '100%' });
+            tableBody.appendChild(tr);
 
-        if (data.product_name)
-            $(tr).find('.select-product').val(data.product_name).trigger('change');
-        if (data.karat_name)
-            $(tr).find('.select-karat').val(data.karat_name).trigger('change');
+            tr.querySelector('.remove-row')
+                .addEventListener('click', () => {
+                    tr.remove();
+                    updateGrandTotal();
+                });
 
-        tr.querySelector('.harga-jual')
-            .addEventListener('input', updateGrandTotal);
+            tr.querySelector('.harga-jual')
+                .addEventListener('input', updateGrandTotal);
 
-        tr.querySelector('.remove-row')
-            .addEventListener('click', () => {
-                tr.remove();
-                updateGrandTotal();
-            });
+            updateGrandTotal();
+        };
 
-        rowIndex++;
-    }
+        /* ======================================================
+           ALPINE BARCODE INPUT (SAMA DENGAN CREATE)
+        ====================================================== */
+        function barcodeInput() {
+            return {
+                query: '',
+                results: [],
+                showDropdown: false,
+                variants: window.PRODUCT_VARIANTS || [],
 
-    if (existingDetails.length) {
-        existingDetails.forEach(d => createRow(d));
-    } else {
-        createRow();
-    }
+                search() {
+                    const q = this.query.trim().toLowerCase();
+                    if (!q) return;
 
-    $('#customerSelect').select2({
-        tags: true,
-        width: '100%',
-        placeholder: '-- pilih / ketik customer --'
-    });
+                    // ===== EXACT MATCH (SCAN BARCODE) =====
+                    const exact = this.variants.find(v =>
+                        v.barcode?.toLowerCase() === q ||
+                        v.sku?.toLowerCase() === q
+                    );
 
-    $('#customerSelect').on('change', function () {
-        const selected = $(this).find(':selected');
-        $('#customerPhone').val(selected.data('phone') || '');
-        $('#customerAddress').val(selected.data('address') || '');
-    });
+                    if (exact) {
+                        this.select(exact);
+                        return;
+                    }
 
-    updateGrandTotal();
-});
-</script>
+                    if (q.length < 2) {
+                        this.showDropdown = false;
+                        return;
+                    }
+
+                    this.results = this.variants.filter(v =>
+                        v.barcode?.toLowerCase().includes(q) ||
+                        v.sku?.toLowerCase().includes(q) ||
+                        v.product?.name?.toLowerCase().includes(q)
+                    ).slice(0, 10);
+
+                    this.showDropdown = true;
+                },
+
+                select(item) {
+                    window.addItemToTable(item);
+                    this.reset();
+                },
+
+                selectFirst() {
+                    if (this.results.length === 1) {
+                        this.select(this.results[0]);
+                    }
+                },
+
+                reset() {
+                    this.query = '';
+                    this.results = [];
+                    this.showDropdown = false;
+                }
+            }
+        }
+    </script>
 @stop

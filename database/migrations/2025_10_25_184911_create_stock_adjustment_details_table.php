@@ -9,8 +9,8 @@ return new class extends Migration {
         Schema::create('stock_adjustment_details', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('stock_adjustment_id');
-            $table->unsignedBigInteger('product_id');
-            $table->unsignedBigInteger('karat_id')->nullable();
+            $table->unsignedBigInteger('product_variant_id');
+            // $table->unsignedBigInteger('karat_id')->nullable();
             $table->decimal('system_qty', 15, 3)->default(0);
             $table->decimal('actual_qty', 15, 3)->default(0);
             $table->decimal('difference', 15, 3)->default(0);
@@ -18,8 +18,8 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->foreign('stock_adjustment_id')->references('id')->on('stock_adjustments')->cascadeOnDelete();
-            $table->foreign('product_id')->references('id')->on('products')->cascadeOnDelete();
-            $table->foreign('karat_id')->references('id')->on('karats')->cascadeOnDelete();
+            $table->foreign('product_variant_id')->references('id')->on('product_variants')->cascadeOnDelete();
+            // $table->foreign('karat_id')->references('id')->on('karats')->cascadeOnDelete();
         });
     }
 

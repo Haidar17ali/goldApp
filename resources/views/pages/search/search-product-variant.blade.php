@@ -3,8 +3,9 @@
         <tr>
             <th scope="col">#</th>
             <th scope="col">Produk</th>
-            <th scope="col">Warna</th>
+            <th scope="col">Kadar</th>
             <th scope="col">Ukuran</th>
+            <th scope="col">Tipe</th>
             <th scope="col">SKU</th>
             <th scope="col">Harga</th>
             <th scope="col">Aksi</th>
@@ -18,9 +19,15 @@
                     <td>{{ strtoupper($item->product?->name) }}</td>
                     <td>{{ strtoupper($item->karat?->name) }}</td>
                     <td>{{ strtoupper($item->gram) }}</td>
+                    <td>{{ strtoupper($item->type) }}</td>
                     <td>{{ $item->sku }}</td>
                     <td>Rp.{{ money_format($item->default_price) }}</td>
                     <td>
+                        <a href="{{ route('varian-produk.barcode-form', $item->id) }}"
+                        class="badge badge-info"
+                        title="Cetak Barcode">
+                            <i class="fas fa-barcode"></i>
+                        </a>
                         <a href="{{ route('varian-produk.ubah', $item->id) }}" class="badge badge-success">
                             <i class="fas fa-pencil-alt"></i>
                         </a>

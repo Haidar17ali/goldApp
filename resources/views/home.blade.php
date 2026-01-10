@@ -39,6 +39,92 @@
         </div>
     </div>
 
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-center">STOK EMAS DI BRANKAS</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+
+                @forelse ($stockBrankas as $item)
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="small-box bg-warning h-100">
+                            <div class="inner">
+                                <h4 class="fw-bold mb-1">
+                                    {{ number_format($item->total_gram, 2) }} gr
+                                </h4>
+
+                                <div class="text-sm">
+                                    {{ $item->product_name ?? '-' }}
+                                </div>
+
+                                <div class="text-sm">
+                                    Tipe {{ $item->type ?? '-' }}
+                                </div>
+
+                                <small class="text-muted">
+                                    Karat {{ $item->karat_name ?? '-' }}
+                                </small>
+                            </div>
+
+                            <div class="icon">
+                                <i class="fas fa-ring"></i>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-lg-12 text-center">
+                            <h6>data emas dibrankas tidak ditemukan!</h6>
+                    </div>
+                @endforelse
+
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-center">STOK EMAS ETALASE</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+
+                @forelse ($stocks as $item)
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="small-box bg-warning h-100">
+                            <div class="inner">
+                                <h4 class="fw-bold mb-1">
+                                    {{ number_format($item->total_gram, 2) }} gr
+                                </h4>
+
+                                <div class="text-sm">
+                                    {{ $item->product_name ?? '-' }}
+                                </div>
+
+                                <div class="text-sm">
+                                    Tipe {{ $item->type ?? '-' }}
+                                </div>
+
+                                <small class="text-muted">
+                                    Kadar {{ $item->karat_name ?? '-' }}
+                                </small>
+                            </div>
+
+                            <div class="icon">
+                                <i class="fas fa-ring"></i>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-lg-12 text-center">
+                            <h6>data emas tidak ditemukan!</h6>
+                    </div>
+                @endforelse
+
+            </div>
+        </div>
+    </div>
+
+
 @stop
 <style>
     .chart-container {

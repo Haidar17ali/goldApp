@@ -293,6 +293,16 @@ class UtilityController extends BaseController
                 'kadar'=> ["username"],
             ]
         ],
+        'goldMergeConversions' => [
+            'model' => 'App\\Models\\GoldMergeConversion',
+            'columns' => [
+                'id',
+                'note',
+                'created_by',
+                'edited_by',
+            ],
+            'relations' => []
+        ],
         'stockAdjustments' => [
             'model' => 'App\\Models\\StockAdjustment',
             'columns' => [
@@ -445,6 +455,11 @@ class UtilityController extends BaseController
         }elseif($modelKey == "goldConversions"){
             return response()->json([
                 'table' => view('pages.search.search-gold-conversions', compact(['data']))->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+            ]);
+        }elseif($modelKey == "goldMergeConversions"){
+            return response()->json([
+                'table' => view('pages.search.search-gold-merge-conversions', compact(['data']))->render(),
                 'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
             ]);
         }elseif($modelKey == "stockAdjustments"){

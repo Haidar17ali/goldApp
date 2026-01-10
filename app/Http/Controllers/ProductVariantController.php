@@ -28,28 +28,40 @@ class ProductVariantController extends BaseController
 
     public function store(Request $request){
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'karat_id'   => 'nullable|exists:karats,id',
-            'gram'    => 'required',
-            'default_price' => 'nullable|numeric|min:0',
+            'product_id'     => 'required|exists:products,id',
+            'karat_id'       => 'nullable|exists:karats,id',
+            'gram'           => 'required|numeric|min:0.01',
+            'type'           => 'required|in:new,sepuh',
+            'default_price'  => 'nullable|numeric|min:0',
         ]);
 
-        $product   = Product::find($request->product_id);
-        $karatName = $request->karat_id ? Karat::find($request->karat_id)->name : 'NOKRT';
 
-        // SKU format: PRODUCTCODE-karatCODE-SIZECODE
-        $sku = strtoupper($product->name . '-' . $karatName. '-' . $request->gram);
+        $product   = Product::find($request->product_id);
+        $karatName = $request->karat_id
+            ? Karat::find($request->karat_id)->name
+            : 'NOKRT';
+
+        $type = strtoupper($request->type); // NEW / SEPUH
+
+        $sku = strtoupper(
+            $product->name . '-' .
+            $karatName . '-' .
+            $request->gram . '-' .
+            $type
+        );
+
 
         // Barcode: unik (pakai UUID atau kombinasi angka acak)
         $barcode = strtoupper(Str::random(12));
 
-        $variant = ProductVariant::create([
-            'product_id' => $request->product_id,
-            'karat_id'   => $request->karat_id,
-            'gram'    => $request->gram,
-            'sku'        => $sku,
-            'barcode'    => $barcode,
-            'default_price' => $request->default_price,
+        ProductVariant::create([
+            'product_id'     => $request->product_id,
+            'karat_id'       => $request->karat_id,
+            'gram'           => $request->gram,
+            'type'           => $request->type, // 🔥 PENTING
+            'sku'            => $sku,
+            'barcode'        => $barcode,
+            'default_price'  => $request->default_price,
         ]);
 
         return redirect()->route('varian-produk.index')
@@ -85,6 +97,7 @@ class ProductVariantController extends BaseController
             'karat_id'   => $request->karat_id,
             'gram'    => $request->gram,
             'sku'        => $sku,
+            'type'    => $request->type,
             // barcode tidak berubah biar tetap unik (kalau mau regenerate bisa juga)
             'default_price' => $request->default_price,
         ]);
@@ -105,9 +118,29 @@ class ProductVariantController extends BaseController
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
         ]);
-
         Excel::import(new ProductVariantImport, $request->file('file'));
 
         return redirect()->route('varian-produk.index')->with('status', 'imported');
+    }
+
+    public function barcodeForm($id)
+    {
+        $item = ProductVariant::with(['product','karat'])->findOrFail($id);
+
+        return view('pages.product-variants.barcode-form', compact('item'));
+    }
+
+    public function barcodePrint(Request $request, $id)
+    {
+        $request->validate([
+            'qty' => 'required|integer|min:1|max:100'
+        ]);
+
+        $item = ProductVariant::with(['product','karat'])->findOrFail($id);
+
+        return view('pages.product-variants.barcode-print', [
+            'item' => $item,
+            'qty'  => $request->qty
+        ]);
     }
 }

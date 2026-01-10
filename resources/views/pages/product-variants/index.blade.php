@@ -165,6 +165,7 @@
                             'product_id',
                             'karat_id',
                             'gram',
+                            'type',
                             'sku',
                             'barcode',
                             'default_price',

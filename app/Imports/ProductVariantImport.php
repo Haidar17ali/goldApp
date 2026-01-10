@@ -13,44 +13,52 @@ class ProductVariantImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
-        // Pastikan kolom di Excel punya heading:
-        // product_name | karat_name | gram | default_price
-
-        if (empty($row['product_name']) || empty($row['gram'])) {
-            // Jika data penting kosong, skip baris ini
+        // wajib ada
+        if (empty($row['product_name']) || empty($row['weight'])) {
             return null;
         }
-
-        // === Cari atau buat product ===
+        
+        // === Product ===
         $product = Product::firstOrCreate(
             ['name' => trim($row['product_name'])],
-            ['code' => strtoupper(Str::slug($row['product_name'], '-'))] // optional field
+            ['code' => strtoupper(Str::slug($row['product_name'], '-'))]
         );
-
-        // === Cari atau buat karat (jika diisi) ===
+        
+        // === Karat (optional) ===
         $karat = null;
         if (!empty($row['karat_name'])) {
-            $karat = Karat::firstOrCreate(
-                ['name' => trim($row['karat_name'])]
-            );
+            $karat = Karat::firstOrCreate([
+                'name' => trim($row['karat_name'])
+            ]);
         }
-
+        
         $karatName = $karat ? $karat->name : 'NOKRT';
-
-        // === Generate SKU & Barcode ===
-        $sku = strtoupper($product->name . '-' . $karatName . '-' . $row['gram']);
+        
+        // === Type (new / sepuh) ===
+        $type = 'new'; // default
+        if (!empty($row['type'])) {
+            $rowType = strtolower(trim($row['type']));
+            if (in_array($rowType, ['new', 'sepuh'])) {
+                $type = $rowType;
+            }
+        }
+        
+        // === SKU & Barcode ===
+        $sku = strtoupper($product->name . '-' . $karatName . '-' . $row['weight'] . '-' . $type);
         $barcode = strtoupper(Str::random(12));
+
 
         // === Cegah duplikasi SKU ===
         if (ProductVariant::where('sku', $sku)->exists()) {
             return null;
         }
 
-        // === Buat ProductVariant ===
+        // === Simpan ===
         return new ProductVariant([
             'product_id'    => $product->id,
             'karat_id'      => $karat?->id,
-            'gram'          => $row['gram'],
+            'gram'          => $row['weight'],
+            'type'          => $type, // 🔥 INI YANG BARU
             'sku'           => $sku,
             'barcode'       => $barcode,
             'default_price' => $row['default_price'] ?? 0,

@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductVariant extends Model
 {
-     protected $fillable = [
+    protected $fillable = [
         'product_id',
         'karat_id',
         'gram',
+        'type',
         'sku',
         'barcode',
         'default_price',
@@ -23,5 +24,10 @@ class ProductVariant extends Model
     public function karat()
     {
         return $this->belongsTo(Karat::class);
+    }
+
+    public function stocks()
+    {
+        return $this->belongsTo(Stock::class);
     }
 }

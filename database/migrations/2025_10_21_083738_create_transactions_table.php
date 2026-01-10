@@ -16,9 +16,14 @@ return new class extends Migration {
             $table->date('transaction_date');
             $table->string('invoice_number')->unique();
             $table->decimal('total', 18, 2)->default(0);
-            $table->string('customer_name')->nullable();
+            $table->integer('customer_id')->nullable();
             $table->string('supplier_name')->nullable();
             $table->text('note')->nullable();
+            $table->string('photo')->nullable();
+            $table->enum('payment_method', ['cash', 'transfer', 'cash_transfer'])->nullable();
+            $table->foreignId('bank_account_id')->nullable()->constrained('bank_accounts')->nullOnDelete();
+            $table->decimal('cash_amount', 15, 2)->nullable();
+            $table->decimal('transfer_amount', 15, 2)->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
@@ -29,4 +34,3 @@ return new class extends Migration {
         Schema::dropIfExists('transactions');
     }
 };
-

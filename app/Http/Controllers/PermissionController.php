@@ -8,7 +8,7 @@ use Spatie\Permission\Models\Permission;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 
-class PermissionController extends BaseController
+class PermissionController extends Controller
 {
     public function index(){
         $permissions = Permission::all();

@@ -8,9 +8,7 @@ class TransactionDetail extends Model
 {
     protected $fillable = [
         'transaction_id',
-        'product_id',
-        'karat_id',
-        'gram',
+        'product_variant_id',
         'unit_price',
         'type',
         'note',
@@ -21,9 +19,9 @@ class TransactionDetail extends Model
         return $this->belongsTo(Transaction::class);
     }
 
-    public function product()
+    public function productVariant()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProductVariant::class);
     }
 
     public function karat()

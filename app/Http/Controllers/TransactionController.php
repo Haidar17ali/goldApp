@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Helpers\StockHelper;
 use App\Models\BankAccount;
+use App\Models\CustomerSupplier;
 use App\Models\Karat;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -46,7 +47,10 @@ class TransactionController extends BaseController
         $karats = \App\Models\Karat::orderBy('name')->get()->map(function ($k) {
             return $k->name;
         })->values()->toArray();
-        return view('pages.transactions.create', compact(["type", "purchaseType", "invoiceNumber", "products", "karats", "bankAccounts"]));
+
+        $customers = CustomerSupplier::orderBy("id", "desc")->get();
+
+        return view('pages.transactions.create', compact(["type", "purchaseType", "invoiceNumber", "products", "customers", "karats", "bankAccounts"]));
     }
 
     public function store($type, $purchaseType, Request $request)
@@ -129,6 +133,9 @@ class TransactionController extends BaseController
 
         try {
             DB::transaction(function () use ($validated, $type, $purchaseType) {
+                $customer = CustomerSupplier::firstOrCreate([
+                    "name" => $validated["customer_name"],
+                ]);
 
                 // 🧾 Buat header transaksi
                 $transaction = \App\Models\Transaction::create([
@@ -138,7 +145,7 @@ class TransactionController extends BaseController
                     'storage_location_id' => 1,
                     'transaction_date'    => now(),
                     'invoice_number'      => $validated['invoice_number'] ?? null,
-                    'customer_name'       => $validated['customer_name'] ?? null,
+                    'customer_id'         => $customer->id ?? null,
                     'note'                => $validated['note'] ?? null,
                     'created_by'          => auth()->id(),
                     'total'               => 0,
@@ -174,6 +181,27 @@ class TransactionController extends BaseController
 
                     $karat = \App\Models\Karat::firstOrCreate(['name' => $karatName]);
 
+                    $sku = strtoupper(
+                        $product->name . '-' .
+                            $karatName . '-' .
+                            $gram . '-' .
+                            "customer"
+                    );
+
+                    $productVariant = ProductVariant::firstOrCreate(
+                        [
+                            'product_id' => $product->id,
+                            'karat_id'   => $karat->id,
+                            'gram'       => $gram,
+                            'type'       => "customer",
+                        ],
+                        [
+                            'sku'           => $sku,
+                            'barcode'       => strtoupper(Str::random(12)),
+                            'default_price' => 0,
+                        ]
+                    );
+
                     // Tentukan jenis emas (rosok, sepuh, new)
                     // $goldType = $purchaseType === 'sepuh'
                     //     ? 'sepuh'
@@ -181,24 +209,47 @@ class TransactionController extends BaseController
 
                     // Simpan detail transaksi
                     \App\Models\TransactionDetail::create([
-                        'transaction_id' => $transaction->id,
-                        'product_id'     => $product->id,
-                        'karat_id'       => $karat->id,
-                        'gram'           => $gram,
-                        'unit_price'     => $price,
-                        'type'           => $purchaseType,
-                        'note'           => $detail['note'] ?? null,
+                        'transaction_id'        => $transaction->id,
+                        'product_variant_id'     => $productVariant->id,
+                        'unit_price'            => $price,
+                        'type'                  => $purchaseType,
+                        'note'                  => $detail['note'] ?? null,
                     ]);
 
                     // Update stok (in/out)
                     $movementType = $transaction->type === 'purchase' ? 'in' : 'out';
                     if ($purchaseType == "customer" || $purchaseType == "new") {
-                        $productStock = Product::where("name", "emas")->first();
+                        $productStock = Product::firstOrCreate(
+                            ['name' => "emas"],
+                            ['code' => \Str::slug("emas")]
+                        );
+
+
+                        $karat = \App\Models\Karat::firstOrCreate(['name' => $karatName]);
+                        $emasSKU =  strtoupper(
+                            $productStock->name . '-' .
+                                $karatName . '-' .
+                                $gram . '-' .
+                                "customer"
+                        );
+
+                        $emasProductVariant = ProductVariant::firstOrCreate(
+                            [
+                                'product_id' => $productStock->id,
+                                'karat_id'   => $karat->id,
+                                'gram'       => $gram,
+                                'type'       => "customer",
+                            ],
+                            [
+                                'sku'           => $emasSKU,
+                                'barcode'       => strtoupper(Str::random(12)),
+                                'default_price' => 0,
+                            ]
+                        );
                     }
 
                     \App\Helpers\StockHelper::moveStock(
-                        $productStock->id,
-                        $karat->id,
+                        $emasProductVariant->id,
                         $transaction->branch_id,
                         $transaction->storage_location_id,
                         $movementType,
@@ -231,7 +282,7 @@ class TransactionController extends BaseController
 
     public function edit($type, $purchaseType, $id)
     {
-        $transaction = Transaction::with(['details.product', "details.karat"])->findOrFail($id);
+        $transaction = Transaction::with(['details.productVariant'])->findOrFail($id);
 
         $products = Product::select("id", 'name')->get();
         $karats = Karat::select("id", 'name')->get();
@@ -240,14 +291,16 @@ class TransactionController extends BaseController
         // Format data details agar sesuai untuk JS
         $details = $transaction->details->map(function ($item) {
             return [
-                'product_id' => $item->product_id,
-                'product_name' => $item->product?->name ?? '',
-                'karat_id' => $item->karat_id,
-                'karat_name' => $item->karat->name ?? '',
-                'gram' => $item->gram,
+                'product_id' => $item->productVariant?->product->id ?? "",
+                'product_name' => $item->productVariant->product?->name ?? '',
+                'karat_id' => $item->productVariant?->karat->id ?? "",
+                'karat_name' => $item->productVariant->karat->name ?? '',
+                'gram' => $item->productVariant->gram,
                 'harga_beli' => $item->unit_price,
             ];
         });
+
+        $customers = CustomerSupplier::orderBy("id", "desc")->get();
 
         return view('pages.transactions.edit', compact(
             'transaction',
@@ -256,6 +309,7 @@ class TransactionController extends BaseController
             'bankAccounts',
             'products',
             'karats',
+            'customers',
             'details'
         ));
     }
@@ -343,19 +397,39 @@ class TransactionController extends BaseController
         try {
             DB::transaction(function () use ($validated, $type, $purchaseType, $id) {
 
-                $transaction = \App\Models\Transaction::findOrFail($id);
-
-                // 🔄 Kembalikan stok lama terlebih dahulu
-                if ($purchaseType == "customer" || $purchaseType == "new") {
-                    $productStock = Product::where("name", "emas")->first();
-                }
+                $transaction = \App\Models\Transaction::with("details.productVariant.karat")->findOrFail($id);
 
                 foreach ($transaction->details as $oldDetail) {
+
+                    // 🔄 Kembalikan stok lama terlebih dahulu
+                    if ($purchaseType == "customer" || $purchaseType == "new") {
+                        $productStock = Product::where("name", "emas")->first();
+
+                        $emasSKU =  strtoupper(
+                            $productStock->name . '-' .
+                                $oldDetail->productVariant->karat->name . '-' .
+                                $oldDetail->productVariant->gram . '-' .
+                                "customer"
+                        );
+
+                        $emasProductVariant = ProductVariant::firstOrCreate(
+                            [
+                                'product_id' => $productStock->id,
+                                'karat_id'   => $oldDetail->productVariant->karat->id,
+                                'gram'       => $oldDetail->productVariant->gram,
+                                'type'       => "customer",
+                            ],
+                            [
+                                'sku'           => $emasSKU,
+                                'barcode'       => strtoupper(Str::random(12)),
+                                'default_price' => 0,
+                            ]
+                        );
+                    }
                     $movementType = $transaction->type === 'purchase' ? 'out' : 'in'; // kebalikan dari store
 
                     \App\Helpers\StockHelper::moveStock(
-                        $productStock->id,
-                        $oldDetail->karat_id,
+                        $emasProductVariant->id,
                         $transaction->branch_id,
                         $transaction->storage_location_id,
                         $movementType,
@@ -394,6 +468,27 @@ class TransactionController extends BaseController
                     $karat   = \App\Models\Karat::findOrFail($detail['karat_id']);
                     $gram    = (float) $detail['gram'];
 
+                    $sku = strtoupper(
+                        $product->name . '-' .
+                            $karat->name . '-' .
+                            $gram . '-' .
+                            "customer"
+                    );
+
+                    $productVariant = ProductVariant::firstOrCreate(
+                        [
+                            'product_id' => $product->id,
+                            'karat_id'   => $karat->id,
+                            'gram'       => $gram,
+                            'type'       => "customer",
+                        ],
+                        [
+                            'sku'           => $sku,
+                            'barcode'       => strtoupper(Str::random(12)),
+                            'default_price' => 0,
+                        ]
+                    );
+
                     $price = $type === 'penjualan'
                         ? (float) ($detail['harga_jual'] ?? 0)
                         : (float) ($detail['harga_beli'] ?? 0);
@@ -404,9 +499,7 @@ class TransactionController extends BaseController
 
                     \App\Models\TransactionDetail::create([
                         'transaction_id' => $transaction->id,
-                        'product_id'     => $product->id,
-                        'karat_id'       => $karat->id,
-                        'gram'           => $gram,
+                        'product_variant_id'     => $productVariant->id,
                         'unit_price'     => $price,
                         'type'           => $purchaseType,
                         'note'           => $detail['note'] ?? null,
@@ -414,9 +507,36 @@ class TransactionController extends BaseController
 
                     $movementType = $transaction->type === 'purchase' ? 'in' : 'out';
 
+                    if ($purchaseType == "customer" || $purchaseType == "new") {
+                        $productStock = Product::firstOrCreate(
+                            ['name' => "emas"],
+                            ['code' => \Str::slug("emas")]
+                        );
+
+                        $emasSKU =  strtoupper(
+                            $productStock->name . '-' .
+                                $karat->name . '-' .
+                                $gram . '-' .
+                                "customer"
+                        );
+
+                        $newEmasProductVariant = ProductVariant::firstOrCreate(
+                            [
+                                'product_id' => $productStock->id,
+                                'karat_id'   => $karat->id,
+                                'gram'       => $gram,
+                                'type'       => "customer",
+                            ],
+                            [
+                                'sku'           => $emasSKU,
+                                'barcode'       => strtoupper(Str::random(12)),
+                                'default_price' => 0,
+                            ]
+                        );
+                    }
+
                     \App\Helpers\StockHelper::moveStock(
-                        $productStock->id,
-                        $karat->id,
+                        $newEmasProductVariant->id,
                         $transaction->branch_id,
                         $transaction->storage_location_id,
                         $movementType,
@@ -451,16 +571,37 @@ class TransactionController extends BaseController
 
     public function destroy($type, $purchaseType, Transaction $transaction)
     {
+        $transaction->load("details.productVariant");
         try {
             DB::transaction(function () use ($transaction, $purchaseType) {
                 // rollback semua stok
                 foreach ($transaction->details as $detail) {
-                    if ($purchaseType == "customer" || $purchaseType == "new") {
-                        $productStock = Product::where("name", "emas")->first();
-                    }
+
+                    $productStock = Product::where("name", "emas")->first();
+
+                    $emasSKU =  strtoupper(
+                        $productStock->name . '-' .
+                            $detail->productVariant->karat->name . '-' .
+                            $detail->productVariant->gram . '-' .
+                            "customer"
+                    );
+
+                    $emasProductVariant = ProductVariant::firstOrCreate(
+                        [
+                            'product_id' => $productStock->id,
+                            'karat_id'   => $detail->productVariant->karat->id,
+                            'gram'       => $detail->productVariant->gram,
+                            'type'       => "customer",
+                        ],
+                        [
+                            'sku'           => $emasSKU,
+                            'barcode'       => strtoupper(Str::random(12)),
+                            'default_price' => 0,
+                        ]
+                    );
+
                     \App\Helpers\StockHelper::moveStock(
-                        $productStock->id,
-                        $detail->karat_id,
+                        $emasProductVariant?->id ?? 0,
                         2,
                         1,
                         'out',

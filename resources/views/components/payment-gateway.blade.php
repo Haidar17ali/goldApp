@@ -50,7 +50,7 @@
     </div>
 </div>
 
-@push('scripts')
+@push('js')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const paymentSelect = document.getElementById('payment_method');

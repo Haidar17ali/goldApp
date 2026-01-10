@@ -130,13 +130,14 @@
                             'transaction_date',
                             'invoice_number',
                             'total',
-                            'customer_name',
+                            'customer_id',
                             'supplier_name',
                             'note',
                             'created_by',
                         ],
                         relations: {
                             'user': ["username"],
+                            'customer': ["name"],
                         },
                         page: page
                     },

@@ -363,11 +363,11 @@ return [
                     'url' => 'gold-app/karat',
                     'can' => 'karat.index',
                 ],
-                // [
-                //     'text' => 'Varian Produk',
-                //     'url' => 'gold-app/varian-produk',
-                //     'can' => 'varian-produk.index',
-                // ],
+                [
+                    'text' => 'Varian Produk',
+                    'url' => 'gold-app/varian-produk',
+                    'can' => 'varian-produk.index',
+                ],
                 [
                     'text' => 'No Rek',
                     'url' => 'gold-app/rekening',
@@ -421,29 +421,41 @@ return [
                         // ],
                     ],
                 ],
+            ],
+        ],
+        [
+            'text' => 'Manajemen Stok',
+            'icon' => 'fas fa-boxes',
+            'submenu' => [
                 [
-                    'text' => 'Manajemen Stok',
-                    'icon' => 'fas fa-boxes',
-                    'submenu' => [
-                        [
-                            'text' => 'Stok Opname',
-                            'url' => 'gold-app/opname',
-                            'icon' => 'fas fa-balance-scale',
-                            'can' => 'opname.index',
-                        ],
-                        [
-                            'text' => 'Pengelolaan Emas',
-                            'url' => 'gold-app/pengelolaan-emas',
-                            'icon' => 'fas fa-tools',
-                            'can' => 'pengelolaan-emas.index',
-                        ],
-                        [
-                            'text' => 'Input Etalase',
-                            'url' => 'gold-app/konversi-emas',
-                            'icon' => 'fas fa-tools',
-                            'can' => 'konversi-emas.index',
-                        ],
-                    ],
+                    'text' => 'Stok',
+                    'url' => 'gold-app/stocks',
+                    'icon' => 'fas fa-balance-scale',
+                    'can' => 'stock.index',
+                ],
+                [
+                    'text' => 'Stok Opname',
+                    'url' => 'gold-app/opname',
+                    'icon' => 'fas fa-balance-scale',
+                    'can' => 'opname.index',
+                ],
+                [
+                    'text' => 'Pengelolaan Emas',
+                    'url' => 'gold-app/pengelolaan-emas',
+                    'icon' => 'fas fa-tools',
+                    'can' => 'pengelolaan-emas.index',
+                ],
+                [
+                    'text' => 'Masuk Etalase',
+                    'url' => 'gold-app/konversi-emas',
+                    'icon' => 'fas fa-tools',
+                    'can' => 'konversi-emas.index',
+                ],
+                [
+                    'text' => 'Keluar Etalase',
+                    'url' => 'gold-app/keluar-etalase',
+                    'icon' => 'fas fa-tools',
+                    'can' => 'keluar-etalase.index',
                 ],
             ],
         ],

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class StockAdjustmentDetail extends Model
 {
     protected $fillable = [
-        'stock_adjustment_id', 'product_id', 'karat_id',
+        'stock_adjustment_id', 'product_variant_id',
         'system_qty', 'actual_qty', 'difference', 'type', "weight"
     ];
 
@@ -15,11 +15,11 @@ class StockAdjustmentDetail extends Model
         return $this->belongsTo(StockAdjustment::class);
     }
 
-    public function product() {
-        return $this->belongsTo(Product::class);
+    public function productVariant() {
+        return $this->belongsTo(ProductVariant::class);
     }
 
-    public function karat() {
-        return $this->belongsTo(Karat::class);
-    }
+    // public function karat() {
+    //     return $this->belongsTo(Karat::class);
+    // }
 }

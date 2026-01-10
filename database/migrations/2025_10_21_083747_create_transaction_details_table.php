@@ -10,13 +10,9 @@ return new class extends Migration {
         Schema::create('transaction_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('transaction_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->foreignId('karat_id')->constrained('karats')->cascadeOnDelete();
-            $table->decimal('gram', 12, 3);
-            $table->decimal('qty', 12, 3);
+            $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
             $table->decimal('unit_price', 18, 2);
-            $table->decimal('subtotal', 18, 2);
-            $table->enum('type', ["new","customer", "second", "batangan"]);
+            $table->enum('type', ["new","customer", "sepuh", "batangan"]);
             $table->string('note')->nullable();
             $table->timestamps();
         });

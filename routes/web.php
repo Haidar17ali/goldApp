@@ -13,11 +13,13 @@ use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerSupplierController;
 use App\Http\Controllers\GoldConversionController;
+use App\Http\Controllers\GoldMergeConversionController;
 use App\Http\Controllers\GoldManagementController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StorageLocationController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -104,15 +106,17 @@ Route::prefix('gold-app')
 
 
         // product variant
-        // Route::get("/varian-produk", [ProductVariantController::class, 'index'])->name("varian-produk.index");
-        // Route::get('/varian-produk/buat', [ProductVariantController::class, 'create'])->name('varian-produk.buat');
-        // Route::post('/varian-produk/buat', [ProductVariantController::class, 'store'])->name('varian-produk.simpan');
-        // Route::get('/varian-produk/{id}/ubah', [ProductVariantController::class, 'edit'])->name('varian-produk.ubah');
-        // Route::patch('/varian-produk/{id}/ubah', [ProductVariantController::class, 'update'])->name('varian-produk.update');
-        // Route::get('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'editDetail'])->name('varian-produk.ubahDetail');
-        // Route::patch('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'updateDetail'])->name('varian-produk.updateDetail');
-        // Route::delete('/varian-produk/{id}/hapus', [ProductVariantController::class, 'destroy'])->name('varian-produk.hapus');
-        // Route::post('/varian-produk/import', [ProductVariantController::class, 'import'])->name('varian-produk.import');
+        Route::get("/varian-produk", [ProductVariantController::class, 'index'])->name("varian-produk.index");
+        Route::get('/varian-produk/buat', [ProductVariantController::class, 'create'])->name('varian-produk.buat');
+        Route::post('/varian-produk/buat', [ProductVariantController::class, 'store'])->name('varian-produk.simpan');
+        Route::get('/varian-produk/{id}/ubah', [ProductVariantController::class, 'edit'])->name('varian-produk.ubah');
+        Route::patch('/varian-produk/{id}/ubah', [ProductVariantController::class, 'update'])->name('varian-produk.update');
+        Route::get('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'editDetail'])->name('varian-produk.ubahDetail');
+        Route::patch('/varian-produk/{id}/ubah/detail', [ProductVariantController::class, 'updateDetail'])->name('varian-produk.updateDetail');
+        Route::delete('/varian-produk/{id}/hapus', [ProductVariantController::class, 'destroy'])->name('varian-produk.hapus');
+        Route::post('/varian-produk/import', [ProductVariantController::class, 'import'])->name('varian-produk.import');
+        Route::get('/varian-produk/barcode/{id}', [ProductVariantController::class, 'barcodeForm'])->name('varian-produk.barcode-form');
+        Route::post('/barcode/{id}/print', [ProductVariantController::class, 'barcodePrint'])->name('varian-produk.barcode-print');    
 
         // transaksi pembelian
         Route::get("/transaksi/{type}/{purchaseType}", [TransactionController::class, 'index'])->name("transaksi.index");
@@ -149,7 +153,7 @@ Route::prefix('gold-app')
         Route::patch('/pengelolaan-emas/{id}/ubah', [GoldManagementController::class, 'update'])->name('pengelolaan-emas.update');
         Route::delete('/pengelolaan-emas/{id}/hapus', [GoldManagementController::class, 'destroy'])->name('pengelolaan-emas.hapus');
 
-        // conversi emas
+        // conversi emas etalase
         Route::get("/konversi-emas", [GoldConversionController::class, 'index'])->name("konversi-emas.index");
         Route::get('/konversi-emas/buat', [GoldConversionController::class, 'create'])->name('konversi-emas.buat');
         Route::post('/konversi-emas/buat', [GoldConversionController::class, 'store'])->name('konversi-emas.simpan');
@@ -157,6 +161,16 @@ Route::prefix('gold-app')
         Route::get('/konversi-emas/{id}/detail', [GoldConversionController::class, 'show'])->name('konversi-emas.detail');
         Route::patch('/konversi-emas/{id}/ubah', [GoldConversionController::class, 'update'])->name('konversi-emas.update');
         Route::delete('/konversi-emas/{id}/hapus', [GoldConversionController::class, 'destroy'])->name('konversi-emas.hapus');
+
+        // conversi emas brankas
+        Route::get("/keluar-etalase", [GoldMergeConversionController::class, 'index'])->name("keluar-etalase.index");
+        Route::get('/keluar-etalase/buat', [GoldMergeConversionController::class, 'create'])->name('keluar-etalase.buat');
+        Route::post('/keluar-etalase/buat', [GoldMergeConversionController::class, 'store'])->name('keluar-etalase.simpan');
+        Route::get('/keluar-etalase/{id}/ubah', [GoldMergeConversionController::class, 'edit'])->name('keluar-etalase.ubah');
+        Route::get('/keluar-etalase/{id}/detail', [GoldMergeConversionController::class, 'show'])->name('keluar-etalase.detail');
+        Route::patch('/keluar-etalase/{id}/ubah', [GoldMergeConversionController::class, 'update'])->name('keluar-etalase.update');
+        Route::delete('/keluar-etalase/{id}/hapus', [GoldMergeConversionController::class, 'destroy'])->name('keluar-etalase.hapus');
+
 
         // 🔹 Tambahkan ini untuk AJAX info stok per karat
         Route::get('/stock/info/{karat}', function ($karatId) {
@@ -167,6 +181,15 @@ Route::prefix('gold-app')
 
             return response()->json(['weight' => $stock->weight ?? 0]);
         });
+
+        // stocks
+        Route::get('/stocks', [StockController::class, 'index'])->name("stock.index");
+        // routes/web.php
+        Route::get('/stocks/detail', [StockController::class, 'detail'])->name('stocks.detail');
+        Route::get('/stocks/info', [StockController::class, 'info'])->name("stock.info");
+        Route::get('/stocks/weights', [StockController::class, 'weights'])->name("stock.berat");
+
+
 
 
         // utility

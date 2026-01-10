@@ -42,10 +42,10 @@
                         <span class="text-danger error-text" id="product_id_error"></span>
                     </div>
 
-                    <label for="karat_id" class="col-sm-2 col-form-label">Karat</label>
+                    <label for="karat_id" class="col-sm-2 col-form-label">Kadar</label>
                     <div class="col-sm-4">
                         <select name="karat_id" id="karat_id" class="form-control select2">
-                            <option value="">-- Pilih Karat --</option>
+                            <option value="">-- Pilih Kadar --</option>
                             @foreach ($karats as $karat)
                                 <option value="{{ $karat->id }}" {{ old('karat_id') == $karat->id ? 'selected' : '' }}>
                                     {{ strtoupper($karat->name) }}
@@ -53,6 +53,25 @@
                             @endforeach
                         </select>
                         <span class="text-danger error-text" id="karat_id_error"></span>
+                    </div>
+                </div>
+      
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Tipe</label>
+                    <div class="col-sm-4">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="type" id="type_new"
+                                value="new" {{ old('type', 'new') == 'new' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="type_new">NEW</label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="type" id="type_sepuh"
+                                value="sepuh" {{ old('type') == 'sepuh' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="type_sepuh">SEPUH</label>
+                        </div>
+
+                        <span class="text-danger error-text" id="type_error"></span>
                     </div>
                 </div>
 

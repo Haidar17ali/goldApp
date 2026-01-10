@@ -14,9 +14,13 @@ return new class extends Migration
             $table->foreignId('karat_id')->nullable()->constrained()->nullOnDelete()->cascadeOnDelete();
 
             $table->double('gram');
+            $table->enum('type', ["sepuh", "new", "customer", "batangan"])->default("new");
             $table->string('sku')->unique();      // SKU unik
             $table->string('barcode')->nullable()->unique(); // bisa null kalau belum ada
             $table->integer('default_price')->nullable();
+
+            $table->unique(['product_id', 'karat_id', 'gram', 'type']);
+
             $table->timestamps();
         });
     }

@@ -27,11 +27,22 @@
                         <input type="text" name="invoice_number" class="form-control form-control-lg"
                             value="{{ $invoiceNumber }}" required>
                     </div>
+                    
                     <div class="col-md-4">
-                        <label class="fw-semibold">Nama Customer</label>
-                        <input type="text" name="customer_name" class="form-control form-control-lg"
-                            placeholder="Masukkan nama customer" required>
+                        <label class="fw-semibold">Customer</label>
+                        <select name="customer_name" id="customerSelect"
+                            class="form-control form-control-lg" required>
+                            <option value="">-- pilih / ketik customer --</option>
+                            @foreach ($customers as $c)
+                                <option value="{{ $c->name }}"
+                                    data-phone="{{ $c->phone_number }}"
+                                    data-address="{{ $c->address }}">
+                                    {{ $c->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
+
                     <div class="col-md-4">
                         <label class="fw-semibold">Catatan</label>
                         <input type="text" name="note" class="form-control form-control-lg"
@@ -101,6 +112,28 @@
 @stop
 
 @section('css')
+
+    <style>
+        #detailTable td {
+            vertical-align: middle !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: calc(2.875rem + 2px) !important;
+            padding: 0.5rem 0.75rem !important;
+            display: flex !important;
+            align-items: center !important;
+            border-radius: 0.5rem !important;
+        }
+
+        .select2-selection__rendered {
+            font-size: 1rem !important;
+        }
+
+        .form-control-lg {
+            height: calc(2.875rem + 2px);
+        }
+    </style>
     <style>
         /* 🧩 Biar semua input sejajar secara vertikal */
         #detailTable td {
@@ -148,6 +181,21 @@
     @stack('scripts')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+         // ===== Customer Select2 =====
+        $('#customerSelect').select2({
+            tags: true,
+            width: '100%',
+            placeholder: '-- pilih / ketik customer --'
+        });
+
+        $('#customerSelect').on('change', function() {
+            const selected = $(this).find(':selected');
+            $('#customerPhone').val(selected.data('phone') || '');
+            $('#customerAddress').val(selected.data('address') || '');
+        });
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

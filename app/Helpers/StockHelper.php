@@ -15,7 +15,7 @@ class StockHelper
     /**
      * Pastikan product, karat, dan variant ada — buat otomatis jika belum ada
      */
-    public static function ensureVariant($productName, $karatName = null, $gram = null)
+    public static function ensureVariant($productName, $karatName = null, $gram = null, $type = null)
     {
         // Pastikan produk ada
         $product = Product::firstOrCreate(
@@ -36,29 +36,27 @@ class StockHelper
         return ProductVariant::firstOrCreate(
             [
                 'product_id' => $product->id,
-                'karat_id' => $karat ? $karat->id : null,
+                'karat_id' => $karat?->id,
                 'gram' => $gram,
+                'type' => $type,
             ],
-            function () use ($product, $karat, $gram) {
-                $karatCode = $karat ? $karat->name : 'NOKRT';
-                return [
-                    'sku' => strtoupper($product->name . '-' . $karatCode . '-' . ($gram ?? 'GEN')),
-                    'barcode' => strtoupper(Str::random(12)),
-                    'default_price' => 0,
-                ];
-            }
+            [
+                'sku' => strtoupper($product->name . '-' . ($karat?->name ?? 'NOKRT') . '-' . ($gram ?? 'GEN')),
+                'barcode' => strtoupper(Str::random(12)),
+                'default_price' => 0,
+            ]
         );
     }
 
     /**
      * Catat pergerakan stok
      */
-    public static function moveStock($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null, $goldType = 'new')
+    public static function moveStock($product_variant_id, $branchId, $storageLocationId, $type, $quantity, $weight = null, $referenceType = null, $referenceId = null, $note = null, $userId = null, $goldType = 'new')
     {
-        return DB::transaction(function () use ($product_id, $karat_id, $branchId, $storageLocationId, $type, $quantity, $weight, $referenceType, $referenceId, $note, $userId, $goldType) {
+        return DB::transaction(function () use ($product_variant_id, $branchId, $storageLocationId, $type, $quantity, $weight, $referenceType, $referenceId, $note, $userId, $goldType) {
             $movement = StockMovement::create([
-                'product_id' => $product_id,
-                'karat_id' => $karat_id,
+                'product_variant_id' => $product_variant_id,
+                // 'karat_id' => $karat_id,
                 'branch_id' => $branchId,
                 'storage_location_id' => $storageLocationId,
                 'type' => $type,
@@ -70,52 +68,41 @@ class StockHelper
                 'note' => $note,
                 'created_by' => $userId,
             ]);
-            
-            
-            $product = Product::where("id", $product_id)->first();
-            if($product->name == "emas"){
-                if ($goldType == "customer" || $goldType == "new" || $goldType == "second" || $goldType == "batangan") {
-                    $stock = Stock::firstOrCreate([
-                        'product_id' => $product_id,
-                        'karat_id' => $karat_id,
-                        'branch_id' => $branchId,
-                        'storage_location_id' => $storageLocationId,
-                        'type' => $goldType,
-                    ], [
-                        'weight' => 0,
-                        'quantity' => 0,
-                    ]);
-    
-                    if (in_array($type, ['in', 'loan_in'])) {
-                        $stock->weight += $weight;
-                    } elseif (in_array($type, ['out', 'loan_out'])) {
-                        $stock->weight -= $weight;
-                    } elseif ($type === 'adjustment') {
-                        $stock->weight = $weight;
-                    }
-                }
-            } else {
-                // Update stok utama
-                $stock = Stock::firstOrCreate([
-                    'product_id' => $product_id,
-                    'karat_id' => $karat_id,
-                    'branch_id' => $branchId,
-                    'storage_location_id' => $storageLocationId,
-                    'weight' => $weight,
-                    'type' => $goldType,
-                ], [
-                    'quantity' => 0,
-                ]);
 
-                if (in_array($type, ['in', 'loan_in'])) {
-                    $stock->quantity += $quantity;
-                } elseif (in_array($type, ['out', 'loan_out'])) {
-                    $stock->quantity -= $quantity;
-                } elseif ($type === 'adjustment') {
-                    $stock->quantity = $quantity;
-                }
+
+            $productVariant = ProductVariant::where("id", $product_variant_id)->first();
+            // if ($productVariant->product->name == "emas") {
+            //     if ($goldType == "customer" || $goldType == "new" || $goldType == "second" || $goldType == "batangan") {
+            //         $stock = Stock::firstOrCreate([
+            //             'product_variant_id' => $product_variant_id,
+            //             // 'karat_id' => $karat_id,
+            //             'branch_id' => $branchId,
+            //             'storage_location_id' => $storageLocationId,
+            //             'type' => $goldType,
+            //         ], [
+            //             'quantity' => 0,
+            //         ]);
+            //     }
+            // } else {
+            // Update stok utama
+            $stock = Stock::firstOrCreate([
+                'product_variant_id' => $product_variant_id,
+                // 'karat_id' => $karat_id,
+                'branch_id' => $branchId,
+                'storage_location_id' => $storageLocationId,
+                'type' => $goldType,
+            ], [
+                'quantity' => 0,
+            ]);
+
+            if (in_array($type, ['in', 'loan_in'])) {
+                $stock->quantity += $quantity;
+            } elseif (in_array($type, ['out', 'loan_out'])) {
+                $stock->quantity -= $quantity;
+            } elseif ($type === 'adjustment') {
+                $stock->quantity = $quantity;
             }
-
+            // }
 
             $stock->save();
 
