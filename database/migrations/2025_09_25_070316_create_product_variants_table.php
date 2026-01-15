@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('karat_id')->nullable()->constrained()->nullOnDelete()->cascadeOnDelete();
 
-            $table->double('gram');
+            $table->double('gram')->nullable();
             $table->enum('type', ["sepuh", "new", "customer", "batangan"])->default("new");
             $table->string('sku')->unique();      // SKU unik
             $table->string('barcode')->nullable()->unique(); // bisa null kalau belum ada

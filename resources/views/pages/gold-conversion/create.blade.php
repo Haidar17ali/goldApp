@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-    <div class="card shadow-lg">
+    <div class="shadow-lg card">
         <div class="card-body">
 
             @if ($errors->any())
@@ -24,8 +24,8 @@
                 <input type="hidden" name="karat_id" id="karatIdHidden">
 
                 {{-- ======================= HEADER FORM ======================= --}}
-                <h5 class="fw-bold mb-3">Informasi Utama</h5>
-                <div class="row g-3 mb-4">
+                <h5 class="mb-3 fw-bold">Informasi Utama</h5>
+                <div class="mb-4 row g-3">
 
                     {{-- PILIH STOCK --}}
                     <div class="col-md-6">
@@ -60,30 +60,66 @@
 
                 <hr class="my-4">
 
+                <hr class="my-4">
+
+                <div x-data="barcodeInput()" class="mb-4 position-relative">
+
+                    <label class="fw-semibold">Scan Barcode / Ketik Barang</label>
+
+                    <input type="text" x-model="query" @input="search" @keydown.enter.prevent="selectFirst"
+                        class="form-control form-control-lg" placeholder="Scan barcode atau ketik nama barang" autofocus>
+
+                    <!-- DROPDOWN -->
+                    <div class="shadow list-group position-absolute w-100" x-show="showDropdown"
+                        @click.outside="showDropdown = false" style="z-index:1050">
+
+                        <template x-for="item in results" :key="item.id">
+                            <button type="button" class="list-group-item list-group-item-action" @click="select(item)">
+                                <strong x-text="item.barcode ?? item.sku"></strong>
+                                —
+                                <span x-text="item.product.name"></span>
+                                —
+                                <span x-text="item.gram + ' gr'"></span>
+                            </button>
+                        </template>
+
+                        <div class="list-group-item text-muted" x-show="results.length === 0">
+                            Tidak ditemukan
+                        </div>
+                    </div>
+                </div>
+
+
                 {{-- ======================= DETAIL OUTPUT ======================= --}}
-                <h5 class="mb-3 fw-bold">Detail Output</h5>
+                <h5 class="mb-3 fw-bold">Detail Barang</h5>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle" id="detailTable">
-                        <thead class="table-light text-center">
+                    <table class="table align-middle table-bordered" id="detailTable">
+                        <thead class="text-center table-light">
                             <tr>
-                                <th style="width: 40%">Produk</th>
-                                <th style="width: 20%">Gram</th>
+                                <th style="width: 25%">Produk</th>
+                                <th style="width: 15%">Karat</th>
+                                <th style="width: 15%">Gram</th>
+                                <th style="width: 15%">Harga Jual</th>
                                 <th style="width: 5%"></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
+
+                    <div class="mb-4 text-end">
+                        <h5>
+                            <strong>
+                                Grand Total Jual:
+                                Rp <span id="grandTotalJual">0</span>
+                            </strong>
+                        </h5>
+                    </div>
                 </div>
 
-                <div class="mb-3 text-end">
-                    <button type="button" id="addRow" class="btn btn-success btn-lg">
-                        <i class="fas fa-plus"></i> Tambah Baris
-                    </button>
-                </div>
 
                 <div class="text-end">
-                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <button type="submit" class="px-5 btn btn-primary btn-lg">
                         <i class="fas fa-save me-1"></i> Simpan Proses
                     </button>
                 </div>
@@ -184,5 +220,49 @@
             addRow();
         });
     </script>
+
+    {{-- dropdown --}}
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('barcodeInput', () => ({
+                query: '',
+                results: [],
+                showDropdown: false,
+
+                search() {
+                    if (this.query.length < 2) {
+                        this.results = [];
+                        this.showDropdown = false;
+                        return;
+                    }
+
+                    fetch(`/api/products/search?q=${this.query}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            this.results = data;
+                            this.showDropdown = true;
+                        });
+                },
+
+                select(item) {
+                    addItemToTable(item);
+                    this.reset();
+                },
+
+                selectFirst() {
+                    if (this.results.length > 0) {
+                        this.select(this.results[0]);
+                    }
+                },
+
+                reset() {
+                    this.query = '';
+                    this.results = [];
+                    this.showDropdown = false;
+                }
+            }))
+        });
+    </script>
+
 
 @stop

@@ -2,93 +2,76 @@
 <html>
 
 <head>
-    <title>Print QR Label Yupo</title>
+    <title>Print Barcode Label Yupo</title>
+
     <style>
         @page {
-            size: auto;
+            size: 78mm auto;
             margin: 0;
         }
 
         body {
             margin: 0;
-            padding: 0;
             font-family: Arial, sans-serif;
         }
 
-        /* CONTAINER UTAMA */
+        /* CONTAINER 2 KOLOM – TOTAL PAS 78mm */
         .container {
             display: grid;
-            grid-template-columns: 22mm 22mm;
-            /* 2 label per baris */
-            column-gap: 34mm;
-            /* jarak horizontal antar label */
-            row-gap: 2mm;
-            /* jarak vertikal antar label */
-            padding: 1mm 0 0 1mm;
-            /* posisi top-left */
-            justify-content: start;
-            align-items: start;
+            grid-template-columns: 24mm 24mm;
+            column-gap: 30mm;
+            /* 24 + 30 + 24 = 78 */
+            width: 78mm;
         }
 
-        /* SATU LABEL */
+        /* 1 LABEL (24 x 24 mm) */
         .label {
-            width: 22mm;
+            width: 24mm;
             height: 24mm;
-            padding: 0.5mm;
-            box-sizing: border-box;
-            background: white;
-
-            display: flex;
-            align-items: flex-start;
-            /* top-aligned */
-            gap: 0.5mm;
-            overflow: hidden;
-            border: 0.1mm solid #ddd;
-            /* garis bantu tipis */
-        }
-
-        /* QR CODE */
-        .qr {
-            width: 8mm;
-            height: 8mm;
-            flex-shrink: 0;
-        }
-
-        .qr img {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        /* TEKS */
-        .text {
-            font-size: 3.5pt;
-            line-height: 1.1;
-            white-space: nowrap;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            /* teks dari atas */
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* BARCODE AREA */
+        .barcode {
+            width: 24mm;
+            height: 12mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .barcode svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            /* PENTING */
+        }
+
+        /* INFO AREA */
+        .info {
+            width: 24mm;
+            height: 12mm;
+            font-size: 4.5pt;
+            line-height: 1.2;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .product {
-            font-size: 4pt;
+            font-size: 5.5pt;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 0.2mm;
         }
 
         @media print {
-            body {
-                background: none;
-            }
-
-            .label {
-                border: none;
-            }
-
-            .container {
-                padding: 0.5mm 0 0 0.5mm;
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
     </style>
@@ -99,24 +82,30 @@
     <div class="container">
         @for ($i = 0; $i < $qty; $i++)
             <div class="label">
-                <div id="qr-{{ $i }}" class="qr"></div>
-                <div class="text">
+
+                <div class="barcode">
+                    <svg id="barcode-{{ $i }}"></svg>
+                </div>
+
+                <div class="info">
                     <div class="product">{{ strtoupper($item->product->name) }}</div>
                     <div>{{ $item->karat?->name }} | {{ $item->gram }}g</div>
-                    <div>Barcode: {{ $item->barcode }}</div>
                 </div>
+
             </div>
         @endfor
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
     <script>
         @for ($i = 0; $i < $qty; $i++)
-            new QRCode(document.getElementById("qr-{{ $i }}"), {
-                text: "{{ $item->barcode }}",
-                width: 32, // QR proporsional 8mm
-                height: 32,
-                correctLevel: QRCode.CorrectLevel.M
+            JsBarcode("#barcode-{{ $i }}", "{{ $item->barcode }}", {
+                format: "CODE128",
+                width: 1.7, // sweet spot untuk 24mm
+                height: 26,
+                displayValue: false,
+                margin: 0
             });
         @endfor
     </script>

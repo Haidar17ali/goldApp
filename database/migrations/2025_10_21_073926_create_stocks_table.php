@@ -16,6 +16,7 @@ return new class extends Migration
             // $table->foreignId('karat_id')->constrained()->cascadeOnDelete();
             $table->enum('type', ['new', 'customer', 'sepuh', 'batangan'])->default('new');
 
+            $table->decimal('weight', 15, 3)->nullable(); // dalam gram, bisa pecahan
             $table->decimal('quantity', 15, 3)->default(0); // dalam gram, bisa pecahan
             $table->timestamps();
 

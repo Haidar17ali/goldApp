@@ -44,7 +44,7 @@ class SalesController extends BaseController
             'stocks' => function ($q) {
                 $q->where('quantity', '>', 0);
             }
-        ])->get();
+        ])->where("gram", "!=", null)->get();
         $customers = CustomerSupplier::orderBy("id", "desc")->get();
 
         return view('pages.sales.create', compact('invoiceNumber', 'bankAccounts', "type", "customers", "productVariants"));

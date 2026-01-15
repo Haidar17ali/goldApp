@@ -237,7 +237,7 @@ class TransactionController extends BaseController
                             [
                                 'product_id' => $productStock->id,
                                 'karat_id'   => $karat->id,
-                                'gram'       => $gram,
+                                'gram'       => null,
                                 'type'       => "customer",
                             ],
                             [
@@ -416,7 +416,7 @@ class TransactionController extends BaseController
                             [
                                 'product_id' => $productStock->id,
                                 'karat_id'   => $oldDetail->productVariant->karat->id,
-                                'gram'       => $oldDetail->productVariant->gram,
+                                'gram'       => null,
                                 'type'       => "customer",
                             ],
                             [
@@ -434,7 +434,7 @@ class TransactionController extends BaseController
                         $transaction->storage_location_id,
                         $movementType,
                         1,
-                        $oldDetail->gram,
+                        $oldDetail->productVariant?->gram ?? 0,
                         'Transaction',
                         $transaction->id,
                         'rollback-transaction',
@@ -524,7 +524,7 @@ class TransactionController extends BaseController
                             [
                                 'product_id' => $productStock->id,
                                 'karat_id'   => $karat->id,
-                                'gram'       => $gram,
+                                'gram'       => null,
                                 'type'       => "customer",
                             ],
                             [
@@ -590,7 +590,7 @@ class TransactionController extends BaseController
                         [
                             'product_id' => $productStock->id,
                             'karat_id'   => $detail->productVariant->karat->id,
-                            'gram'       => $detail->productVariant->gram,
+                            'gram'       => null,
                             'type'       => "customer",
                         ],
                         [
@@ -606,7 +606,7 @@ class TransactionController extends BaseController
                         1,
                         'out',
                         1,
-                        $detail->gram ?? null,
+                        $detail->productVariant?->gram ?? null,
                         'Transaction',
                         $transaction->id,
                         "deleted",
