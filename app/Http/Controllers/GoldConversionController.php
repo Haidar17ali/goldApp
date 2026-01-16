@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Karat;
 use App\Models\GoldConversion;
 use App\Models\GoldConversionOutput;
+use App\Models\ProductVariant;
 use App\Models\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,14 @@ class GoldConversionController extends Controller
     */
     public function create()
     {
+        $productVariants = ProductVariant::with([
+            'product:id,name',
+            'karat:id,name',
+            'stocks' => function ($q) {
+                $q->where('quantity', '>', 0);
+            }
+        ])->where("gram", null)->get();
+
         return view('pages.gold-conversion.create', [
             'stocks'  => Stock::where("product_id", 7)->whereIn('type', ['second', 'new'])->where("weight", ">", 0)->get(),
             'products' => Product::all(),
@@ -68,11 +77,11 @@ class GoldConversionController extends Controller
                     'stock_id'      => $stock->id,
                     'product_id'    => $stock->product_id,
                     'karat_id'      => $stock->karat_id,
-                    'input_weight'  => array_sum(array_column($request->details,"weight")),
+                    'input_weight'  => array_sum(array_column($request->details, "weight")),
                     'note'          => $validated['note'] ?? null,
                     'created_by'    => auth()->id(),
                 ]);
-                
+
                 // =======================================================================================
                 // 2. Keluarkan stok gelondongan (OUT)
                 // =======================================================================================
@@ -83,14 +92,14 @@ class GoldConversionController extends Controller
                     1,
                     'out',
                     1,
-                    array_sum(array_column($request->details,"weight")),
+                    array_sum(array_column($request->details, "weight")),
                     'GoldConversion',
                     $conversion->id,
                     'pecah-gelondongan',
                     auth()->id(),
                     $stock->type // biasanya "second"
                 );
-                
+
                 // =======================================================================================
                 // 3. Simpan DETAIL + tambahkan stok hasil pecahan
                 // =======================================================================================
@@ -123,7 +132,6 @@ class GoldConversionController extends Controller
             });
 
             return redirect()->route("konversi-emas.index")->with("status", "saved");
-
         } catch (\Throwable $e) {
 
             \Log::error("Gagal menyimpan gold conversion", [
@@ -154,12 +162,12 @@ class GoldConversionController extends Controller
 
         $currentStockId = $conversion->stock_id;
         $stocks = Stock::where("product_id", 7)
-        ->whereIn('type', ['second', 'new'])
-        ->where(function ($q) use ($currentStockId) {
-            $q->where("weight", ">", 0)
-            ->orWhere("id", $currentStockId); // tampilkan walaupun weight = 0
-        })
-        ->get();
+            ->whereIn('type', ['second', 'new'])
+            ->where(function ($q) use ($currentStockId) {
+                $q->where("weight", ">", 0)
+                    ->orWhere("id", $currentStockId); // tampilkan walaupun weight = 0
+            })
+            ->get();
 
         $products = Product::all();
         $karats = Karat::all();
@@ -242,7 +250,7 @@ class GoldConversionController extends Controller
                 'stock_id'     => $validated['stock_id'],
                 'product_id'   => Stock::find($validated['stock_id'])->product_id,
                 'karat_id'     => $validated['karat_id'],
-                'input_weight' => array_sum(array_column($request->details,"weight")),
+                'input_weight' => array_sum(array_column($request->details, "weight")),
                 'note'         => $validated['note'] ?? null,
                 'edited_by'    => auth()->id(),
             ]);
@@ -259,7 +267,7 @@ class GoldConversionController extends Controller
                 $conversion->stock->storage_location_id,
                 'out',
                 1,
-                array_sum(array_column($request->details,"weight")),
+                array_sum(array_column($request->details, "weight")),
                 'GoldConversion',
                 $conversion->id,
                 'edit-input',
@@ -297,11 +305,10 @@ class GoldConversionController extends Controller
             DB::commit();
 
             return redirect()->route("konversi-emas.index")->with('status', 'edited');
-
         } catch (\Throwable $e) {
 
             DB::rollBack();
-            \Log::error("Gagal update Gold Conversion: ".$e->getMessage());
+            \Log::error("Gagal update Gold Conversion: " . $e->getMessage());
 
             return back()->withErrors([
                 'msg' => 'Gagal update: ' . $e->getMessage()
@@ -312,10 +319,10 @@ class GoldConversionController extends Controller
     public function destroy($id)
     {
         $conversion = GoldConversion::with('outputs')->findOrFail($id);
-        
+
         DB::beginTransaction();
         $stock = Stock::find($conversion->stock_id);
-        
+
         //---------------------------------------------------------
         // 1. KEMBALIKAN stok lama (rollback output lama)
         //---------------------------------------------------------
@@ -336,7 +343,7 @@ class GoldConversionController extends Controller
                 $stock->type
             );
         }
-        
+
         // rollback bahan baku (stock_id)
         StockHelper::moveStock(
             $conversion->product_id,
@@ -352,12 +359,12 @@ class GoldConversionController extends Controller
             auth()->id(),
             $stock->type
         );
-        
+
         // ========================================================
         // 3. Hapus output (detail)
         // ========================================================
         $conversion->outputs()->delete();
-        
+
         // ========================================================
         // 4. Hapus master conversion
         // ========================================================
@@ -368,6 +375,4 @@ class GoldConversionController extends Controller
         return redirect()->route('konversi-emas.index')
             ->with(['status' => 'deleted']);
     }
-
-
 }
