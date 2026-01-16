@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('gold_conversion_outputs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('gold_conversion_id')->constrained('gold_conversions')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('products')->onDelete('restrict'); // cincin/gelang
-            $table->unsignedBigInteger('karat_id'); // tetap 8K
+            $table->foreignId('product_variant_id')->constrained('product_variants')->onDelete('restrict'); // cincin/gelang
             $table->decimal('weight', 10, 2);
             $table->text('note')->nullable();
             $table->timestamps();

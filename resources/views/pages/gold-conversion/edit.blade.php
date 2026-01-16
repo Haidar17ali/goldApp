@@ -8,7 +8,7 @@
 
 @section('content')
 
-    <div class="card shadow-lg">
+    <div class="shadow-lg card">
         <div class="card-body">
 
             @if ($errors->any())
@@ -23,15 +23,15 @@
                 @method('patch')
 
                 {{-- ======================= HEADER ======================= --}}
-                <h5 class="fw-bold mb-3">Informasi Utama</h5>
+                <h5 class="mb-3 fw-bold">Informasi Utama</h5>
 
-                <div class="row g-3 mb-4">
+                <div class="mb-4 row g-3">
 
                     {{-- PILIH STOK --}}
                     <div class="col-md-6">
                         <label class="fw-semibold">Pilih Stok</label>
                         <select name="stock_id" id="stockSelect" class="form-control form-control-lg select2" required>
-                            @foreach ($stocks as $s)
+                            @foreach ($productVariants as $s)
                                 <option value="{{ $s->id }}" data-karat-id="{{ $s->karat_id }}"
                                     data-karat="{{ $s->karat->name }}" data-weight="{{ $s->weight }}"
                                     {{ $conversion->stock_id == $s->id ? 'selected' : '' }}>
@@ -46,11 +46,11 @@
                     <div class="col-md-3">
                         <label class="fw-semibold">Karat</label>
                         <input type="text" id="karatView" class="form-control form-control-lg"
-                            value="{{ $conversion->kadar->name }}" readonly>
-                    </div>
+                            value="{{ $conversion->stock->productVariant->karat->name }}" readonly>
 
-                    {{-- HIDDEN KARAT_ID (DIKIRIM KE UPDATE) --}}
-                    <input type="hidden" name="karat_id" id="karatIdInput" value="{{ $conversion->karat_id }}">
+                        {{-- HIDDEN KARAT_ID (DIKIRIM KE UPDATE) --}}
+                        <input type="hidden" value="{{ $conversion->stock->productVariant->karat_id }}" name="karat_id">
+                    </div>
 
                     {{-- INPUT WEIGHT --}}
                     <div class="col-md-3">
@@ -72,8 +72,8 @@
                 <h5 class="mb-3 fw-bold">Detail Output</h5>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle" id="detailTable">
-                        <thead class="table-light text-center">
+                    <table class="table align-middle table-bordered" id="detailTable">
+                        <thead class="text-center table-light">
                             <tr>
                                 <th style="width: 40%">Produk</th>
                                 <th style="width: 20%">Gram</th>
@@ -124,7 +124,7 @@
                 </div>
 
                 <div class="text-end">
-                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <button type="submit" class="px-5 btn btn-primary btn-lg">
                         <i class="fas fa-save me-1"></i> Update Proses
                     </button>
                 </div>

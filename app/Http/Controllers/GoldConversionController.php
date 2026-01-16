@@ -12,6 +12,7 @@ use App\Models\ProductVariant;
 use App\Models\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class GoldConversionController extends Controller
 {
@@ -35,13 +36,30 @@ class GoldConversionController extends Controller
         $productVariants = ProductVariant::with([
             'product:id,name',
             'karat:id,name',
-            'stocks' => function ($q) {
-                $q->where('quantity', '>', 0);
-            }
-        ])->where("gram", null)->get();
+        ])
+            ->whereNull('gram')
+
+            // hanya yang punya stock
+            ->whereHas('stocks', function ($q) {
+                $q->where('weight', '>', 0);
+            })
+
+            // ambil weight stock sebagai attribute
+            ->select('product_variants.*')
+            ->selectSub(function ($q) {
+                $q->from('stocks')
+                    ->select('weight')
+                    ->whereColumn('stocks.product_variant_id', 'product_variants.id')
+                    ->where('weight', '>', 0)
+                    ->limit(1);
+            }, 'weight')
+
+            ->get();
+
+
 
         return view('pages.gold-conversion.create', [
-            'stocks'  => Stock::where("product_id", 7)->whereIn('type', ['second', 'new'])->where("weight", ">", 0)->get(),
+            'productVariants'  => $productVariants,
             'products' => Product::all(),
             'karats' => Karat::all(),
         ]);
@@ -55,7 +73,7 @@ class GoldConversionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'stock_id'      => 'required|exists:stocks,id',
+            'stock_id'      => 'required|exists:product_variants,id',
             'input_weight'  => 'required|numeric|min:0.01',
             'note'          => 'nullable|string',
 
@@ -68,15 +86,14 @@ class GoldConversionController extends Controller
         try {
             DB::transaction(function () use ($validated, $request) {
 
-                $stock = Stock::find($validated['stock_id']);
+                $productVariant = ProductVariant::with(["stocks"])->find($validated['stock_id']);
 
                 // =======================================================================================
                 // 1. Simpan HEADER
                 // =======================================================================================
                 $conversion = GoldConversion::create([
-                    'stock_id'      => $stock->id,
-                    'product_id'    => $stock->product_id,
-                    'karat_id'      => $stock->karat_id,
+                    'stock_id'      => $productVariant->stocks->id,
+                    'product_variant_id'    => $productVariant->id,
                     'input_weight'  => array_sum(array_column($request->details, "weight")),
                     'note'          => $validated['note'] ?? null,
                     'created_by'    => auth()->id(),
@@ -86,9 +103,8 @@ class GoldConversionController extends Controller
                 // 2. Keluarkan stok gelondongan (OUT)
                 // =======================================================================================
                 StockHelper::moveStock(
-                    $stock->product_id,
-                    $stock->karat_id,
-                    2,
+                    $productVariant->id,
+                    1,
                     1,
                     'out',
                     1,
@@ -97,7 +113,7 @@ class GoldConversionController extends Controller
                     $conversion->id,
                     'pecah-gelondongan',
                     auth()->id(),
-                    $stock->type // biasanya "second"
+                    $productVariant->type // biasanya "second"
                 );
 
                 // =======================================================================================
@@ -105,20 +121,36 @@ class GoldConversionController extends Controller
                 // =======================================================================================
                 foreach ($validated['details'] as $d) {
 
+                    $newPV = ProductVariant::firstOrCreate(
+                        [
+                            "product_id" => $d["product_id"],
+                            "karat_id" => $productVariant->karat?->id ?? 0,
+                            "gram" => $d["weight"],
+                            'type'       => $productVariant->type == "new" ? $productVariant->type : "sepuh",
+                        ],
+                        [
+                            'sku'           => strtoupper(
+                                $d["product_id"] . '-' . $productVariant->karat->name . '-' .
+                                    $d["weight"] . '-' .
+                                    $productVariant->type
+                            ),
+                            'barcode'       => strtoupper(Str::random(12)),
+                            'default_price' => 0,
+                        ]
+                    );
+
                     GoldConversionOutput::create([
                         'gold_conversion_id' => $conversion->id,
-                        'product_id'         => $d['product_id'],
-                        'karat_id'           => $request->karat_id,
+                        'product_variant_id'         => $newPV->id,
                         'weight'             => $d['weight'],
                         'note'               => $d['note'] ?? null,
                     ]);
 
                     // stok masuk untuk item hasil pecahan
                     StockHelper::moveStock(
-                        $d['product_id'],
-                        $request->karat_id,
-                        $stock->branch_id,
-                        $stock->storage_location_id,
+                        $newPV->id,
+                        1,
+                        1,
                         'in',
                         1,
                         $d['weight'],
@@ -126,7 +158,7 @@ class GoldConversionController extends Controller
                         $conversion->id,
                         'hasil-pecahan',
                         auth()->id(),
-                        $stock->type // tetap second
+                        $productVariant->type == "new" ? $productVariant->type : "sepuh", // tetap second
                     );
                 }
             });
@@ -148,7 +180,7 @@ class GoldConversionController extends Controller
 
     public function show($id)
     {
-        $conversion = GoldConversion::with(['stock', 'kadar', 'outputs.product', 'outputs.kadar'])
+        $conversion = GoldConversion::with(['stock', "productVariant", 'outputs.productVariant.product', 'outputs.productVariant.karat'])
             ->findOrFail($id);
 
         return view('pages.gold-conversion.show', compact('conversion'));
@@ -157,16 +189,31 @@ class GoldConversionController extends Controller
 
     public function edit($id)
     {
-        $conversion = GoldConversion::with(['outputs', 'stock.product', 'stock.karat'])
+        $conversion = GoldConversion::with(['outputs', 'stock.productVariant.product', 'stock.productVariant.karat'])
             ->findOrFail($id);
 
         $currentStockId = $conversion->stock_id;
-        $stocks = Stock::where("product_id", 7)
-            ->whereIn('type', ['second', 'new'])
-            ->where(function ($q) use ($currentStockId) {
-                $q->where("weight", ">", 0)
-                    ->orWhere("id", $currentStockId); // tampilkan walaupun weight = 0
+        $productVariants = ProductVariant::with([
+            'product:id,name',
+            'karat:id,name',
+        ])
+            ->whereNull('gram')
+
+            // hanya yang punya stock
+            ->whereHas('stocks', function ($q) {
+                $q->where('weight', '>', 0);
             })
+
+            // ambil weight stock sebagai attribute
+            ->select('product_variants.*')
+            ->selectSub(function ($q) {
+                $q->from('stocks')
+                    ->select('weight')
+                    ->whereColumn('stocks.product_variant_id', 'product_variants.id')
+                    ->where('weight', '>', 0)
+                    ->limit(1);
+            }, 'weight')
+
             ->get();
 
         $products = Product::all();
@@ -174,7 +221,7 @@ class GoldConversionController extends Controller
 
         return view('pages.gold-conversion.edit', compact(
             'conversion',
-            'stocks',
+            'productVariants',
             'products',
             'karats'
         ));
@@ -195,7 +242,7 @@ class GoldConversionController extends Controller
         ]);
 
         DB::beginTransaction();
-        $stock = Stock::find($validated['stock_id']);
+        $productVariant = ProductVariant::find($validated['stock_id']);
 
         try {
 
@@ -205,8 +252,7 @@ class GoldConversionController extends Controller
 
             foreach ($conversion->outputs as $old) {
                 StockHelper::moveStock(
-                    $old->product_id,
-                    $old->karat_id,
+                    $old->product_variant_id,
                     $conversion->stock->branch_id,
                     $conversion->stock->storage_location_id,
                     'out',            // kebalikan dari proses input
@@ -216,14 +262,13 @@ class GoldConversionController extends Controller
                     $conversion->id,
                     'rollback-output',
                     auth()->id(),
-                    $stock->type
+                    $old->productVariant->type
                 );
             }
 
             // rollback bahan baku (stock_id)
             StockHelper::moveStock(
-                $conversion->product_id,
-                $conversion->karat_id,
+                $conversion->product_variant_id,
                 $conversion->stock->branch_id,
                 $conversion->stock->storage_location_id,
                 'in',   // karena saat create dulu keluar (out)
@@ -233,7 +278,7 @@ class GoldConversionController extends Controller
                 $conversion->id,
                 'rollback-input',
                 auth()->id(),
-                $stock->type
+                $productVariant->type
             );
 
             //---------------------------------------------------------
@@ -247,9 +292,9 @@ class GoldConversionController extends Controller
             //---------------------------------------------------------
 
             $conversion->update([
-                'stock_id'     => $validated['stock_id'],
-                'product_id'   => Stock::find($validated['stock_id'])->product_id,
-                'karat_id'     => $validated['karat_id'],
+                'stock_id'     => $productVariant->stocks->id,
+                'product_variant_id'   => $productVariant->id,
+                'karat_id'     => $productVariant->karat_id,
                 'input_weight' => array_sum(array_column($request->details, "weight")),
                 'note'         => $validated['note'] ?? null,
                 'edited_by'    => auth()->id(),
@@ -261,10 +306,9 @@ class GoldConversionController extends Controller
             //---------------------------------------------------------
             // stok utama keluar lagi
             StockHelper::moveStock(
-                $conversion->product_id,
-                $conversion->karat_id,
-                $conversion->stock->branch_id,
-                $conversion->stock->storage_location_id,
+                $productVariant->id,
+                1,
+                1,
                 'out',
                 1,
                 array_sum(array_column($request->details, "weight")),
@@ -272,14 +316,31 @@ class GoldConversionController extends Controller
                 $conversion->id,
                 'edit-input',
                 auth()->id(),
-                $stock->type
+                $productVariant->type
             );
 
             // simpan output + catat stock in
             foreach ($validated['details'] as $item) {
+                $newPV = ProductVariant::firstOrCreate(
+                    [
+                        "product_id" => $item["product_id"],
+                        "karat_id" => $productVariant->karat?->id ?? 0,
+                        "gram" => $item["weight"],
+                        'type'       => $productVariant->type == "new" ? $productVariant->type : "sepuh",
+                    ],
+                    [
+                        'sku'           => strtoupper(
+                            $item["product_id"] . '-' . $productVariant->karat->name . '-' .
+                                $item["weight"] . '-' .
+                                $productVariant->type
+                        ),
+                        'barcode'       => strtoupper(Str::random(12)),
+                        'default_price' => 0,
+                    ]
+                );
 
                 $output = $conversion->outputs()->create([
-                    'product_id' => $item['product_id'],
+                    'product_variant_id' => $newPV->id,
                     'karat_id'   => $request->karat_id, // ikut header
                     'weight'     => $item['weight'],
                     'note'       => null,
@@ -287,10 +348,9 @@ class GoldConversionController extends Controller
 
                 // stok output masuk
                 StockHelper::moveStock(
-                    $item['product_id'],
-                    $validated['karat_id'],
-                    $conversion->stock->branch_id,
-                    $conversion->stock->storage_location_id,
+                    $newPV->id,
+                    1,
+                    1,
                     'in',
                     1,
                     $item['weight'],
@@ -298,7 +358,7 @@ class GoldConversionController extends Controller
                     $conversion->id,
                     'edit-output',
                     auth()->id(),
-                    $stock->type
+                    $newPV->type
                 );
             }
 
@@ -329,10 +389,9 @@ class GoldConversionController extends Controller
 
         foreach ($conversion->outputs as $old) {
             StockHelper::moveStock(
-                $old->product_id,
-                $old->karat_id,
-                $conversion->stock->branch_id,
-                $conversion->stock->storage_location_id,
+                $old->product_variant_id,
+                1,
+                1,
                 'out',            // kebalikan dari proses input
                 1,
                 $old->weight,
@@ -346,10 +405,9 @@ class GoldConversionController extends Controller
 
         // rollback bahan baku (stock_id)
         StockHelper::moveStock(
-            $conversion->product_id,
-            $conversion->karat_id,
-            $conversion->stock->branch_id,
-            $conversion->stock->storage_location_id,
+            $conversion->product_variant_id,
+            1,
+            1,
             'in',   // karena saat create dulu keluar (out)
             1,
             $conversion->input_weight,

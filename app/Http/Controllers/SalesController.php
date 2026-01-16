@@ -173,8 +173,8 @@ class SalesController extends BaseController
                 // === STOCK KELUAR ===
                 StockHelper::stockOut(
                     $detail['variant_id'],
-                    $transaction->branch_id,
-                    $transaction->storage_location_id,
+                    1,
+                    1,
                     1, // qty
                     null,
                     'Transaction',
@@ -341,8 +341,8 @@ class SalesController extends BaseController
             foreach ($transaction->details as $oldDetail) {
                 StockHelper::stockIn(
                     $oldDetail->product_variant_id,
-                    $transaction->branch_id,
-                    $transaction->storage_location_id,
+                    1,
+                    1,
                     1,
                     null,
                     'Transaction',
@@ -385,8 +385,8 @@ class SalesController extends BaseController
 
                 StockHelper::stockOut(
                     $detail['variant_id'],
-                    $transaction->branch_id,
-                    $transaction->storage_location_id,
+                    1,
+                    1,
                     1,
                     null,
                     'Transaction',
@@ -422,8 +422,8 @@ class SalesController extends BaseController
 
                     StockHelper::stockIn(
                         $detail->product_variant_id,
-                        $transaction->branch_id,
-                        $transaction->storage_location_id,
+                        1,
+                        1,
                         1, // qty
                         null,
                         'Transaction',

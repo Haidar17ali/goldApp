@@ -14,12 +14,11 @@ return new class extends Migration
         Schema::create('gold_conversions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stock_id')->constrained('stocks')->onDelete('cascade');
-            $table->unsignedBigInteger('product_id'); // 8K
-            $table->unsignedBigInteger('karat_id'); // 8K
+            $table->unsignedBigInteger('product_variant_id'); // 8K
             $table->decimal('input_weight', 10, 2);
             $table->text('note')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->foreignId('edited_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('edited_by')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

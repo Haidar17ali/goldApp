@@ -10,6 +10,7 @@
     <div class="shadow-lg card">
         <div class="card-body">
 
+            {{-- ERROR --}}
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <strong>Terjadi kesalahan!</strong><br>
@@ -20,21 +21,22 @@
             <form method="POST" action="{{ route('konversi-emas.simpan') }}">
                 @csrf
 
-                {{-- KARAT YANG DIPAKAI DETAIL --}}
+                {{-- KARAT HIDDEN --}}
                 <input type="hidden" name="karat_id" id="karatIdHidden">
 
-                {{-- ======================= HEADER FORM ======================= --}}
+                {{-- ======================= INFORMASI UTAMA ======================= --}}
                 <h5 class="mb-3 fw-bold">Informasi Utama</h5>
+
                 <div class="mb-4 row g-3">
 
-                    {{-- PILIH STOCK --}}
+                    {{-- PILIH STOK --}}
                     <div class="col-md-6">
                         <label class="fw-semibold">Pilih Stok</label>
                         <select name="stock_id" id="stockSelect" class="form-control form-control-lg select2" required>
                             <option value="">-- pilih stok emas --</option>
-                            @foreach ($stocks as $s)
-                                <option value="{{ $s->id }}" data-karat-name="{{ $s->karat->name }}"
-                                    data-karat-id="{{ $s->karat->id }}" data-weight="{{ $s->weight }}">
+                            @foreach ($productVariants as $s)
+                                <option value="{{ $s->id }}" data-karat-id="{{ $s->karat->id }}"
+                                    data-karat-name="{{ $s->karat->name }}" data-weight="{{ $s->weight }}">
                                     {{ $s->product->name }} — {{ $s->karat->name }} — {{ $s->weight }} g —
                                     {{ $s->type }}
                                 </option>
@@ -42,7 +44,7 @@
                         </select>
                     </div>
 
-                    {{-- KARAT OTOMATIS --}}
+                    {{-- KARAT --}}
                     <div class="col-md-3">
                         <label class="fw-semibold">Karat</label>
                         <input type="text" id="karatView" class="form-control form-control-lg" readonly>
@@ -53,71 +55,45 @@
                         <label class="fw-semibold">Berat Input (g)</label>
                         <input type="number" step="0.001" min="0" name="input_weight" id="inputWeight"
                             class="form-control form-control-lg" required>
-                        <small class="text-muted">Berat stok: <span id="stockWeight">0</span> g</small>
+                        <small class="text-muted">
+                            Berat stok: <span id="stockWeight">0</span> g
+                        </small>
                     </div>
 
                 </div>
 
                 <hr class="my-4">
 
-                <hr class="my-4">
-
-                <div x-data="barcodeInput()" class="mb-4 position-relative">
-
-                    <label class="fw-semibold">Scan Barcode / Ketik Barang</label>
-
-                    <input type="text" x-model="query" @input="search" @keydown.enter.prevent="selectFirst"
-                        class="form-control form-control-lg" placeholder="Scan barcode atau ketik nama barang" autofocus>
-
-                    <!-- DROPDOWN -->
-                    <div class="shadow list-group position-absolute w-100" x-show="showDropdown"
-                        @click.outside="showDropdown = false" style="z-index:1050">
-
-                        <template x-for="item in results" :key="item.id">
-                            <button type="button" class="list-group-item list-group-item-action" @click="select(item)">
-                                <strong x-text="item.barcode ?? item.sku"></strong>
-                                —
-                                <span x-text="item.product.name"></span>
-                                —
-                                <span x-text="item.gram + ' gr'"></span>
-                            </button>
-                        </template>
-
-                        <div class="list-group-item text-muted" x-show="results.length === 0">
-                            Tidak ditemukan
-                        </div>
-                    </div>
-                </div>
-
-
-                {{-- ======================= DETAIL OUTPUT ======================= --}}
+                {{-- ======================= DETAIL BARANG ======================= --}}
                 <h5 class="mb-3 fw-bold">Detail Barang</h5>
 
                 <div class="table-responsive">
                     <table class="table align-middle table-bordered" id="detailTable">
                         <thead class="text-center table-light">
                             <tr>
-                                <th style="width: 25%">Produk</th>
-                                <th style="width: 15%">Karat</th>
-                                <th style="width: 15%">Gram</th>
-                                <th style="width: 15%">Harga Jual</th>
-                                <th style="width: 5%"></th>
+                                <th width="35%">Produk</th>
+                                <th width="15%">Gram</th>
+                                <th width="5%"></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
 
+                    <div class="mb-3 text-end">
+                        <button type="button" id="addRow" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus"></i> Tambah Baris
+                        </button>
+                    </div>
+
                     <div class="mb-4 text-end">
-                        <h5>
-                            <strong>
-                                Grand Total Jual:
-                                Rp <span id="grandTotalJual">0</span>
-                            </strong>
+                        <h5 class="fw-bold">
+                            Grand Total:
+                            <span id="grandTotalGram">0</span>g
                         </h5>
                     </div>
                 </div>
 
-
+                {{-- SUBMIT --}}
                 <div class="text-end">
                     <button type="submit" class="px-5 btn btn-primary btn-lg">
                         <i class="fas fa-save me-1"></i> Simpan Proses
@@ -125,12 +101,9 @@
                 </div>
 
             </form>
-
         </div>
     </div>
 @stop
-
-
 
 @section('css')
     <style>
@@ -148,121 +121,86 @@
 
     <script>
         const products = @json($products);
+        const karats = @json($karats);
 
         $(document).ready(function() {
 
-            $('.select2').select2();
-
-            // ==========================================
-            // PILIH STOCK → set karat & berat otomatis
-            // ==========================================
-            $('#stockSelect').on('change', function() {
-                let opt = $(this).find(':selected');
-
-                let karatName = opt.data('karat-name') || '-';
-                let karatId = opt.data('karat-id') || null;
-                let weight = opt.data('weight') || 0;
-
-                $('#karatView').val(karatName);
-                $('#karatIdHidden').val(karatId);
-
-                $('#inputWeight').val(weight);
-                $('#stockWeight').text(weight);
+            $('.select2').select2({
+                width: '100%'
             });
 
-            // ==========================================
-            // FUNGSI TAMBAH BARIS DETAIL
-            // ==========================================
+            /* ================= PILIH STOK ================= */
+            $('#stockSelect').on('change', function() {
+                const opt = $(this).find(':selected');
+
+                $('#karatView').val(opt.data('karat-name') || '-');
+                $('#karatIdHidden').val(opt.data('karat-id') || '');
+                $('#inputWeight').val(opt.data('weight') || 0);
+                $('#stockWeight').text(opt.data('weight') || 0);
+            });
+
+            /* ================= HITUNG TOTAL GRAM ================= */
+            function updateGrandTotal() {
+                let total = 0;
+
+                $('#detailTable tbody .weight').each(function() {
+                    total += parseFloat($(this).val()) || 0;
+                });
+
+                $('#grandTotalGram').text(
+                    total.toLocaleString('id-ID', {
+                        minimumFractionDigits: 3
+                    })
+                );
+            }
+
+            /* ================= TAMBAH BARIS ================= */
             function addRow() {
-                let index = $('#detailTable tbody tr').length;
+                const index = $('#detailTable tbody tr').length;
 
-                let row = `
-                <tr>
-                    <td>
-                        <select name="details[${index}][product_id]"
-                            class="form-control form-control-lg select2-product">
-                            <option value="">-- pilih produk --</option>
-                            ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
-                        </select>
-                    </td>
+                const row = `
+        <tr>
+            <td>
+                <select name="details[${index}][product_id]"
+                    class="form-control form-control-lg select2-product" required>
+                    <option value="">-- pilih produk --</option>
+                    ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                </select>
+            </td>
 
-                    <td>
-                        <input type="number" step="0.001" min="0"
-                            name="details[${index}][weight]"
-                            class="form-control form-control-lg" required>
-                    </td>
+            <td>
+                <input type="number" step="0.001" min="0"
+                    name="details[${index}][weight]"
+                    class="form-control form-control-lg weight" required>
+            </td>
 
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-lg removeRow">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                `;
+            <td class="text-center">
+                <button type="button"
+                    class="btn btn-danger btn-lg removeRow">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>`;
 
                 $('#detailTable tbody').append(row);
-
-                $(".select2-product").last().select2({
-                    width: "100%"
+                $('.select2-product').last().select2({
+                    width: '100%'
                 });
             }
 
-            // ==========================================
-            // HAPUS BARIS
-            // ==========================================
-            $(document).on('click', '.removeRow', function() {
-                $(this).closest('tr').remove();
-            });
-
+            /* ================= EVENT ================= */
             $('#addRow').on('click', addRow);
 
-            // BARIS PERTAMA DEFAULT
+            $(document).on('input', '.weight', updateGrandTotal);
+
+            $(document).on('click', '.removeRow', function() {
+                $(this).closest('tr').remove();
+                updateGrandTotal();
+            });
+
+            /* BARIS PERTAMA */
             addRow();
         });
     </script>
-
-    {{-- dropdown --}}
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('barcodeInput', () => ({
-                query: '',
-                results: [],
-                showDropdown: false,
-
-                search() {
-                    if (this.query.length < 2) {
-                        this.results = [];
-                        this.showDropdown = false;
-                        return;
-                    }
-
-                    fetch(`/api/products/search?q=${this.query}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            this.results = data;
-                            this.showDropdown = true;
-                        });
-                },
-
-                select(item) {
-                    addItemToTable(item);
-                    this.reset();
-                },
-
-                selectFirst() {
-                    if (this.results.length > 0) {
-                        this.select(this.results[0]);
-                    }
-                },
-
-                reset() {
-                    this.query = '';
-                    this.results = [];
-                    this.showDropdown = false;
-                }
-            }))
-        });
-    </script>
-
 
 @stop

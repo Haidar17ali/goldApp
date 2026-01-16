@@ -8,7 +8,7 @@
 
 @section('content')
 
-    <div class="card shadow">
+    <div class="shadow card">
         <div class="card-header">
             <h4 class="mb-0">Informasi Header</h4>
         </div>
@@ -16,16 +16,16 @@
 
             <table class="table table-bordered">
                 <tr>
-                    <th width="250">Stock Asal</th>
+                    <th width="250">Stock Saat ini</th>
                     <td>
-                        {{ $conversion->product->name }} -
-                        {{ $conversion->kadar->name }}
+                        {{ $conversion->productVariant->product->name }} -
+                        {{ $conversion->productVariant->karat->name }}
                         ({{ number_format($conversion->stock->weight, 3) }} Gram)
                     </td>
                 </tr>
                 <tr>
                     <th>Karat</th>
-                    <td>{{ $conversion->kadar->name }}</td>
+                    <td>{{ $conversion->productVariant->karat->name }}</td>
                 </tr>
                 <tr>
                     <th>Berat Input</th>
@@ -48,7 +48,7 @@
     </div>
 
     {{-- DETAIL OUTPUT --}}
-    <div class="card shadow mt-4">
+    <div class="mt-4 shadow card">
         <div class="card-header d-flex justify-content-between">
             <h4 class="mb-0">Detail Hasil Pecahan</h4>
         </div>
@@ -68,8 +68,8 @@
                     @foreach ($conversion->outputs as $detail)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $detail->product->name }}</td>
-                            <td>{{ $detail->kadar->name }}</td>
+                            <td>{{ $detail->productVariant->product->name }}</td>
+                            <td>{{ $detail->productVariant->karat->name }}</td>
                             <td>{{ number_format($detail->weight, 3) }}</td>
                             <td>{{ $detail->note ?: '-' }}</td>
                         </tr>

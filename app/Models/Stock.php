@@ -11,7 +11,7 @@ class Stock extends Model
         'storage_location_id',
         'product_variant_id',
         // 'karat_id',
-        // 'weight',
+        'weight',
         'type',
         'quantity',
     ];

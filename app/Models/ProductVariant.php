@@ -28,6 +28,6 @@ class ProductVariant extends Model
 
     public function stocks()
     {
-        return $this->belongsTo(Stock::class);
+        return $this->hasOne(Stock::class);
     }
 }

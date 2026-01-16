@@ -8,8 +8,7 @@ class GoldConversionOutput extends Model
 {
     protected $fillable = [
         'gold_conversion_id',
-        'product_id',
-        'karat_id',
+        'product_variant_id',
         'weight',
         'note',
     ];
@@ -21,13 +20,8 @@ class GoldConversionOutput extends Model
     }
 
     // Produk hasil pecahan (cincin/gelang/kalung)
-    public function product()
+    public function productVariant()
     {
-        return $this->belongsTo(Product::class, 'product_id');
-    }
-
-    public function kadar()
-    {
-        return $this->belongsTo(Product::class, 'karat_id');
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 }

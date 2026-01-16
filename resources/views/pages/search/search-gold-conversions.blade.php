@@ -6,6 +6,7 @@
             <th scope="col">Produk</th>
             <th scope="col">Kadar</th>
             <th scope="col">Berat Keluar</th>
+            <th scope="col">Type</th>
             <th scope="col">Keterangan</th>
             <th scope="col">Aksi</th>
         </tr>
@@ -16,9 +17,10 @@
                 <tr style="text-transform: uppercase">
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ date('d-m-Y', strtotime($item->created_at)) }}</td>
-                    <td>{{ $item->product?->name }}</td>
-                    <td>{{ $item->kadar?->name }}</td>
+                    <td>{{ $item->productVariant->product?->name }}</td>
+                    <td>{{ $item->productVariant->karat?->name }}</td>
                     <td>{{ $item->input_weight }}g</td>
+                    <td>{{ $item->productVariant->type }}</td>
                     <td>{{ $item->note }}</td>
                     <td>
                         {{-- <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank" class="badge badge-success">

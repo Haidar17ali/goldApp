@@ -250,8 +250,8 @@ class TransactionController extends BaseController
 
                     \App\Helpers\StockHelper::moveStock(
                         $emasProductVariant->id,
-                        $transaction->branch_id,
-                        $transaction->storage_location_id,
+                        1,
+                        1,
                         $movementType,
                         $qty, // selalu 1
                         $gram,
@@ -430,8 +430,8 @@ class TransactionController extends BaseController
 
                     \App\Helpers\StockHelper::moveStock(
                         $emasProductVariant->id,
-                        $transaction->branch_id,
-                        $transaction->storage_location_id,
+                        1,
+                        1,
                         $movementType,
                         1,
                         $oldDetail->productVariant?->gram ?? 0,
@@ -537,8 +537,8 @@ class TransactionController extends BaseController
 
                     \App\Helpers\StockHelper::moveStock(
                         $newEmasProductVariant->id,
-                        $transaction->branch_id,
-                        $transaction->storage_location_id,
+                        1,
+                        1,
                         $movementType,
                         $qty,
                         $gram,
@@ -602,7 +602,7 @@ class TransactionController extends BaseController
 
                     \App\Helpers\StockHelper::moveStock(
                         $emasProductVariant?->id ?? 0,
-                        2,
+                        1,
                         1,
                         'out',
                         1,

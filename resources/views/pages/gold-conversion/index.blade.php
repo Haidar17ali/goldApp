@@ -126,8 +126,7 @@
                         columns: [
                             'id',
                             'stock_id',
-                            'product_id',
-                            'karat_id',
+                            'product_variant_id',
                             'input_weight',
                             'note',
                             'created_by',
@@ -135,8 +134,8 @@
                             'created_at',
                         ],
                         relations: {
-                            'product': ["name"],
-                            'kadar': ["name"],
+                            'productVariant.product': ["name"],
+                            'productVariant.karat': ["name"],
                         },
                         page: page
                     },

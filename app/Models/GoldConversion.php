@@ -8,31 +8,25 @@ class GoldConversion extends Model
 {
     protected $fillable = [
         'stock_id',
-        'product_id',
-        'karat_id',
+        'product_variant_id',
         'input_weight',
         'note',
         'created_by',
         'edited_by'
     ];
 
-    
-     // Stok gelondongan yang diproses
+
+    // Stok gelondongan yang diproses
     public function stock()
     {
         return $this->belongsTo(Stock::class, 'stock_id');
     }
-    
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'product_id');
-    }
 
-    public function kadar()
-    {
-        return $this->belongsTo(Karat::class, 'karat_id');
-    }
 
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
     // Semua output item (cincin, gelang, anting)
     public function outputs()
     {
