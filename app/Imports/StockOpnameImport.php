@@ -85,8 +85,8 @@ class StockOpnameImport implements ToCollection, WithHeadingRow
                  * =============================== */
                 StockHelper::moveStock(
                     product_variant_id: $variant->id,
-                    branchId: $adjustment->branch_id,
-                    storageLocationId: $adjustment->storage_location_id,
+                    branchId: 1,
+                    storageLocationId: 1,
                     type: 'adjustment',
                     quantity: $actualQty,
                     weight: $weight,
