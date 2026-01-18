@@ -132,7 +132,7 @@ class GoldConversionController extends Controller
                             'sku'           => strtoupper(
                                 $d["product_id"] . '-' . $productVariant->karat->name . '-' .
                                     $d["weight"] . '-' .
-                                    $productVariant->type
+                                    $productVariant->type == "new" ? $productVariant->type : "sepuh"
                             ),
                             'barcode'       => strtoupper(Str::random(12)),
                             'default_price' => 0,
@@ -192,29 +192,48 @@ class GoldConversionController extends Controller
         $conversion = GoldConversion::with(['outputs', 'stock.productVariant.product', 'stock.productVariant.karat'])
             ->findOrFail($id);
 
+        $selectedVariantId = $conversion->product_variant_id;
+
+
         $currentStockId = $conversion->stock_id;
+
         $productVariants = ProductVariant::with([
             'product:id,name',
             'karat:id,name',
         ])
-            ->whereNull('gram')
+            ->where(function ($q) use ($selectedVariantId) {
 
-            // hanya yang punya stock
-            ->whereHas('stocks', function ($q) {
-                $q->where('weight', '>', 0);
+                // =====================
+                // CREATE MODE
+                // =====================
+                $q->where(function ($q2) {
+                    $q2->whereNull('gram')
+                        ->whereHas('stocks', function ($s) {
+                            $s->where('weight', '>', 0);
+                        });
+                });
+
+                // =====================
+                // EDIT MODE (PASTI MUNCUL)
+                // =====================
+                if ($selectedVariantId) {
+                    $q->orWhere('id', $selectedVariantId);
+                }
             })
 
-            // ambil weight stock sebagai attribute
             ->select('product_variants.*')
+
+            // ambil stock weight (boleh 0)
             ->selectSub(function ($q) {
                 $q->from('stocks')
                     ->select('weight')
                     ->whereColumn('stocks.product_variant_id', 'product_variants.id')
-                    ->where('weight', '>', 0)
+                    ->orderByDesc('weight')
                     ->limit(1);
             }, 'weight')
 
             ->get();
+
 
         $products = Product::all();
         $karats = Karat::all();
@@ -300,7 +319,6 @@ class GoldConversionController extends Controller
                 'edited_by'    => auth()->id(),
             ]);
 
-
             //---------------------------------------------------------
             // 4. CATAT PERGERAKAN STOK BARU
             //---------------------------------------------------------
@@ -321,6 +339,7 @@ class GoldConversionController extends Controller
 
             // simpan output + catat stock in
             foreach ($validated['details'] as $item) {
+                $product = Product::where("id", $item["product_id"])->first();
                 $newPV = ProductVariant::firstOrCreate(
                     [
                         "product_id" => $item["product_id"],
@@ -330,9 +349,14 @@ class GoldConversionController extends Controller
                     ],
                     [
                         'sku'           => strtoupper(
-                            $item["product_id"] . '-' . $productVariant->karat->name . '-' .
+                            $product->name . '-' .
+                                $productVariant->karat->name . '-' .
                                 $item["weight"] . '-' .
-                                $productVariant->type
+                                (
+                                    $productVariant->type == "new"
+                                    ? $productVariant->type
+                                    : "sepuh"
+                                )
                         ),
                         'barcode'       => strtoupper(Str::random(12)),
                         'default_price' => 0,
@@ -384,7 +408,7 @@ class GoldConversionController extends Controller
         $stock = Stock::find($conversion->stock_id);
 
         //---------------------------------------------------------
-        // 1. KEMBALIKAN stok lama (rollback output lama)
+        // 1. KEMBALIKAN stok lama (rollback output lama) output detail
         //---------------------------------------------------------
 
         foreach ($conversion->outputs as $old) {
@@ -399,7 +423,7 @@ class GoldConversionController extends Controller
                 $conversion->id,
                 'rollback-output',
                 auth()->id(),
-                $stock->type
+                $stock->type == "new" ? $stock->type : "sepuh"
             );
         }
 

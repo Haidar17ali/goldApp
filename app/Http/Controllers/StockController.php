@@ -114,30 +114,27 @@ class StockController extends Controller
         $query = Stock::where('product_id', $request->product_id)
             ->where('karat_id', $request->karat_id)
             ->where('weight', $request->weight)->first();
-            
+
         return response()->json([
             'qty'       => $query->quantity,          // JUMLAH ITEM
             'available' => $query->exists(),         // ADA / TIDAK
         ]);
     }
 
-public function weights(Request $request)
-{
-    $request->validate([
-        'product_id' => 'required|integer',
-        'karat_id'   => 'required|integer',
-    ]);
+    public function weights(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|integer',
+        ]);
 
-    $weights = Stock::where('product_id', $request->product_id)
-        ->where('karat_id', $request->karat_id)
-        ->pluck('weight')
-        ->unique()
-        ->sort()
-        ->values();
-
-    return response()->json($weights);
-}
+        $weights = Stock::where('product_variant_id', $request->product_id)
+            ->pluck('quantity')
+            ->unique()
+            ->sort()
+            ->map(fn($q) => number_format($q, 0, ',', '.'))
+            ->values();
 
 
-
+        return response()->json($weights);
+    }
 }

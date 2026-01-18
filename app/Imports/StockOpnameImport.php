@@ -39,7 +39,7 @@ class StockOpnameImport implements ToCollection, WithHeadingRow
 
                 $productName = trim($row['product']);
                 $karatName   = trim($row['karat'] ?? null);
-                $type        = strtolower(trim($row['type'] ?? 'new')); // gold_type
+                $type        = strtolower(trim($row['type'])); // gold_type
                 $actualQty   = (int) $row['actual_qty'];
                 $weight      = $row['weight'] !== null ? (float) $row['weight'] : null;
 

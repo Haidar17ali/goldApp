@@ -14,14 +14,11 @@ return new class extends Migration
         Schema::create('gold_merge_conversion_inputs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('gold_merge_conversion_id');
-            $table->unsignedBigInteger('product_id'); // emas (product 7)
-            $table->unsignedBigInteger('karat_id');
-            $table->decimal('weight', 12, 3);
+            $table->unsignedBigInteger('product_variant_id'); // emas (product 7)
             $table->integer('qty');
             $table->text('note')->nullable();
             $table->timestamps();
         });
-
     }
 
     /**

@@ -8,9 +8,7 @@ class GoldMergeConversionInput extends Model
 {
     protected $fillable = [
         'gold_merge_conversion_id',
-        'product_id',
-        'karat_id',
-        'weight',
+        'product_variant_id',
         'qty',
         'note'
     ];
@@ -20,8 +18,8 @@ class GoldMergeConversionInput extends Model
         return $this->belongsTo(GoldMergeConversion::class);
     }
 
-    public function stock()
+    public function productVariant()
     {
-        return $this->belongsTo(Stock::class);
+        return $this->belongsTo(ProductVariant::class);
     }
 }

@@ -67,7 +67,7 @@ class HomeController extends BaseController
                 'pv.karat_id',
                 'k.name as karat_name',
                 'pv.type as variant_type',
-                DB::raw('SUM(stocks.quantity * pv.gram) as total_gram')
+                DB::raw('SUM(pv.gram) as total_gram')
             )
             ->groupBy(
                 'pv.product_id',

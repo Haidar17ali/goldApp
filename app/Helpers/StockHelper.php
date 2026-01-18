@@ -15,7 +15,7 @@ class StockHelper
     /**
      * Pastikan product, karat, dan variant ada — buat otomatis jika belum ada
      */
-    public static function ensureVariant($productName, $karatName = null, $gram = null)
+    public static function ensureVariant($productName, $karatName = null, $gram = null, $type)
     {
         // Pastikan produk ada
         $product = Product::firstOrCreate(
@@ -38,9 +38,10 @@ class StockHelper
                 'product_id' => $product->id,
                 'karat_id' => $karat?->id,
                 'gram' => $gram,
+                'type' => $type,
             ],
             [
-                'sku' => strtoupper($product->name . '-' . ($karat?->name ?? 'NOKRT') . '-' . ($gram ?? 'GEN')),
+                'sku' => strtoupper($product->name . '-' . ($karat?->name ?? 'NOKRT') . '-' . ($gram ?? 'GEN') . $type),
                 'barcode' => strtoupper(Str::random(12)),
                 'default_price' => 0,
             ]
@@ -69,9 +70,10 @@ class StockHelper
             ]);
 
 
-            $productVariant = ProductVariant::where("id", $product_variant_id)->first();
+            $productVariant = ProductVariant::with("product", "karat")->where("id", $product_variant_id)->first();
+
             if ($productVariant->product->name == "emas") {
-                if ($goldType == "customer" || $goldType == "new" || $goldType == "second" || $goldType == "batangan") {
+                if ($goldType == "customer" || $goldType == "new" || $goldType == "sepuh" || $goldType == "batangan") {
                     $stock = Stock::firstOrCreate([
                         'product_variant_id' => $product_variant_id,
                         // 'karat_id' => $karat_id,
@@ -98,7 +100,7 @@ class StockHelper
                     // 'karat_id' => $karat_id,
                     'branch_id' => $branchId,
                     'storage_location_id' => $storageLocationId,
-                    'weight' => $weight,
+                    // 'weight' => $weight,
                     'type' => $goldType,
                 ], [
                     'quantity' => 0,
@@ -112,8 +114,6 @@ class StockHelper
                     $stock->quantity = $quantity;
                 }
             }
-
-
             $stock->save();
 
             return $movement;

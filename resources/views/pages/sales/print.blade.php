@@ -195,7 +195,7 @@
         @foreach ($transaction->details as $detail)
             <div class="item-row">
                 <div class="col-name">{{ $detail->productVariant->product->name }}</div>
-                <div class="col-weight">{{ $detail->gram }} gr</div>
+                <div class="col-weight">{{ $detail->productVariant->gram }} gr</div>
                 <div class="col-size"></div>
                 <div class="col-karat">{{ $detail->productVariant->karat->name }}</div>
                 <div class="col-price">

@@ -82,6 +82,8 @@
                                 —
                                 <span x-text="item.product.name"></span>
                                 —
+                                <span x-text="item.karat.name"></span>
+                                —
                                 <span x-text="item.gram + 'gr'"></span>
                             </button>
                         </template>
@@ -119,31 +121,31 @@
                     </div>
                 </div>
 
-                <div class="mb-3 text-end">
+                {{-- <div class="mb-3 text-end">
                     <button type="button" id="addRow" class="btn btn-success btn-lg">
                         <i class="fas fa-plus"></i> Tambah Baris
-                    </button>
-                </div>
-
-                {{-- ================= PAYMENT ================= --}}
-                @include('components.payment-gateway', [
-                    'bankAccounts' => $bankAccounts,
-                    'payment_method' => $transaction->payment_method ?? null,
-                    'bank_account_id' => $transaction->bank_account_id ?? null,
-                    'transfer_amount' => $transaction->transfer_amount ?? null,
-                    'cash_amount' => $transaction->cash_amount ?? null,
-                    'reference_no' => $transaction->reference_no ?? null,
-                ])
-
-                @include('components.camera')
-
-                <div class="text-end">
-                    <button type="submit" class="px-5 btn btn-primary btn-lg">
-                        <i class="fas fa-save me-1"></i> Simpan Transaksi
-                    </button>
-                </div>
-            </form>
+                    </button> --}}
         </div>
+
+        {{-- ================= PAYMENT ================= --}}
+        @include('components.payment-gateway', [
+            'bankAccounts' => $bankAccounts,
+            'payment_method' => $transaction->payment_method ?? null,
+            'bank_account_id' => $transaction->bank_account_id ?? null,
+            'transfer_amount' => $transaction->transfer_amount ?? null,
+            'cash_amount' => $transaction->cash_amount ?? null,
+            'reference_no' => $transaction->reference_no ?? null,
+        ])
+
+        @include('components.camera')
+
+        <div class="text-end">
+            <button type="submit" class="px-5 btn btn-primary btn-lg">
+                <i class="fas fa-save me-1"></i> Simpan Transaksi
+            </button>
+        </div>
+        </form>
+    </div>
     </div>
 @stop
 
@@ -335,77 +337,77 @@
             tableBody = document.querySelector('#detailTable tbody');
             grandTotalEl = document.getElementById('grandTotalJual');
 
-            let rowIndex = 0;
+            // let rowIndex = 0;
 
-            function createRow() {
-                const tr = document.createElement('tr');
+            // function createRow() {
+            //     const tr = document.createElement('tr');
 
-                tr.innerHTML = `
-                <td>
-                    <select class="form-control form-control-lg select-product"
-                        name="details[${rowIndex}][product_name]">
-                        <option value="">-- pilih / ketik produk --</option>
-                        ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
-                    </select>
-                </td>
+            //     tr.innerHTML = `
+        //         <td>
+        //             <select class="form-control form-control-lg select-product"
+        //                 name="details[${rowIndex}][product_name]">
+        //                 <option value="">-- pilih / ketik produk --</option>
+        //                 ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
+        //             </select>
+        //         </td>
 
-                <td>
-                    <select class="form-control form-control-lg select-karat"
-                        name="details[${rowIndex}][karat_name]">
-                        <option value="">-- pilih / ketik karat --</option>
-                        ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
-                    </select>
-                </td>
+        //         <td>
+        //             <select class="form-control form-control-lg select-karat"
+        //                 name="details[${rowIndex}][karat_name]">
+        //                 <option value="">-- pilih / ketik karat --</option>
+        //                 ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
+        //             </select>
+        //         </td>
 
-                <td>
-                    <input type="number" step="0.001"
-                        class="form-control form-control-lg gram"
-                        name="details[${rowIndex}][gram]">
-                </td>
+        //         <td>
+        //             <input type="number" step="0.001"
+        //                 class="form-control form-control-lg gram"
+        //                 name="details[${rowIndex}][gram]">
+        //         </td>
 
-                <td>
-                    <input type="number" step="0.01"
-                        class="form-control form-control-lg harga-jual"
-                        name="details[${rowIndex}][harga_jual]">
-                </td>
+        //         <td>
+        //             <input type="number" step="0.01"
+        //                 class="form-control form-control-lg harga-jual"
+        //                 name="details[${rowIndex}][harga_jual]">
+        //         </td>
 
-                <td class="text-center">
-                    <button type="button"
-                        class="btn btn-danger btn-lg remove-row">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            `;
+        //         <td class="text-center">
+        //             <button type="button"
+        //                 class="btn btn-danger btn-lg remove-row">
+        //                 <i class="fas fa-trash"></i>
+        //             </button>
+        //         </td>
+        //     `;
 
-                tableBody.appendChild(tr);
+            //     tableBody.appendChild(tr);
 
-                $(tr).find('select').select2({
-                    tags: true,
-                    width: '100%'
-                });
+            //     $(tr).find('select').select2({
+            //         tags: true,
+            //         width: '100%'
+            //     });
 
-                tr.querySelector('.harga-jual')
-                    .addEventListener('input', updateGrandTotal);
+            //     tr.querySelector('.harga-jual')
+            //         .addEventListener('input', updateGrandTotal);
 
-                tr.querySelector('.remove-row')
-                    .addEventListener('click', () => {
-                        tr.remove();
-                        updateGrandTotal();
-                    });
+            //     tr.querySelector('.remove-row')
+            //         .addEventListener('click', () => {
+            //             tr.remove();
+            //             updateGrandTotal();
+            //         });
 
-                rowIndex++;
-            }
+            //     rowIndex++;
+            // }
 
-            createRow();
-            document.getElementById('addRow')
-                .addEventListener('click', createRow);
+            // createRow();
+            // document.getElementById('addRow')
+            //     .addEventListener('click', createRow);
 
-            // ===== Customer Select2 =====
-            $('#customerSelect').select2({
-                tags: true,
-                width: '100%',
-                placeholder: '-- pilih / ketik customer --'
-            });
+            // // ===== Customer Select2 =====
+            // $('#customerSelect').select2({
+            //     tags: true,
+            //     width: '100%',
+            //     placeholder: '-- pilih / ketik customer --'
+            // });
 
             $('#customerSelect').on('change', function() {
                 const selected = $(this).find(':selected');

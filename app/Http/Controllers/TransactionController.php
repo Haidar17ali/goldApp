@@ -185,7 +185,7 @@ class TransactionController extends BaseController
                         $product->name . '-' .
                             $karatName . '-' .
                             $gram . '-' .
-                            "customer"
+                            "sepuh"
                     );
 
                     $productVariant = ProductVariant::firstOrCreate(
@@ -193,7 +193,7 @@ class TransactionController extends BaseController
                             'product_id' => $product->id,
                             'karat_id'   => $karat->id,
                             'gram'       => $gram,
-                            'type'       => "customer",
+                            'type'       => "sepuh",
                         ],
                         [
                             'sku'           => $sku,
@@ -229,7 +229,6 @@ class TransactionController extends BaseController
                         $emasSKU =  strtoupper(
                             $productStock->name . '-' .
                                 $karatName . '-' .
-                                $gram . '-' .
                                 "customer"
                         );
 
@@ -408,7 +407,6 @@ class TransactionController extends BaseController
                         $emasSKU =  strtoupper(
                             $productStock->name . '-' .
                                 $oldDetail->productVariant->karat->name . '-' .
-                                $oldDetail->productVariant->gram . '-' .
                                 "customer"
                         );
 
@@ -516,7 +514,6 @@ class TransactionController extends BaseController
                         $emasSKU =  strtoupper(
                             $productStock->name . '-' .
                                 $karat->name . '-' .
-                                $gram . '-' .
                                 "customer"
                         );
 
@@ -578,11 +575,11 @@ class TransactionController extends BaseController
                 foreach ($transaction->details as $detail) {
 
                     $productStock = Product::where("name", "emas")->first();
+                    dd($detail);
 
                     $emasSKU =  strtoupper(
                         $productStock->name . '-' .
                             $detail->productVariant->karat->name . '-' .
-                            $detail->productVariant->gram . '-' .
                             "customer"
                     );
 

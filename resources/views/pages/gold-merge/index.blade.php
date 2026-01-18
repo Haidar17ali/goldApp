@@ -126,10 +126,13 @@
                         columns: [
                             'id',
                             'note',
+                            'created_at',
                             'created_by',
                             'edited_by',
                         ],
-                        relations: {},
+                        relations: {
+                            "inputs.productVariant.product": ["name"]
+                        },
                         page: page
                     },
                     success: function(response) {

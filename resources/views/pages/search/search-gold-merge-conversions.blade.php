@@ -15,7 +15,10 @@
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ date('d-m-Y', strtotime($item->created_at)) }}</td>
                     <td>
-                        {{ $item->inputs->sum(fn ($row) => $row->weight * $row->qty) }}g
+                        {{ $item->inputs->sum(function ($row) {
+                            return ($row->productVariant->gram ?? 0) * $row->qty;
+                        }) }}
+                        g
                     </td>
                     <td>{{ $item->note }}</td>
                     <td>

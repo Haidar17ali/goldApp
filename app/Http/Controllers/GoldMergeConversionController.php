@@ -8,8 +8,10 @@ use App\Models\GoldMergeConversionInput;
 use App\Models\Stock;
 use App\Models\Product;
 use App\Models\Karat;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class GoldMergeConversionController extends Controller
 {
@@ -31,8 +33,9 @@ class GoldMergeConversionController extends Controller
     public function create()
     {
         return view('pages.gold-merge.create', [
-            'products' => Product::where('name', "!=", 'emas')->get(),
-            'karats'   => Karat::orderBy('name')->get(),
+            'productVariants' => ProductVariant::where('gram', "!=", null)->whereHas('stocks', function ($q) {
+                $q->where('quantity', '>', 0);
+            })->get(),
         ]);
     }
 
@@ -47,9 +50,7 @@ class GoldMergeConversionController extends Controller
         $validated = $request->validate([
             'note' => 'nullable|string',
             'details' => 'required|array|min:1',
-            'details.*.product_id' => 'required|exists:products,id',
-            'details.*.karat_id'   => 'required|exists:karats,id',
-            'details.*.weight'     => 'required|numeric|min:0.001',
+            'details.*.product_variant_id' => 'required|exists:product_variants,id',
             'details.*.qty'     => 'required|numeric',
         ]);
 
@@ -65,36 +66,58 @@ class GoldMergeConversionController extends Controller
             // =============================================
             // 1. CATAT DETAIL & KELUARKAN STOK ETALASE
             // =============================================
-            foreach ($validated['details'] as $row) {
+            foreach ($validated['details'] as $index => $row) {
+                $pv = ProductVariant::findOrFail($row["product_variant_id"]);
 
                 $conversion->inputs()->create($row);
-                
+
                 StockHelper::moveStock(
-                    $row['product_id'],
-                    $row['karat_id'],
-                    2, // etalase
+                    $pv->id,
+                    1, // etalase
                     1,
                     'out',
                     $row["qty"],
-                    $row['weight'],
+                    $pv->weight,
                     'GoldMergeConversion',
                     $conversion->id,
                     'keluar-etalase',
                     auth()->id(),
-                    'new'
+                    $pv->type
                 );
-
             }
 
             // =============================================
             // 2. GROUP PER KARAT → MASUK EMAS
             // =============================================
-            $grouped = collect($validated['details'])
-                ->groupBy('karat_id');
+            $grouped = collect($validated['details'])->map(function ($row) {
+                $pv = ProductVariant::find($row['product_variant_id']);
+
+                return [
+                    'karat_id' => $pv->karat_id,
+                    'type'     => $pv->type,
+                    'qty'      => $row['qty'],
+                    'weight'   => $pv->weight * $row['qty'],
+                ];
+            })->groupBy('karat_id');
+
 
             $emas = Product::firstOrCreate(
                 ['name' => 'emas'],
                 ['code' => 'ems']
+            );
+
+            $pvGold = ProductVariant::firstOrCreate(
+                [
+                    "product_id" => $emas->id,
+                    "karat_id" => $pv->karat_id,
+                    "gram" => null,
+                    "type" => $pv->type
+                ],
+                [
+                    'sku' => strtoupper($emas->name . '-' . ($pv->karat?->name ?? 'NOKRT') . "-" . $pv->type),
+                    'barcode' => strtoupper(Str::random(12)),
+                    'default_price' => 0,
+                ]
             );
 
 
@@ -103,20 +126,18 @@ class GoldMergeConversionController extends Controller
                 $totalWeight = $items->sum('weight');
 
                 StockHelper::moveStock(
-                    $emas->id, // emas
-                    $karatId,
-                    2, // brankas
+                    $pvGold->id, // emas
+                    1, // brankas
                     1,
                     'in',
                     $row["qty"],
-                    $row['weight'],
+                    $pv->gram * $row["qty"],
                     'GoldMergeConversion',
                     $conversion->id,
                     'Masuk brankas',
                     auth()->id(),
-                    'new'
+                    $pv->type
                 );
-
             }
         });
 
@@ -131,21 +152,16 @@ class GoldMergeConversionController extends Controller
     */
     public function edit($id)
     {
-        $conversion = GoldMergeConversion::with('inputs.stock.product', 'inputs.stock.karat')
-            ->findOrFail($id);
+        $conversion = GoldMergeConversion::with('inputs.productVariant.product', 'inputs.productVariant.karat')->findOrFail($id);
 
-        $stocks = Stock::where('product_id', '!=', 7)
-            ->where(function ($q) use ($conversion) {
-                $q->where('weight', '>', 0)
-                  ->orWhereIn('id', $conversion->inputs->pluck('stock_id'));
-            })->get();
+        $productVariants = ProductVariant::with('product', 'karat')->get();
 
-        return view('pages.gold-merge.edit', [
-            'conversion' => $conversion,
-            'stocks' => $stocks,
-            'karats' => Karat::all(),
-        ]);
+        return view('pages.gold-merge.edit', compact(
+            'conversion',
+            'productVariants'
+        ));
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -154,128 +170,178 @@ class GoldMergeConversionController extends Controller
     */
     public function update(Request $request, $id)
     {
-        $conversion = GoldMergeConversion::with('inputs.stock')->findOrFail($id);
-
+        $conversion = GoldMergeConversion::with('inputs.productVariant.product', 'inputs.productVariant.karat')->findOrFail($id);
         $validated = $request->validate([
-            'karat_id'        => 'required|exists:karats,id',
-            'output_weight'   => 'required|numeric|min:0.001',
-            'note'            => 'nullable|string',
-
-            'details'                   => 'required|array|min:1',
-            'details.*.stock_id'        => 'required|exists:stocks,id',
-            'details.*.weight'          => 'required|numeric|min:0.001',
+            'note' => 'nullable|string',
+            'details' => 'required|array|min:1',
+            'details.*.product_variant_id' => 'required|exists:product_variants,id',
+            'details.*.qty' => 'required|numeric|min:1',
         ]);
 
-        DB::beginTransaction();
+        DB::transaction(function () use ($validated, $conversion) {
 
-        try {
+            // ==================================================
+            // 1. ROLLBACK STOK LAMA (KELUAR ETALASE) masukan etalase lagi
+            // ==================================================
+            foreach ($conversion->inputs as $input) {
 
-            // =========================================================
-            // 1. ROLLBACK OUTPUT EMAS
-            // =========================================================
-            StockHelper::moveStock(
-                7,
-                $conversion->karat_id,
-                2,
-                1,
-                'out',
-                1,
-                $conversion->output_weight,
-                'GoldMergeConversion',
-                $conversion->id,
-                'rollback-emas',
-                auth()->id(),
-                'second'
-            );
-
-            // =========================================================
-            // 2. ROLLBACK INPUT ETALASE
-            // =========================================================
-            foreach ($conversion->inputs as $old) {
-
-                $stock = $old->stock;
+                $pv = $input->productVariant;
 
                 StockHelper::moveStock(
-                    $stock->product_id,
-                    $stock->karat_id,
-                    $stock->branch_id,
-                    $stock->storage_location_id,
-                    'in',
+                    $pv->id,
+                    1, // etalase
                     1,
-                    $old->weight,
+                    'in',
+                    $input->qty,
+                    $pv->weight,
                     'GoldMergeConversion',
                     $conversion->id,
-                    'rollback-etalase',
+                    'rollback edit',
                     auth()->id(),
-                    $stock->type
+                    $pv->type
                 );
             }
 
+            // ==================================================
+            // 2. ROLLBACK EMAS (BRANKAS)
+            // HITUNG ULANG BERDASARKAN INPUT LAMA rollback stock brankas
+            // ==================================================
+            $rollbackGrouped = $conversion->inputs->map(function ($input) {
+                $pv = $input->productVariant;
+
+                return [
+                    'karat_id' => $pv->karat_id,
+                    'weight' => $pv->gram * $input->qty,
+                    'type' => $pv->type,
+                ];
+            })->groupBy('karat_id');
+
+            $emas = Product::where('name', 'emas')->first();
+
+            if ($emas) {
+                foreach ($rollbackGrouped as $karatId => $items) {
+
+                    $totalWeight = $items->sum('weight');
+
+                    $pvGold = ProductVariant::where([
+                        'product_id' => $emas->id,
+                        'karat_id' => $karatId,
+                        'gram' => null,
+                        'type' => $pv->type,
+                    ])->first();
+
+                    if ($pvGold) {
+                        StockHelper::moveStock(
+                            $pvGold->id,
+                            1, // brankas
+                            1,
+                            'out',
+                            1,
+                            $totalWeight,
+                            'GoldMergeConversion',
+                            $conversion->id,
+                            'rollback edit emas',
+                            auth()->id(),
+                            'new'
+                        );
+                    }
+                }
+            }
+
+            // ==================================================
+            // 3. HAPUS INPUT LAMA
+            // ==================================================
             $conversion->inputs()->delete();
 
-            // =========================================================
-            // 3. UPDATE HEADER
-            // =========================================================
             $conversion->update([
-                'karat_id'      => $validated['karat_id'],
-                'output_weight' => $validated['output_weight'],
-                'note'          => $validated['note'] ?? null,
-                'edited_by'     => auth()->id(),
+                'note' => $validated['note'] ?? null,
+                'edited_by' => auth()->id(),
             ]);
 
-            // =========================================================
-            // 4. INPUT BARU
-            // =========================================================
-            foreach ($validated['details'] as $item) {
+            // ==================================================
+            // 4. PROSES ULANG INPUT BARU
+            // ==================================================
+            foreach ($validated['details'] as $row) {
 
-                $stock = Stock::find($item['stock_id']);
+                $pv = ProductVariant::findOrFail($row['product_variant_id']);
 
                 $conversion->inputs()->create([
-                    'stock_id' => $stock->id,
-                    'weight'   => $item['weight'],
+                    'gold_merge_conversion_id' => $conversion->id,
+                    'product_variant_id' => $pv->id,
+                    'qty' => $row['qty'],
                 ]);
 
                 StockHelper::moveStock(
-                    $stock->product_id,
-                    $stock->karat_id,
-                    $stock->branch_id,
-                    $stock->storage_location_id,
-                    'out',
+                    $pv->id,
+                    1, // etalase
                     1,
-                    $item['weight'],
+                    'out',
+                    $row['qty'],
+                    $pv->weight,
                     'GoldMergeConversion',
                     $conversion->id,
-                    'edit-etalase',
+                    'keluar-etalase',
                     auth()->id(),
-                    $stock->type
+                    $pv->type
                 );
             }
 
-            StockHelper::moveStock(
-                7,
-                $validated['karat_id'],
-                2,
-                1,
-                'in',
-                1,
-                $validated['output_weight'],
-                'GoldMergeConversion',
-                $conversion->id,
-                'edit-emas',
-                auth()->id(),
-                'second'
+            // ==================================================
+            // 5. GROUP INPUT BARU → MASUK EMAS
+            // ==================================================
+            $emas = Product::firstOrCreate(
+                ['name' => 'emas'],
+                ['code' => 'ems']
             );
 
-            DB::commit();
+            $grouped = collect($validated['details'])->map(function ($row) {
+                $pv = ProductVariant::find($row['product_variant_id']);
 
-            return redirect()->route('gold-merge.index')->with('status', 'edited');
+                return [
+                    'karat_id' => $pv->karat_id,
+                    'weight' => $pv->gram * $row['qty'],
+                ];
+            })->groupBy('karat_id');
 
-        } catch (\Throwable $e) {
+            foreach ($grouped as $karatId => $items) {
 
-            DB::rollBack();
-            throw $e;
-        }
+                $totalWeight = $items->sum('weight');
+
+                $pvGold = ProductVariant::firstOrCreate(
+                    [
+                        'product_id' => $emas->id,
+                        'karat_id' => $karatId,
+                        'gram' => null,
+                        'type' => $pv->type,
+                    ],
+                    [
+                        'sku' => 'EMS-' . $karatId . $pv->type,
+                        'barcode' => strtoupper(Str::random(12)),
+                        'default_price' => 0,
+                    ]
+                );
+
+                StockHelper::moveStock(
+                    $pvGold->id,
+                    1, // brankas
+                    1,
+                    'in',
+                    1,
+                    $totalWeight,
+                    'GoldMergeConversion',
+                    $conversion->id,
+                    'masuk brankas',
+                    auth()->id(),
+                    $pvGold->type
+                );
+            }
+        });
+
+        return redirect()
+            ->route('keluar-etalase.index')
+            ->with('status', 'updated');
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -284,52 +350,87 @@ class GoldMergeConversionController extends Controller
     */
     public function destroy($id)
     {
-        $conversion = GoldMergeConversion::with('inputs.stock')->findOrFail($id);
+        $conversion = GoldMergeConversion::with('inputs.productVariant')->findOrFail($id);
 
         DB::transaction(function () use ($conversion) {
 
-            // rollback emas
-            StockHelper::moveStock(
-                7,
-                $conversion->karat_id,
-                2,
-                1,
-                'out',
-                1,
-                $conversion->output_weight,
-                'GoldMergeConversion',
-                $conversion->id,
-                'delete-emas',
-                auth()->id(),
-                'second'
-            );
+            // =============================================
+            // 1. GROUP INPUT → HITUNG TOTAL EMAS
+            // =============================================
+            $grouped = $conversion->inputs->map(function ($input) {
+                $pv = $input->productVariant;
 
-            // rollback etalase
+                return [
+                    'karat_id' => $pv->karat_id,
+                    'type'     => $pv->type,
+                    'weight'   => $pv->gram * $input->qty,
+                ];
+            })->groupBy(fn($i) => $i['karat_id'] . '-' . $i['type']);
+
+            $emas = Product::where('name', 'emas')->first();
+
+            if ($emas) {
+                foreach ($grouped as $group) {
+
+                    $karatId = $group->first()['karat_id'];
+                    $type    = $group->first()['type'];
+                    $totalWeight = $group->sum('weight');
+
+                    $pvGold = ProductVariant::where([
+                        'product_id' => $emas->id,
+                        'karat_id'   => $karatId,
+                        'gram'       => null,
+                        'type'       => $type,
+                    ])->first();
+
+                    if ($pvGold && $totalWeight > 0) {
+                        StockHelper::moveStock(
+                            $pvGold->id,
+                            1, // brankas
+                            1,
+                            'out',
+                            1,
+                            $totalWeight,
+                            'GoldMergeConversion',
+                            $conversion->id,
+                            'destroy-rollback-emas',
+                            auth()->id(),
+                            $type
+                        );
+                    }
+                }
+            }
+
+            // =============================================
+            // 2. ROLLBACK ETALASE
+            // =============================================
             foreach ($conversion->inputs as $input) {
-
-                $stock = $input->stock;
+                $pv = $input->productVariant;
 
                 StockHelper::moveStock(
-                    $stock->product_id,
-                    $stock->karat_id,
-                    $stock->branch_id,
-                    $stock->storage_location_id,
-                    'in',
+                    $pv->id,
+                    1, // etalase
                     1,
-                    $input->weight,
+                    'in',
+                    $input->qty,
+                    $pv->weight,
                     'GoldMergeConversion',
                     $conversion->id,
-                    'delete-etalase',
+                    'destroy-rollback-etalase',
                     auth()->id(),
-                    $stock->type
+                    $pv->type
                 );
             }
 
+            // =============================================
+            // 3. HAPUS DATA
+            // =============================================
             $conversion->inputs()->delete();
             $conversion->delete();
         });
 
-        return redirect()->route('gold-merge.index')->with('status', 'deleted');
+        return redirect()
+            ->route('keluar-etalase.index')
+            ->with('status', 'deleted');
     }
-
 }

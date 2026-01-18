@@ -14,27 +14,28 @@ use Illuminate\Support\Facades\App;
 
 class UtilityController extends BaseController
 {
-    public function approve($modelType, $id, $status){
+    public function approve($modelType, $id, $status)
+    {
         $modelClass = 'App\Models\\' . ucfirst($modelType);
-        
+
         if (!class_exists($modelClass)) {
             return redirect()->back()->with('error', 'Model tidak ditemukan');
         }
-        
+
         $model = $modelClass::findOrFail($id);
-        
+
         if ($model->status !== 'Pending' && $model->status !== 'Terbayar') {
             return redirect()->back()->with('error', 'Hanya data pending yang bisa disetujui');
         }
-        
+
         // Khusus untuk Purchase Order: Nonaktifkan data lama dengan supplier yang sama
-        
+
         $model->update([
             'status' => $status,
             'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
-        
+
         // if ($model instanceof PO) {
         //     $modelClass::where('supplier_id', $model->supplier_id)
         //     ->where('id', '!=', $model->id)
@@ -47,19 +48,20 @@ class UtilityController extends BaseController
         return redirect()->back()->with('status', $status);
     }
 
-    public function activation($modelType, $id, $status){
+    public function activation($modelType, $id, $status)
+    {
         $modelClass = 'App\Models\\' . ucfirst($modelType);
-        
+
         if (!class_exists($modelClass)) {
             return redirect()->back()->with('error', 'Model tidak ditemukan');
         }
-        
+
         $model = $modelClass::findOrFail($id);
-        
+
         // if ($model->status !== 'Pending') {
         //     return redirect()->back()->with('error', 'Hanya data pending yang bisa disetujui');
         // }
-        
+
         // Khusus untuk Purchase Order: Nonaktifkan data lama dengan supplier yang sama
         // if ($model instanceof PO) {
         //     $modelClass::where('supplier_id', $model->supplier_id)
@@ -75,30 +77,33 @@ class UtilityController extends BaseController
     }
 
     // ajax
-    public function getNumberAccount(Request $request){
+    public function getNumberAccount(Request $request)
+    {
         $response = Bank::where("id", $request->id)->first();
         return response()->json($response);
     }
 
-    public function getMultipleData(Request $request){
+    public function getMultipleData(Request $request)
+    {
         $modelClass = 'App\Models\\' . ucfirst($request->model);
         if (!class_exists($modelClass)) {
             return redirect()->back()->with('error', 'Model tidak ditemukan');
         }
-        
+
         $response = $modelClass::whereIn('id', $request->id ?? [])->get();
-        
-        if($request->relation){
+
+        if ($request->relation) {
             $response = $modelClass::with($request->relation ?? [])
-            ->whereIn('id', $request->id ?? [])
-            ->get();
+                ->whereIn('id', $request->id ?? [])
+                ->get();
         }
 
         return response()->json($response);
     }
 
     // get npwp
-    public function getByID(Request $request){
+    public function getByID(Request $request)
+    {
         $modelClass = 'App\Models\\' . ucfirst($request->model);
         if (!class_exists($modelClass)) {
             return redirect()->back()->with('error', 'Model tidak ditemukan');
@@ -106,37 +111,38 @@ class UtilityController extends BaseController
 
         $response = $modelClass::findOrFail($request->id);
 
-        if($request->relation){
+        if ($request->relation) {
             $response = $modelClass::with($request->relation)->findOrFail($request->id);
         }
-        
+
         return response()->json($response);
     }
 
-    public function getByType(Request $request) {
+    public function getByType(Request $request)
+    {
         $modelClass = 'App\Models\\' . ucfirst($request->model);
         $isEdit = $request->isEdit;
         $pjId = $request->pj_id;
         if (!class_exists($modelClass)) {
             return redirect()->back()->with('error', 'Model tidak ditemukan');
         }
-        
-        if ($request->model ==  'Down_payment'){
+
+        if ($request->model ==  'Down_payment') {
             $response = $modelClass::where('status', $request->type)->where('pj_id', null)->get();
-            
-            if($request->relation){
+
+            if ($request->relation) {
                 $response = $modelClass::with($request->relation)->where('status', $request->type)->where('pj_id', null)->get();
             }
 
-            if($isEdit){
+            if ($isEdit) {
                 $response = $modelClass::where('status', $request->type)->where('pj_id', null)->orwhere('pj_id', $pjId)->get();
-    
-                if($request->relation){
+
+                if ($request->relation) {
                     $response = $modelClass::with($request->relation)->where('status', $request->type)->where('pj_id', null)->orwhere('pj_id', $pjId)->get();
                 }
             }
         }
-        
+
         return response()->json($response);
     }
 
@@ -228,8 +234,8 @@ class UtilityController extends BaseController
                 'default_price',
             ],
             'relations' => [
-                'product'=> ["name","code"],
-                'karat'=> ["name"],
+                'product' => ["name", "code"],
+                'karat' => ["name"],
             ]
         ],
         'bankAccounts' => [
@@ -256,7 +262,7 @@ class UtilityController extends BaseController
                 'created_by',
             ],
             'relations' => [
-                'user'=> ["username"],
+                'user' => ["username"],
             ]
         ],
         'sales' => [
@@ -272,7 +278,7 @@ class UtilityController extends BaseController
                 'created_by',
             ],
             'relations' => [
-                'user'=> ["username"],
+                'user' => ["username"],
             ]
         ],
         'goldConversions' => [
@@ -289,8 +295,8 @@ class UtilityController extends BaseController
                 'edited_by'
             ],
             'relations' => [
-                'product'=> ["username"],
-                'kadar'=> ["username"],
+                'product' => ["username"],
+                'kadar' => ["username"],
             ]
         ],
         'goldMergeConversions' => [
@@ -319,7 +325,8 @@ class UtilityController extends BaseController
         ],
     ];
 
-    public function search(Request $request){
+    public function search(Request $request)
+    {
         $search = $request->input('search');
         $from = $request->input('from');
         $modelKey = $request->input('model');
@@ -327,149 +334,145 @@ class UtilityController extends BaseController
         $purchaseType = $request->input('purchase_type');
         $isEdit = $request->edit;
         $page = $request->page ?? 1;
-        
+
         // Validasi model
         if (!isset($this->allowedModels[$modelKey])) {
             return response()->json(['error' => 'Model tidak diizinkan'], 403);
         }
-        
+
         $modelInfo = $this->allowedModels[$modelKey];
         $modelClass = $modelInfo['model'];
         $columns = $request->input('columns', []); // Ambil dari frontend, default array kosong
         $relations = $request->input('relations', []); // Relasi dari frontend jika ada
-        
+
         // Jika frontend tidak mengirimkan kolom, gunakan default dari backend
         if (empty($columns)) {
             $columns = $modelInfo['columns'];
         }
-        if(count($relations) == 0){
+        if (count($relations) == 0) {
             $relations = $modelInfo['relations'];
         }
-        
+
         $withRelations = [];
-        if(count($relations)){
-            foreach($relations as $index => $dataRelation){
-                $withRelations[]= $index;
+        if (count($relations)) {
+            foreach ($relations as $index => $dataRelation) {
+                $withRelations[] = $index;
             }
         }
-        
+
         // Caching untuk meningkatkan performa
         $cacheKey = "search_{$modelKey}_{$search}_page_{$page}";
 
         Cache::forget($cacheKey); // Hapus cache agar query tidak tersimpan
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type,$purchaseType) {
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type, $purchaseType) {
             return App::make($modelClass)::select($columns)->with($withRelations)
-            ->when(in_array('parent_id', $columns), function ($query) {
-                $query->whereNull('parent_id');
-            })
-            ->where(function($q) use($columns, $relations, $search){
-                foreach($columns as $column){
+                ->when(in_array('parent_id', $columns), function ($query) {
+                    $query->whereNull('parent_id');
+                })
+                ->where(function ($q) use ($columns, $relations, $search) {
+                    foreach ($columns as $column) {
 
-                    if ($column === 'date' || $column === 'datetime') {
-                        $q->orWhereRaw("DATE_FORMAT($column, '%d-%m-%Y') LIKE ?", ["%$search%"]);
-                    }else {
-                        $q->orWhere($column, 'like', "%$search%");
-                    }
-                }
-                foreach($relations as $relation => $fields){
-                    $q->orWhereHas($relation, function($query) use ($fields,$search){
-                        if($fields){
-                            foreach($fields as $field){
-                                $query->where($field, 'like', "%$search%");
-                            }
+                        if ($column === 'date' || $column === 'datetime') {
+                            $q->orWhereRaw("DATE_FORMAT($column, '%d-%m-%Y') LIKE ?", ["%$search%"]);
+                        } else {
+                            $q->orWhere($column, 'like', "%$search%");
                         }
-                    });
-                }
-            })
-            ->when($type, function ($query) use ($type) {
-                $query->where('type', $type);
-            })
-            ->when($purchaseType, function ($query) use ($purchaseType) {
-                $query->where('purchase_type', $purchaseType);
-            })
-            ->orderBy("id", "desc")->paginate(10);
-
+                    }
+                    foreach ($relations as $relation => $fields) {
+                        $q->orWhereHas($relation, function ($query) use ($fields, $search) {
+                            if ($fields) {
+                                foreach ($fields as $field) {
+                                    $query->where($field, 'like', "%$search%");
+                                }
+                            }
+                        });
+                    }
+                })
+                ->when($type, function ($query) use ($type) {
+                    $query->where('type', $type);
+                })
+                ->when($purchaseType, function ($query) use ($purchaseType) {
+                    $query->where('purchase_type', $purchaseType);
+                })
+                ->orderBy("id", "desc")->paginate(10);
         });
 
-        if($modelKey  == "fabrics"){
+        if ($modelKey  == "fabrics") {
             return response()->json([
                 'table' => view('pages.search.search-fabrics', compact('data'))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "customerSuppliers"){
-           return response()->json([
+        } elseif ($modelKey == "customerSuppliers") {
+            return response()->json([
                 'table' => view('pages.search.search-customer-supliers', compact(['data', 'type']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "products"){
-           return response()->json([
+        } elseif ($modelKey == "products") {
+            return response()->json([
                 'table' => view('pages.search.search-product', compact('data'))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "types"){
+        } elseif ($modelKey == "types") {
             return response()->json([
                 'table' => view('pages.search.search-type', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "users"){
+        } elseif ($modelKey == "users") {
             return response()->json([
                 'table' => view('pages.search.search-user', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "karats"){
+        } elseif ($modelKey == "karats") {
             return response()->json([
                 'table' => view('pages.search.search-karat', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "branches"){
+        } elseif ($modelKey == "branches") {
             return response()->json([
                 'table' => view('pages.search.search-branch', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "storageLocations"){
+        } elseif ($modelKey == "storageLocations") {
             return response()->json([
                 'table' => view('pages.search.search-storageLocation', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "productVariants"){
+        } elseif ($modelKey == "productVariants") {
             return response()->json([
                 'table' => view('pages.search.search-product-variant', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "bankAccounts"){
+        } elseif ($modelKey == "bankAccounts") {
             return response()->json([
                 'table' => view('pages.search.search-bank-accounts', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "transactions"){
+        } elseif ($modelKey == "transactions") {
             return response()->json([
                 'table' => view('pages.search.search-transactions', compact(['data', "type", "purchaseType"]))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "sales"){
+        } elseif ($modelKey == "sales") {
             return response()->json([
                 'table' => view('pages.search.search-sales', compact(['data', "type"]))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "goldConversions"){
+        } elseif ($modelKey == "goldConversions") {
             return response()->json([
                 'table' => view('pages.search.search-gold-conversions', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "goldMergeConversions"){
+        } elseif ($modelKey == "goldMergeConversions") {
             return response()->json([
                 'table' => view('pages.search.search-gold-merge-conversions', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
-        }elseif($modelKey == "stockAdjustments"){
+        } elseif ($modelKey == "stockAdjustments") {
             return response()->json([
                 'table' => view('pages.search.search-stock-adjustments', compact(['data']))->render(),
-                'pagination' => view('vendor/pagination/bootstrap-4',['paginator' => $data])->render(),
+                'pagination' => view('vendor/pagination/bootstrap-4', ['paginator' => $data])->render(),
             ]);
         }
-
     }
-
-    
 }
