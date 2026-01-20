@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +28,10 @@ class AppServiceProvider extends ServiceProvider
             'debt.cut' => \App\Models\DeliveryDetail::class,
             // tambah model lain kalau perlu
         ]);
+
+        // for production
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }
