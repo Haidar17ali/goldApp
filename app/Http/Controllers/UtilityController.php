@@ -365,14 +365,46 @@ class UtilityController extends BaseController
 
         Cache::forget($cacheKey); // Hapus cache agar query tidak tersimpan
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type, $purchaseType) {
-            return App::make($modelClass)::select($columns)->with($withRelations)
+        // $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type, $purchaseType) {
+        //     return App::make($modelClass)::select($columns)->with($withRelations)
+        //         ->when(in_array('parent_id', $columns), function ($query) {
+        //             $query->whereNull('parent_id');
+        //         })
+        //         ->where(function ($q) use ($columns, $relations, $search) {
+        //             foreach ($columns as $column) {
+
+        //                 if ($column === 'date' || $column === 'datetime') {
+        //                     $q->orWhereRaw("DATE_FORMAT($column, '%d-%m-%Y') LIKE ?", ["%$search%"]);
+        //                 } else {
+        //                     $q->orWhere($column, 'like', "%$search%");
+        //                 }
+        //             }
+        //             foreach ($relations as $relation => $fields) {
+        //                 $q->orWhereHas($relation, function ($query) use ($fields, $search) {
+        //                     if ($fields) {
+        //                         foreach ($fields as $field) {
+        //                             $query->where($field, 'like', "%$search%");
+        //                         }
+        //                     }
+        //                 });
+        //             }
+        //         })
+        //         ->when($type, function ($query) use ($type) {
+        //             $query->where('type', $type);
+        //         })
+        //         ->when($purchaseType, function ($query) use ($purchaseType) {
+        //             $query->where('purchase_type', $purchaseType);
+        //         })
+        //         ->orderBy("id", "desc")->paginate(10);
+        // });
+
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type, $purchaseType, $modelKey) {
+            $query = App::make($modelClass)::select($columns)->with($withRelations)
                 ->when(in_array('parent_id', $columns), function ($query) {
                     $query->whereNull('parent_id');
                 })
                 ->where(function ($q) use ($columns, $relations, $search) {
                     foreach ($columns as $column) {
-
                         if ($column === 'date' || $column === 'datetime') {
                             $q->orWhereRaw("DATE_FORMAT($column, '%d-%m-%Y') LIKE ?", ["%$search%"]);
                         } else {
@@ -394,8 +426,14 @@ class UtilityController extends BaseController
                 })
                 ->when($purchaseType, function ($query) use ($purchaseType) {
                     $query->where('purchase_type', $purchaseType);
-                })
-                ->orderBy("id", "desc")->paginate(10);
+                });
+
+            // Hanya tampilkan data yang dibuat oleh user login jika modelnya transactions atau sales
+            if (in_array($modelKey, ['transactions', 'sales'])) {
+                $query->where('created_by', auth()->id());
+            }
+
+            return $query->orderBy("id", "desc")->paginate(10);
         });
 
         if ($modelKey  == "fabrics") {

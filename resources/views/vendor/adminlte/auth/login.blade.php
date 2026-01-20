@@ -25,7 +25,7 @@
         @csrf
 
         {{-- Email field --}}
-        <div class="input-group mb-3">
+        <div class="mb-3 input-group">
             <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
                 value="{{ old('email') }}" placeholder="{{ __('adminlte::adminlte.email') }}" autofocus>
 
@@ -43,7 +43,7 @@
         </div>
 
         {{-- Password field --}}
-        <div class="input-group mb-3">
+        <div class="mb-3 input-group">
             <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
                 placeholder="{{ __('adminlte::adminlte.password') }}">
 
@@ -101,4 +101,7 @@
             </a>
         </p>
     @endif --}}
+@stop
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/auth-custom.css') }}">
 @stop

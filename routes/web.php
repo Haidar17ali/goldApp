@@ -26,7 +26,10 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Auth::routes();
+Auth::routes([
+    'register' => false,
+]);
+
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 // Route::get('/dashboard/stok/filter', [HomeController::class, 'filterStok'])->name('filter-stock');
@@ -55,6 +58,10 @@ Route::prefix('gold-app')
         Route::get('/pengguna/{id}/ubah', [UserController::class, 'edit'])->name('pengguna.ubah');
         Route::patch('/pengguna/{id}/ubah', [UserController::class, 'update'])->name('pengguna.update');
         Route::delete('/pengguna/{id}/hapus', [UserController::class, 'destroy'])->name('pengguna.hapus');
+
+        // user profile
+        Route::get('/profil', [UserController::class, 'profile'])->name('profil.ubah');
+        Route::patch('/profil', [UserController::class, 'updateProfile'])->name('profil.update');
 
         // products
         Route::get("/produk", [ProductController::class, 'index'])->name("produk.index");
@@ -116,7 +123,7 @@ Route::prefix('gold-app')
         Route::delete('/varian-produk/{id}/hapus', [ProductVariantController::class, 'destroy'])->name('varian-produk.hapus');
         Route::post('/varian-produk/import', [ProductVariantController::class, 'import'])->name('varian-produk.import');
         Route::get('/varian-produk/barcode/{id}', [ProductVariantController::class, 'barcodeForm'])->name('varian-produk.barcode-form');
-        Route::post('/barcode/{id}/print', [ProductVariantController::class, 'barcodePrint'])->name('varian-produk.barcode-print');    
+        Route::post('/barcode/{id}/print', [ProductVariantController::class, 'barcodePrint'])->name('varian-produk.barcode-print');
 
         // transaksi pembelian
         Route::get("/transaksi/{type}/{purchaseType}", [TransactionController::class, 'index'])->name("transaksi.index");

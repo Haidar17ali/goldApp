@@ -1,0 +1,15 @@
+/* Hilangkan jarak besar logo */
+.login-logo,
+.register-logo {
+    margin-bottom: -120px !important;
+}
+
+/* Kecilkan padding card */
+.login-card-body {
+    padding-top: 15px !important;
+}
+
+/* Opsional: kecilkan jarak judul */
+.login-box-msg {
+    margin-bottom: 10px !important;
+}

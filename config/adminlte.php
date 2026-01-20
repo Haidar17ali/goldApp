@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'title' => 'Emas App',
+    'title' => 'Emas Barokah',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'logo' => '<b>Toko Emas</b>',
+    'logo' => 'Emas Barokah',
     'logo_img' => 'assets/images/LogoJM.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -91,8 +91,8 @@ return [
             'path' => 'assets/images/LogoJM.png',
             'alt' => 'Auth Logo',
             'class' => '',
-            'width' => 50,
-            'height' => 50,
+            'width' => 300,
+            'height' => 300,
         ],
     ],
 
@@ -118,8 +118,8 @@ return [
             'path' => 'assets/images/LogoJM.png',
             'alt' => 'AdminLTE Preloader Image',
             'effect' => 'animation__shake',
-            'width' => 60,
-            'height' => 60,
+            'width' => 300,
+            'height' => 300,
         ],
     ],
 
@@ -313,11 +313,11 @@ return [
             'topnav_right' => true,
         ],
 
-        [
-            'type' => 'sidebar-menu-search',
-            'text' => 'search',
-            'can' => 'search',
-        ],
+        // [
+        //     'type' => 'sidebar-menu-search',
+        //     'text' => 'search',
+        //     'can' => 'search',
+        // ],
         [
             'text' => 'blog',
             'url' => 'admin/blog',
@@ -387,13 +387,13 @@ return [
                             'text' => 'Pembelian Customer',
                             'url' => 'gold-app/transaksi/purchase/customer',
                             'icon' => 'fas fa-ring',
-                            // 'can' => 'pembelian.sepuh.index',
+                            'can' => 'transaksi.index',
                         ],
                         [
                             'text' => 'Pembelian Baru',
                             'url' => 'gold-app/transaksi/purchase/new',
                             'icon' => 'fas fa-industry',
-                            // 'can' => 'pembelian.pabrik.index',
+                            'can' => 'transaksi.index',
                         ],
                         [
                             'text' => 'Penjualan',
@@ -403,24 +403,24 @@ return [
                         ],
                     ],
                 ],
-                [
-                    'text' => 'Peminjaman & Pengembalian',
-                    'icon' => 'fas fa-handshake',
-                    'submenu' => [
-                        [
-                            'text' => 'Peminjaman Emas',
-                            'url' => 'gold-app/peminjaman',
-                            'icon' => 'fas fa-hand-holding',
-                            // 'can' => 'peminjaman.index',
-                        ],
-                        // [
-                        //     'text' => 'Pengembalian Emas',
-                        //     'url' => 'gold-app/pengembalian',
-                        //     'icon' => 'fas fa-undo',
-                        //     // 'can' => 'pengembalian.index',
-                        // ],
-                    ],
-                ],
+                // [
+                //     'text' => 'Peminjaman & Pengembalian',
+                //     'icon' => 'fas fa-handshake',
+                //     'submenu' => [
+                //         [
+                //             'text' => 'Peminjaman Emas',
+                //             'url' => 'gold-app/peminjaman',
+                //             'icon' => 'fas fa-hand-holding',
+                //             // 'can' => 'peminjaman.index',
+                //         ],
+                //         // [
+                //         //     'text' => 'Pengembalian Emas',
+                //         //     'url' => 'gold-app/pengembalian',
+                //         //     'icon' => 'fas fa-undo',
+                //         //     // 'can' => 'pengembalian.index',
+                //         // ],
+                //     ],
+                // ],
             ],
         ],
         [
@@ -494,12 +494,7 @@ return [
         [
             'text' => 'Profil',
             'icon' => 'fas fa-user',
-            'url' => 'admin/settings',
-        ],
-        [
-            'text' => 'Ganti Password',
-            'icon' => 'fas fa-lock',
-            'url' => 'admin/settings',
+            'url' => 'gold-app/profil/',
         ],
         [
             'text' => 'Pengelolaan Pengguna',

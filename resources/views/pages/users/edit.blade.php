@@ -19,7 +19,7 @@
                 </div>
             @endif
 
-            <div class="badge badge-warning float-right">Edit Pengguna</div>
+            <div class="float-right badge badge-warning">Edit Pengguna</div>
         </div>
     </div>
 
@@ -58,36 +58,40 @@
                             </div>
                         </div>
 
-                        <!-- Role -->
-                        <div class="form-group row">
-                            <label for="role_id" class="col-sm-2 col-form-label">Role</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="role_id[]" multiple id="role_id">
-                                    @foreach ($roles as $role)
-                                        <option value="{{ $role->name }}"
-                                            {{ in_array($role->name, $user->getRoleNames()->toArray()) ? 'selected' : '' }}>
-                                            {{ $role->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                        @role(['super-admin'])
+                            <!-- Role -->
+                            <div class="form-group row">
+                                <label for="role_id" class="col-sm-2 col-form-label">Role</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" name="role_id[]" multiple id="role_id">
+                                        @foreach ($roles as $role)
+                                            <option value="{{ $role->name }}"
+                                                {{ in_array($role->name, $user->getRoleNames()->toArray()) ? 'selected' : '' }}>
+                                                {{ $role->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Aktivasi -->
-                        <div class="form-group row">
-                            <label for="activation" class="col-sm-2 col-form-label">Aktivasi</label>
-                            <div class="toggle-container col-md-3">
-                                <label class="switch">
-                                    <input type="checkbox" id="activation" name="activation"
-                                        {{ $user->is_active ? 'checked' : '' }}>
-                                    <span class="slider round"></span>
-                                </label>
+                            <!-- Aktivasi -->
+                            <div class="form-group row">
+                                <label for="activation" class="col-sm-2 col-form-label">Aktivasi</label>
+                                <div class="toggle-container col-md-3">
+                                    <label class="switch">
+                                        <input type="checkbox" id="activation" name="activation"
+                                            {{ $user->is_active ? 'checked' : '' }}>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
+                        @endrole
 
                         <!-- Tombol -->
                         <div class="float-right mt-3">
-                            <a href="{{ route('pengguna.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            @can('pengguna.index')
+                                <a href="{{ route('pengguna.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
+                            @endcan
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Perubahan</button>
                         </div>
                     </div>
