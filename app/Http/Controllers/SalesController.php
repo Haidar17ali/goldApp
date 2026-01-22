@@ -129,10 +129,12 @@ class SalesController extends BaseController
             $customer = null;
             if (!empty($validated['customer_name'])) {
                 $customer = CustomerSupplier::firstOrCreate(
-                    ['name' => trim($validated['customer_name'])],
+                    [
+                        'name' => trim($validated['customer_name']),
+                        'address' => $validated['customer_address'],
+                    ],
                     [
                         'phone_number' => $validated['customer_phone'],
-                        'address' => $validated['customer_address'],
                         'type' => 'customer',
                     ]
                 );
@@ -269,6 +271,8 @@ class SalesController extends BaseController
             'invoice_number' => 'nullable|string|max:255|unique:transactions,invoice_number,' . $transaction->id,
 
             'customer_name' => 'nullable|string|max:255',
+            'customer_phone' => 'nullable|string|max:50',
+            'customer_address' => 'nullable|string|max:255',
             'note' => 'nullable|string|max:1000',
 
             'payment_method' => 'required|in:cash,transfer,cash_transfer',
@@ -337,6 +341,21 @@ class SalesController extends BaseController
         DB::beginTransaction();
         try {
 
+            // 🔹 CUSTOMER
+            $customer = null;
+            if (!empty($validated['customer_name'])) {
+                $customer = CustomerSupplier::firstOrCreate(
+                    [
+                        'name' => trim($validated['customer_name']),
+                        'address' => $validated['customer_address'],
+                    ],
+                    [
+                        'phone_number' => $validated['customer_phone'],
+                        'type' => 'customer',
+                    ]
+                );
+            }
+
             /* === ROLLBACK STOK LAMA === */
             foreach ($transaction->details as $oldDetail) {
                 StockHelper::stockIn(
@@ -359,7 +378,7 @@ class SalesController extends BaseController
             /* === UPDATE HEADER === */
             $transaction->update([
                 'invoice_number' => $validated['invoice_number'],
-                'customer_name' => $validated['customer_name'],
+                'customer_id' => $customer->id,
                 'note' => $validated['note'],
                 'photo' => $photo,
 

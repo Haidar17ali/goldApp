@@ -31,19 +31,35 @@
                             value="{{ old('invoice_number', $transaction->invoice_number) }}" required>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-4 position-relative" x-data="customerInput({
+                        customers: {{ Js::from($customers) }},
+                        initialName: '{{ old('customer_name', $transaction->customer?->name) }}',
+                        initialPhone: '{{ old('customer_phone', $transaction->customer?->phone_number) }}',
+                        initialAddress: '{{ old('customer_address', $transaction->customer?->address) }}'
+                    })" x-init="init()">
+
                         <label class="fw-semibold">Customer</label>
-                        <select name="customer_name" id="customerSelect" class="form-control form-control-lg" required>
-                            <option value="">-- pilih / ketik customer --</option>
-                            @foreach ($customers as $c)
-                                <option value="{{ $c->name }}" data-phone="{{ $c->phone_number }}"
-                                    data-address="{{ $c->address }}"
-                                    {{ $c->id == $transaction->customer_id ? 'selected' : '' }}>
-                                    {{ $c->name }}
-                                </option>
-                            @endforeach
-                        </select>
+
+                        <input type="text" name="customer_name" x-model="query" @input="search" @focus="search"
+                            class="form-control form-control-lg" placeholder="Ketik / pilih customer" required>
+
+                        <!-- DROPDOWN -->
+                        <div class="shadow list-group position-absolute w-100" x-show="show" @click.outside="show = false"
+                            style="z-index:1050">
+
+                            <template x-for="item in results" :key="item.id">
+                                <button type="button" class="list-group-item list-group-item-action" @click="select(item)">
+                                    <strong x-text="item.name"></strong><br>
+                                    <small class="text-muted" x-text="item.address"></small>
+                                </button>
+                            </template>
+
+                            <div class="list-group-item text-muted" x-show="results.length === 0">
+                                Customer baru — isi manual
+                            </div>
+                        </div>
                     </div>
+
 
                     <div class="col-md-4">
                         <label class="fw-semibold">Catatan</label>
@@ -87,7 +103,14 @@
                                 —
                                 <span x-text="item.product.name"></span>
                                 —
+                                <span x-text="item.karat.name"></span>
+                                —
                                 <span x-text="item.gram + 'gr'"></span>
+
+                                <!-- BADGE NEW (HANYA JIKA TYPE = new) -->
+                                <span x-show="item.type === 'new'" class="badge bg-success ms-2">
+                                    NEW
+                                </span>
                             </button>
                         </template>
 
@@ -179,8 +202,8 @@
 
     <script>
         /* ======================================================
-           GLOBAL DATA
-        ====================================================== */
+                               GLOBAL DATA
+                            ====================================================== */
         window.PRODUCT_VARIANTS = @json($productVariants);
         window.EXISTING_DETAILS = @json($details);
 
@@ -363,4 +386,48 @@
             }
         }
     </script>
+    <script>
+        function customerInput({
+            customers,
+            initialName,
+            initialPhone,
+            initialAddress
+        }) {
+            return {
+                query: '',
+                results: [],
+                show: false,
+
+                init() {
+                    // SET DATA AWAL (MODE EDIT)
+                    this.query = initialName ?? ''
+                    document.getElementById('customerPhone').value = initialPhone ?? ''
+                    document.getElementById('customerAddress').value = initialAddress ?? ''
+                },
+
+                search() {
+                    if (!this.query) {
+                        this.results = []
+                        this.show = false
+                        return
+                    }
+
+                    this.results = customers.filter(c =>
+                        c.name.toLowerCase().includes(this.query.toLowerCase())
+                    )
+
+                    this.show = true
+                },
+
+                select(item) {
+                    this.query = item.name
+                    this.show = false
+
+                    document.getElementById('customerPhone').value = item.phone_number ?? ''
+                    document.getElementById('customerAddress').value = item.address ?? ''
+                }
+            }
+        }
+    </script>
+
 @stop
