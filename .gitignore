@@ -1,14 +1,13 @@
+# Upload user
+/public/assets/images/
+/public/uploads/
+/public/storage/
+
 /.phpunit.cache
 /node_modules
 /public/build
 /public/hot
 /public/storage
-# ===============================
-# USER UPLOADS (PUBLIC)
-# ===============================
-/public/assets/images/
-/public/uploads/
-/public/photos/
 /storage/*.key
 /storage/pail
 /vendor
