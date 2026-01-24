@@ -40,21 +40,22 @@ class GoldConversionController extends Controller
             ->whereNull('gram')
 
             // hanya yang punya stock
-            ->whereHas('stocks', function ($q) {
-                $q->where('weight', '>', 0);
-            })
+            // ->whereHas('stocks', function ($q) {
+            //     $q->where('weight', '>', 0);
+            // })
 
             // ambil weight stock sebagai attribute
-            ->select('product_variants.*')
-            ->selectSub(function ($q) {
-                $q->from('stocks')
-                    ->select('weight')
-                    ->whereColumn('stocks.product_variant_id', 'product_variants.id')
-                    ->where('weight', '>', 0)
-                    ->limit(1);
-            }, 'weight')
+            // ->select('product_variants.*')
+            // ->selectSub(function ($q) {
+            //     $q->from('stocks')
+            //         ->select('weight')
+            //         ->whereColumn('stocks.product_variant_id', 'product_variants.id')
+            //         ->where('weight', '>', 0)
+            //         ->limit(1);
+            // }, 'weight')
 
             ->get();
+        // dd($productVariants);
 
 
 

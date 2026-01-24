@@ -26,11 +26,12 @@ class ProductVariantController extends BaseController
     }
 
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $request->validate([
             'product_id'     => 'required|exists:products,id',
             'karat_id'       => 'nullable|exists:karats,id',
-            'gram'           => 'required|numeric|min:0.01',
+            'gram'           => 'nullable|numeric|min:0.01',
             'type'           => 'required|in:new,sepuh',
             'default_price'  => 'nullable|numeric|min:0',
         ]);
@@ -45,9 +46,9 @@ class ProductVariantController extends BaseController
 
         $sku = strtoupper(
             $product->name . '-' .
-            $karatName . '-' .
-            $request->gram . '-' .
-            $type
+                $karatName . '-' .
+                $request->gram . '-' .
+                $type
         );
 
 
@@ -77,12 +78,13 @@ class ProductVariantController extends BaseController
         return view('pages.product-variants.edit', compact('productVariant', 'products', 'karats'));
     }
 
-    public function update(Request $request, $id){
+    public function update(Request $request, $id)
+    {
         $productVariant = ProductVariant::findOrFail($id);
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'karat_id'   => 'nullable|exists:karats,id',
-            'gram'    => 'required',
+            'gram'    => 'nullable',
             'default_price' => 'nullable|numeric|min:0',
         ]);
 
@@ -114,7 +116,8 @@ class ProductVariantController extends BaseController
         return redirect()->route('varian-produk.index')->with('status', 'deleted');
     }
 
-    public function import(Request $request){
+    public function import(Request $request)
+    {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
         ]);
@@ -125,7 +128,7 @@ class ProductVariantController extends BaseController
 
     public function barcodeForm($id)
     {
-        $item = ProductVariant::with(['product','karat'])->findOrFail($id);
+        $item = ProductVariant::with(['product', 'karat'])->findOrFail($id);
 
         return view('pages.product-variants.barcode-form', compact('item'));
     }
@@ -136,7 +139,7 @@ class ProductVariantController extends BaseController
             'qty' => 'required|integer|min:1|max:100'
         ]);
 
-        $item = ProductVariant::with(['product','karat'])->findOrFail($id);
+        $item = ProductVariant::with(['product', 'karat'])->findOrFail($id);
 
         return view('pages.product-variants.barcode-print', [
             'item' => $item,
