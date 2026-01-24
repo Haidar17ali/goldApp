@@ -1,8 +1,5 @@
 # Upload user
-/public/assets/images/
-/public/uploads/
-/public/storage/
-
+/public/assets/images/penjualan
 /.phpunit.cache
 /node_modules
 /public/build
