@@ -89,16 +89,30 @@ class GoldConversionController extends Controller
 
                 $productVariant = ProductVariant::with(["stocks"])->find($validated['stock_id']);
 
+                $stock = Stock::firstOrCreate(
+                    [
+                        "product_variant_id" => $productVariant->id,
+                    ],
+                    [
+                        'branch_id' => 1,
+                        'storage_location_id' => 1,
+                        'weight' => 0,
+                        'type' => $productVariant->type,
+                        'quantity' => 0,
+                    ]
+                );
+
                 // =======================================================================================
                 // 1. Simpan HEADER
                 // =======================================================================================
                 $conversion = GoldConversion::create([
-                    'stock_id'      => $productVariant->stocks->id,
+                    'stock_id'      => $stock->id,
                     'product_variant_id'    => $productVariant->id,
                     'input_weight'  => array_sum(array_column($request->details, "weight")),
                     'note'          => $validated['note'] ?? null,
                     'created_by'    => auth()->id(),
                 ]);
+
 
                 // =======================================================================================
                 // 2. Keluarkan stok gelondongan (OUT)
@@ -120,9 +134,9 @@ class GoldConversionController extends Controller
                 // =======================================================================================
                 // 3. Simpan DETAIL + tambahkan stok hasil pecahan
                 // =======================================================================================
-                foreach ($validated['details'] as $d) {
+                foreach ($validated['details'] as $index => $d) {
 
-                    $newPV = ProductVariant::firstOrCreate(
+			$newPV = ProductVariant::firstOrCreate(
                         [
                             "product_id" => $d["product_id"],
                             "karat_id" => $productVariant->karat?->id ?? 0,
@@ -131,15 +145,16 @@ class GoldConversionController extends Controller
                         ],
                         [
                             'sku'           => strtoupper(
-                                $d["product_id"] . '-' . $productVariant->karat->name . '-' .
-                                    $d["weight"] . '-' .
-                                    $productVariant->type == "new" ? $productVariant->type : "sepuh"
-                            ),
+						    $d["product_id"] . '-' . $productVariant->karat->name . '-' .
+						    $d["weight"] . '-' .
+						    ($productVariant->type == "new" ? $productVariant->type : "sepuh")
+						),
                             'barcode'       => strtoupper(Str::random(12)),
                             'default_price' => 0,
                         ]
                     );
-
+			
+		    
                     GoldConversionOutput::create([
                         'gold_conversion_id' => $conversion->id,
                         'product_variant_id'         => $newPV->id,
