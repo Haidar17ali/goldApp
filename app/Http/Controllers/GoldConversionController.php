@@ -89,11 +89,24 @@ class GoldConversionController extends Controller
 
                 $productVariant = ProductVariant::with(["stocks"])->find($validated['stock_id']);
 
+                $stock = Stock::firstOrCreate(
+                    [
+                        "product_variant_id" => $productVariant->id,
+                    ],
+                    [
+                        'branch_id' => 1,
+                        'storage_location_id' => 1,
+                        'weight' => 0,
+                        'type' => $productVariant->type,
+                        'quantity' => 0,
+                    ]
+                );
+
                 // =======================================================================================
                 // 1. Simpan HEADER
                 // =======================================================================================
                 $conversion = GoldConversion::create([
-                    'stock_id'      => $productVariant->stocks->id,
+                    'stock_id'      => $stock->id,
                     'product_variant_id'    => $productVariant->id,
                     'input_weight'  => array_sum(array_column($request->details, "weight")),
                     'note'          => $validated['note'] ?? null,
