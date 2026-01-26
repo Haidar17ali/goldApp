@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-class GoldConversionController extends Controller
+class GoldConversionController extends BaseController
 {
     /*
     |--------------------------------------------------------------------------
@@ -136,7 +136,7 @@ class GoldConversionController extends Controller
                 // =======================================================================================
                 foreach ($validated['details'] as $index => $d) {
 
-			$newPV = ProductVariant::firstOrCreate(
+                    $newPV = ProductVariant::firstOrCreate(
                         [
                             "product_id" => $d["product_id"],
                             "karat_id" => $productVariant->karat?->id ?? 0,
@@ -145,16 +145,16 @@ class GoldConversionController extends Controller
                         ],
                         [
                             'sku'           => strtoupper(
-						    $d["product_id"] . '-' . $productVariant->karat->name . '-' .
-						    $d["weight"] . '-' .
-						    ($productVariant->type == "new" ? $productVariant->type : "sepuh")
-						),
+                                $d["product_id"] . '-' . $productVariant->karat->name . '-' .
+                                    $d["weight"] . '-' .
+                                    ($productVariant->type == "new" ? $productVariant->type : "sepuh")
+                            ),
                             'barcode'       => strtoupper(Str::random(12)),
                             'default_price' => 0,
                         ]
                     );
-			
-		    
+
+
                     GoldConversionOutput::create([
                         'gold_conversion_id' => $conversion->id,
                         'product_variant_id'         => $newPV->id,

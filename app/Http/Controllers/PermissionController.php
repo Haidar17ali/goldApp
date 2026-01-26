@@ -8,14 +8,16 @@ use Spatie\Permission\Models\Permission;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 
-class PermissionController extends Controller
+class PermissionController extends BaseController
 {
-    public function index(){
+    public function index()
+    {
         $permissions = Permission::all();
         return view('pages.permissions.index', compact('permissions'));
     }
 
-    public function generate(){
+    public function generate()
+    {
         // 1. Ambil semua route yang dimulai dengan 'by-zara'
         $routes = Route::getRoutes()->getRoutes();
         $routeNames = [];
@@ -55,6 +57,4 @@ class PermissionController extends Controller
 
         return redirect()->back()->with('status', 'Permissions, Super Admin role, and User #1 synced');
     }
-
-
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Stock;
 use Illuminate\Http\Request;
 
-class StockController extends Controller
+class StockController extends BaseController
 {
 
     public function index(Request $request)

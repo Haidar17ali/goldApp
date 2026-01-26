@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-class GoldMergeConversionController extends Controller
+class GoldMergeConversionController extends BaseController
 {
     /*
     |--------------------------------------------------------------------------

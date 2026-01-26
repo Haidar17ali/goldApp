@@ -209,7 +209,7 @@ class SalesController extends BaseController
 
     public function print($id)
     {
-        $transaction = Transaction::with('details')->findOrFail($id);
+        $transaction = Transaction::with('details.productVariant')->findOrFail($id);
         return view('pages.sales.print', compact('transaction'));
     }
 
