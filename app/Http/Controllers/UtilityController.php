@@ -429,7 +429,7 @@ class UtilityController extends BaseController
                 });
 
             // Hanya tampilkan data yang dibuat oleh user login jika modelnya transactions atau sales
-            if (in_array($modelKey, ['transactions', 'sales'])) {
+            if (auth()->user()->hasRole('Pramuniaga') && in_array($modelKey, ['transactions', 'sales'])) {
                 $query->where('created_by', auth()->id());
             }
 
