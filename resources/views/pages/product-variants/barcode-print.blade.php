@@ -1,150 +1,161 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 
 <head>
-    <title>Print Barcode Label Yupo</title>
+    <meta charset="UTF-8">
+    <title>Print QR Label 84x24</title>
 
     <style>
+        /* ================= PAGE ================= */
         @page {
-            size: 84mm auto;
+            size: 84mm 24mm;
             margin: 0;
         }
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
-        .page {
-            width: 84mm;
-        }
-
-        .container {
-            width: 78mm;
-            margin: 0 3mm;
-        }
-
-        /* ===================== BARIS (2 KOLOM) ===================== */
+        /* ================= ROW (1 BARIS CETAK) ================= */
         .row {
+            width: 84mm;
+            height: 24mm;
             display: grid;
-            grid-template-columns: 24mm 24mm;
-            column-gap: 34mm;
-            page-break-inside: avoid;
-        }
-
-        .cell {
-            width: 24mm;
+            grid-template-columns: 42mm 42mm;
             box-sizing: border-box;
         }
 
-        /* ===================== BARCODE ===================== */
-        .barcode {
-            height: 14mm;
-            /* 🔥 BARCODE LEBIH TINGGI */
-            padding: 0 2mm;
-            /* QUIET ZONE kiri-kanan */
+        /* ================= LABEL ================= */
+        .label {
+            height: 24mm;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start;
+            /* 🔥 NAIK KE ATAS */
+            padding-top: 1.2mm;
+            /* 🔥 KOMPENSASI DEAD ZONE */
+            box-sizing: border-box;
             overflow: hidden;
         }
 
-        .barcode svg {
-            width: 100%;
-            height: 100%;
+        /* ================= SAFE AREA ================= */
+        .label.left {
+            padding-left: 2mm;
+            padding-right: 1mm;
         }
 
-        /* ===================== INFO ===================== */
-        .info {
+        .label.right {
+            padding-right: 2mm;
+            padding-left: 1mm;
+            flex-direction: row-reverse;
+            /* 🔥 MIRROR */
+            text-align: right;
+        }
+
+        /* ================= QR ================= */
+        .qr-box {
+            width: 10mm;
+            /* 🔥 PALING AMAN */
             height: 10mm;
-            /* 🔥 SISA TINGGI LABEL */
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            line-height: 1.1;
+            flex-shrink: 0;
+        }
+
+        .qr-box svg,
+        .qr-box img {
+            width: 100% !important;
+            height: 100% !important;
+            shape-rendering: crispEdges;
+            /* 🔥 ANTI BLUR */
+        }
+
+        /* ================= INFO ================= */
+        .info {
+            font-size: 7pt;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .left .info {
+            margin-left: 2mm;
+        }
+
+        .right .info {
+            margin-right: 2mm;
         }
 
         .product {
-            font-size: 7.5pt;
-            /* 🔥 LEBIH BESAR */
             font-weight: bold;
             text-transform: uppercase;
         }
 
         .detail {
-            font-size: 6.8pt;
+            font-size: 6.5pt;
         }
 
+        /* ================= PRINT ================= */
         @media print {
-            * {
-                page-break-inside: avoid !important;
+            .row {
+                page-break-after: always;
             }
         }
     </style>
 </head>
 
-<body onload="window.print()">
+<body>
 
-    <div class="page">
-        <div class="container">
+    @php
+        $pairs = ceil($qty / 2);
+    @endphp
 
-            @php
-                $pairs = ceil($qty / 2);
-                $counter = 0;
-            @endphp
+    @for ($i = 0; $i < $pairs; $i++)
+        <div class="row">
 
-            @for ($p = 0; $p < $pairs; $p++)
-
-                <!-- BARCODE ROW -->
-                <div class="row">
-                    @for ($c = 0; $c < 2; $c++)
-                        @if ($counter < $qty)
-                            <div class="cell barcode">
-                                <svg id="barcode-{{ $counter }}"></svg>
-                            </div>
-                            @php $counter++; @endphp
-                        @else
-                            <div class="cell"></div>
-                        @endif
-                    @endfor
+            {{-- LABEL KIRI --}}
+            @if ($i * 2 < $qty)
+                <div class="label left">
+                    <div class="qr-box" id="qr-{{ $i * 2 }}"></div>
+                    <div class="info">
+                        <div class="product">{{ strtoupper($item->product->name) }}</div>
+                        <div class="detail">{{ $item->karat?->name }} | {{ $item->gram }}g</div>
+                        <div class="detail">{{ $item->barcode }}</div>
+                    </div>
                 </div>
+            @else
+                <div></div>
+            @endif
 
-                <!-- INFO ROW -->
-                <div class="row">
-                    @for ($c = 0; $c < 2; $c++)
-                        @if ($p * 2 + $c < $qty)
-                            <div class="cell info">
-                                <div class="product">
-                                    {{ strtoupper($item->product->name) }}
-                                </div>
-                                <div class="detail">
-                                    {{ $item->karat?->name }} | {{ $item->gram }}g
-                                </div>
-                            </div>
-                        @else
-                            <div class="cell"></div>
-                        @endif
-                    @endfor
+            {{-- LABEL KANAN (MIRROR) --}}
+            @if ($i * 2 + 1 < $qty)
+                <div class="label right">
+                    <div class="qr-box" id="qr-{{ $i * 2 + 1 }}"></div>
+                    <div class="info">
+                        <div class="product">{{ strtoupper($item->product->name) }}</div>
+                        <div class="detail">{{ $item->karat?->name }} | {{ $item->gram }}g</div>
+                        <div class="detail">{{ $item->barcode }}</div>
+                    </div>
                 </div>
-
-            @endfor
+            @else
+                <div></div>
+            @endif
 
         </div>
-    </div>
+    @endfor
 
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <!-- ================= QR GENERATOR ================= -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
     <script>
         @for ($i = 0; $i < $qty; $i++)
-            JsBarcode("#barcode-{{ $i }}", "{{ $item->barcode }}", {
-                format: "CODE128",
-                width: 1.6, // 🔥 PALING AMAN UNTUK THERMAL
-                height: 48, // BESAR, TAPI DI-CLIP CSS
-                displayValue: false,
-                margin: 0
+            new QRCode(document.getElementById("qr-{{ $i }}"), {
+                text: "{{ $item->barcode }}",
+                width: 40, // 🔥 GENAP = TAJAM (≈10mm @203dpi)
+                height: 40,
+                useSVG: true, // 🔥 WAJIB
+                correctLevel: QRCode.CorrectLevel.L // 🔥 PALING AMAN UNTUK LABEL KECIL
             });
         @endfor
+
+        window.onload = () => window.print();
     </script>
 
 </body>

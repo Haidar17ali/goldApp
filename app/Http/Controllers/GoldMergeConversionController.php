@@ -144,6 +144,14 @@ class GoldMergeConversionController extends BaseController
         return redirect()->route('keluar-etalase.index')->with('status', 'saved');
     }
 
+    public function show($id)
+    {
+        $conversion = GoldMergeConversion::with('inputs.productVariant.product', 'inputs.productVariant.karat')->findOrFail($id);
+        return view('pages.gold-merge.show', compact(
+            'conversion',
+        ));
+    }
+
 
     /*
     |--------------------------------------------------------------------------

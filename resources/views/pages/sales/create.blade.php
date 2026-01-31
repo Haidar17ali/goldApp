@@ -24,7 +24,7 @@
                 <div class="mb-4 row">
                     <div class="col-md-4">
                         <label class="fw-semibold">Nomor Invoice</label>
-                        <input type="text" name="invoice_number" class="form-control form-control-lg"
+                        <input type="text" readonly name="invoice_number" class="form-control form-control-lg"
                             value="{{ $invoiceNumber }}" required>
                     </div>
 
@@ -212,8 +212,9 @@
 
                 search() {
                     const q = this.query.trim().toLowerCase();
+                    const terms = q.split(/\s+/); // pecah per spasi
 
-                    // ===== EXACT MATCH (SCAN BARCODE)
+                    // ===== EXACT MATCH (SCAN BARCODE / SKU)
                     const exact = this.variants.find(v =>
                         v.barcode?.toLowerCase() === q ||
                         v.sku?.toLowerCase() === q
@@ -229,14 +230,23 @@
                         return;
                     }
 
-                    this.results = this.variants.filter(v =>
-                        v.barcode?.toLowerCase().includes(q) ||
-                        v.sku?.toLowerCase().includes(q) ||
-                        v.product.name.toLowerCase().includes(q)
-                    ).slice(0, 10);
+                    this.results = this.variants.filter(v => {
+                        // gabungkan semua field yang mau dicari
+                        const searchableText = `
+                            ${v.product?.name ?? ''}
+                            ${v.karat?.name ?? ''}
+                            ${v.gram ?? ''}
+                            ${v.sku ?? ''}
+                            ${v.barcode ?? ''}
+                        `.toLowerCase();
 
-                    this.showDropdown = true;
+                        // SEMUA kata harus ada
+                        return terms.every(term => searchableText.includes(term));
+                    }).slice(0, 10);
+
+                    this.showDropdown = this.results.length > 0;
                 },
+
 
                 select(item) {
                     window.addItemToTable(item);
