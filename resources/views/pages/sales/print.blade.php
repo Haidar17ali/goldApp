@@ -184,9 +184,10 @@
     <!-- HEADER -->
     <div class="table-header">
         <div class="col-name">Perhiasan</div>
-        <div class="col-weight">Berat</div>
-        <div class="col-size">Ukuran</div>
         <div class="col-karat">Kadar</div>
+        <div class="col-size">Ukuran</div>
+        <div class="col-weight">Berat</div>
+        <div class="col-size">Harga /Gram</div>
         <div class="col-price">Harga</div>
     </div>
 
@@ -195,11 +196,13 @@
         @foreach ($transaction->details as $detail)
             <div class="item-row">
                 <div class="col-name">{{ ucfirst($detail->productVariant->product->name) }}</div>
-                <div class="col-weight">{{ $detail->productVariant->gram }} gr</div>
-                <div class="col-size"></div>
                 <div class="col-karat">{{ $detail->productVariant->karat->name }}
                     {{ $detail->productVariant->type == 'new' ? ' - N' : '' }}
                 </div>
+                <div class="col-size"></div>
+                <div class="col-weight">{{ $detail->productVariant->gram }} gr</div>
+                <div class="col-weight">Rp
+                    {{ number_format($detail->unit_price / $detail->productVariant->gram, 0, ',', '.') }}</div>
                 <div class="col-price">
                     Rp {{ number_format($detail->unit_price, 0, ',', '.') }}
                 </div>

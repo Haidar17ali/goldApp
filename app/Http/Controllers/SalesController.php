@@ -205,6 +205,15 @@ class SalesController extends BaseController
         }
     }
 
+    public function show($id)
+    {
+        $transaction = Transaction::with([
+            'details.productVariant',
+            'customer'
+        ])->findOrFail($id);
+
+        return view('pages.sales.detail-modal', compact('transaction'));
+    }
 
 
     public function print($id)

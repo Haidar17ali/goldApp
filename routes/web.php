@@ -142,6 +142,8 @@ Route::prefix('gold-app')
         Route::delete('/transaction/{type}/emas/{id}/hapus', [SalesController::class, 'destroy'])->name('penjualan.hapus');
         // cetak penjualan
         Route::get('penjualan/cetak/{id}', [SalesController::class, "print"])->name("penjualan.cetak");
+        Route::get('/penjualan/{id}/detail', [SalesController::class, 'show'])
+            ->name('penjualan.detail');
 
         // opname
         Route::get("/opname", [StockAdjustmentController::class, 'index'])->name("opname.index");

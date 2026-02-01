@@ -169,4 +169,28 @@
             });
         });
     </script>
+
+    <script>
+        $(document).on('click', '.btn-detail', function(e) {
+            e.preventDefault();
+
+            let id = $(this).data('id');
+
+            $('#modalDetail').modal('show');
+            $('#detail-content').html(
+                '<i class="fas fa-spinner fa-spin"></i> Memuat data...'
+            );
+
+            let url = "{{ route('penjualan.detail', ':id') }}";
+            url = url.replace(':id', id);
+
+            $.get(url, function(res) {
+                $('#detail-content').html(res);
+            }).fail(function() {
+                $('#detail-content').html(
+                    '<div class="text-danger">Gagal memuat data</div>'
+                );
+            });
+        });
+    </script>
 @stop

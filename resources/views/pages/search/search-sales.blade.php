@@ -26,6 +26,10 @@
                     <td>{{ money_format($item->total) }}</td>
                     <td>{{ $item->note }}</td>
                     <td>
+                        <a href="#" class="badge badge-info btn-detail" data-id="{{ $item->id }}">
+                            <i class="fas fa-eye"></i>
+                        </a>
+
                         <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank" class="badge badge-success">
                             <i class="fas fa-print"></i>
                         </a>
@@ -52,3 +56,26 @@
         @endif
     </tbody>
 </table>
+
+
+{{-- modal --}}
+<div class="modal fade" id="modalDetail" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Transaksi</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div id="detail-content" class="text-center text-muted">
+                    <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
