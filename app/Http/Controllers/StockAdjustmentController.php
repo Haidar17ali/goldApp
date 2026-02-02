@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StockOpnameImport;
+use App\Models\ProductVariant;
 
 class StockAdjustmentController extends BaseController
 {
@@ -28,9 +29,9 @@ class StockAdjustmentController extends BaseController
         $locationId = $request->query('location_id');
 
         $stocks = Stock::where('branch_id', $branchId)
-                    ->where('storage_location_id', $locationId)
-                    ->with(['product', 'karat'])
-                    ->get();
+            ->where('storage_location_id', $locationId)
+            ->with(['product', 'karat'])
+            ->get();
 
         $products = Product::all();
         $karats = Karat::all();
@@ -38,13 +39,13 @@ class StockAdjustmentController extends BaseController
         return view('pages.stock-adjustments.create', compact('stocks', 'branchId', 'locationId', 'products', 'karats'));
     }
 
-    public function getStock(Request $request){
+    public function getStock(Request $request)
+    {
+        $productVariant = ProductVariant::where("product_id", $request->product_id)->where("karat_id", $request->karat_id)->where("gram", $request->weight)->where("type", $request->gold_type)->first();
+
         $stock = \App\Models\Stock::where([
-            'product_id' => $request->product_id,
-            'karat_id' => $request->karat_id,
-            'weight' => $request->weight,
-            'type' => $request->gold_type,
-            ])->first();
+            'product_variant_id' => $productVariant->id,
+        ])->first();
 
         return response()->json([
             'system_qty' => $stock ? $stock->quantity : 0
@@ -54,71 +55,127 @@ class StockAdjustmentController extends BaseController
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            // 'branch_id' => 'required|integer',
-            // 'storage_location_id' => 'required|integer',
-            'details' => 'required|array|min:1',
-            'details.*.stock_id' => 'nullable|integer',
-            'details.*.product_id' => 'required|integer',
-            'details.*.karat_id' => 'required|integer',
-            'details.*.system_qty' => 'required|numeric',
-            'details.*.weight' => 'required|numeric|min:0.01',
-            'details.*.actual_qty' => 'required|numeric',
-            'details.*.gold_type' => 'nullable|string|in:new,sepuh,rosok',
+        // dd($request->all());
+        $request->validate([
+            'details' => 'required|array',
+            'details.*.product_id' => 'required',
+            'details.*.karat_id' => 'required',
+            'details.*.gold_type' => 'required|string',
+            'details.*.actual_qty' => 'required|numeric|min:0',
         ]);
 
-        DB::transaction(function () use ($data) {
+
+        DB::transaction(function () use ($request) {
+
+            /* ===============================
+            * 1️⃣ BUAT HEADER ADJUSTMENT
+            * =============================== */
             $adjustment = StockAdjustment::create([
-                'branch_id' => 2,
+                'branch_id' => auth()->user()->branch_id ?? 1,
                 'storage_location_id' => 1,
                 'adjustment_date' => now(),
+                'note' => 'Manual Stock Opname',
                 'created_by' => auth()->id(),
-                'note' => 'Stock opname ' . now()->format('d-m-Y'),
             ]);
 
-            foreach ($data['details'] as$detail) {
-                $systemQty = (float)$detail['system_qty'];
-                $actualQty = (float)$detail['actual_qty'];
-                $difference = $actualQty - $systemQty;
-                $weight = isset($detail['weight']) ? (float)$detail['weight'] : null; // gram per unit (atau total berat tergantung UI)
+            foreach ($request->details as $item) {
 
-                // simpan detail
-                $detailModel = StockAdjustmentDetail::create([
+                if (empty($item['product_id']) || $item['actual_qty'] === null) {
+                    continue;
+                }
+
+                $productValue = trim($item['product_id']);
+                $karatValue   = trim($item['karat_id'] ?? null);
+
+                $type      = strtolower(trim($item['gold_type']));
+                $actualQty = (int) $item['actual_qty'];
+                $weight    = isset($item['weight']) ? (float) $item['weight'] : null;
+
+                if ($actualQty < 0) continue;
+
+                /* ===============================
+                * 1️⃣ RESOLVE PRODUCT NAME
+                * =============================== */
+                if (is_numeric($productValue)) {
+                    $product = Product::findOrFail($productValue);
+                    $productName = $product->name;
+                } else {
+                    // dari select2 tags (nama baru)
+                    $productName = $productValue;
+                }
+
+                /* ===============================
+                * 2️⃣ RESOLVE KARAT NAME
+                * =============================== */
+                if ($karatValue && is_numeric($karatValue)) {
+                    $karat = Karat::findOrFail($karatValue);
+                    $karatName = $karat->name;
+                } else {
+                    // bisa null atau string baru
+                    $karatName = $karatValue;
+                }
+
+                /* ===============================
+                * 2️⃣ PASTIKAN VARIANT ADA
+                * =============================== */
+                $variant = StockHelper::ensureVariant(
+                    $productName,
+                    $karatName,
+                    $weight,
+                    $type
+                );
+
+                /* ===============================
+                * 3️⃣ AMBIL STOK SISTEM
+                * =============================== */
+                $stock = Stock::where([
+                    'product_variant_id' => $variant->id,
+                    'branch_id' => 1,
+                    'storage_location_id' => 1,
+                    'type' => $type,
+                ])->first();
+                dd($stock);
+
+                $systemQty = $stock?->quantity ?? 0;
+                $difference = $actualQty - $systemQty;
+
+                /* ===============================
+                 * 4️⃣ SIMPAN DETAIL OPNAME
+                 * =============================== */
+                StockAdjustmentDetail::create([
                     'stock_adjustment_id' => $adjustment->id,
-                    'product_id' => $detail['product_id'],
-                    'karat_id' => $detail['karat_id'],
+                    'product_variant_id' => $variant->id,
                     'system_qty' => $systemQty,
                     'actual_qty' => $actualQty,
                     'difference' => $difference,
-                    'type' => $detail['gold_type'] ?? 'new',
-                    'weight' => $weight ?? 0,
+                    'type' => $type,
                 ]);
-                
-                if ($difference != 0) {
-                    $typeMove = $difference > 0 ? 'in' : 'out';
-                    \App\Helpers\StockHelper::moveStock(
-                        $detail['product_id'],
-                        $detail['karat_id'],
-                        2,
-                        1,
-                        $typeMove,
-                        abs($difference),
-                        $weight,                    // <-- kirim berat di sini
-                        'StockAdjustment',
-                        $adjustment->id,
-                        'Penyesuaian stock opname',
-                        auth()->id(),
-                        $detail['gold_type'] ?? 'new'
-                    );
-                }
-            }
 
+                /* ===============================
+                 * 5️⃣ CATAT STOCK MOVEMENT
+                 * =============================== */
+                StockHelper::moveStock(
+                    product_variant_id: $variant->id,
+                    branchId: $adjustment->branch_id,
+                    storageLocationId: $adjustment->storage_location_id,
+                    type: 'adjustment',
+                    quantity: $actualQty,
+                    weight: $weight,
+                    referenceType: StockAdjustment::class,
+                    referenceId: $adjustment->id,
+                    note: 'Manual Stock Opname',
+                    userId: auth()->id(),
+                    goldType: $type
+                );
+            }
         });
 
-        return redirect()->route('opname.index')->with('status', 'Stock opname berhasil disimpan.');
+        return redirect()
+            ->back()
+            ->with('success', 'Stock opname berhasil disimpan');
     }
 
-     public function importForm()
+    public function importForm()
     {
         return view('pages.stock-adjustments.import');
     }
@@ -138,13 +195,14 @@ class StockAdjustmentController extends BaseController
     }
 
 
-    public function destroy($id){
+    public function destroy($id)
+    {
         $adjustment = StockAdjustment::with('details.productVariant')->findOrFail($id);
 
         DB::transaction(function () use ($adjustment) {
             foreach ($adjustment->details as $detail) {
                 $difference = $detail->difference;
-                $weight = $detail->productVariant?->gram??0;
+                $weight = $detail->productVariant?->gram ?? 0;
 
                 if ($difference != 0) {
                     $typeMove = $difference > 0 ? 'out' : 'in';
@@ -180,6 +238,4 @@ class StockAdjustmentController extends BaseController
 
         return redirect()->route('opname.index')->with('status', 'deleted');
     }
-
-
 }
