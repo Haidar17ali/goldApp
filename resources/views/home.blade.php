@@ -174,6 +174,119 @@
         </div>
     </div>
 
+    {{-- masuk etalase --}}
+    {{-- ===================================================== --}}
+    {{-- EMAS MASUK ETALASE --}}
+    {{-- ===================================================== --}}
+    <div class="mt-4 card card-outline card-success">
+        <div class="card-header">
+            <h3 class="card-title">Emas Masuk Etalase per Product & Karat</h3>
+            <div class="card-tools">
+                <span class="badge badge-success">
+                    {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+                    -
+                    {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                </span>
+            </div>
+        </div>
+
+        <div class="p-0 card-body table-responsive">
+            <table class="table mb-0 table-bordered table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Product</th>
+                        <th>Karat</th>
+                        <th class="text-center">Qty Item</th>
+                        <th class="text-right">Total Gram</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($emasMasukEtalase as $row)
+                        <tr>
+                            <td>{{ $row->product_name }}</td>
+                            <td>{{ $row->karat }}</td>
+                            <td class="text-center fw-bold">{{ $row->qty }}</td>
+                            <td class="text-right fw-bold text-success">
+                                {{ number_format($row->total_gram, 2) }} gr
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">
+                                Tidak ada emas masuk etalase
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                <tfoot class="bg-light font-weight-bold">
+                    <tr>
+                        <td colspan="3" class="text-right">Total Emas Masuk</td>
+                        <td class="text-right text-success">
+                            {{ number_format($totalEmasMasuk, 2) }} gr
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    {{-- keluar etalase --}}
+    {{-- ===================================================== --}}
+    {{-- EMAS KELUAR ETALASE --}}
+    {{-- ===================================================== --}}
+    <div class="mt-4 card card-outline card-danger">
+        <div class="card-header">
+            <h3 class="card-title">Emas Keluar Etalase per Product & Karat</h3>
+            <div class="card-tools">
+                <span class="badge badge-danger">
+                    {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+                    -
+                    {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                </span>
+            </div>
+        </div>
+
+        <div class="p-0 card-body table-responsive">
+            <table class="table mb-0 table-bordered table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Product</th>
+                        <th>Karat</th>
+                        <th class="text-center">Qty Keluar</th>
+                        <th class="text-right">Total Gram</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($emasKeluarEtalase as $row)
+                        <tr>
+                            <td>{{ $row->product_name }}</td>
+                            <td>{{ $row->karat }}</td>
+                            <td class="text-center fw-bold">{{ $row->qty }}</td>
+                            <td class="text-right fw-bold text-danger">
+                                {{ number_format($row->total_gram, 2) }} gr
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">
+                                Tidak ada emas keluar etalase
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                <tfoot class="bg-light font-weight-bold">
+                    <tr>
+                        <td colspan="3" class="text-right">Total Emas Keluar</td>
+                        <td class="text-right text-danger">
+                            {{ number_format($totalEmasKeluar, 2) }} gr
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+
     @unlessrole('super-admin')
         {{-- ===================================================== --}}
         {{-- JAM & HARI RAMAI --}}

@@ -142,6 +142,61 @@ class HomeController extends BaseController
          */
         $grandTotal = $salesByProduct->sum('total_nominal');
 
+        // masuk etalase
+        $emasMasukEtalase = DB::table('gold_conversion_outputs as gco')
+            ->join('gold_conversions as gc', 'gc.id', '=', 'gco.gold_conversion_id')
+            ->join('product_variants as pv', 'pv.id', '=', 'gco.product_variant_id')
+            ->join('products as p', 'p.id', '=', 'pv.product_id')
+            ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+            ->whereBetween(DB::raw('DATE(gc.created_at)'), [$startDate, $endDate])
+            ->select(
+                'p.name as product_name',
+                'k.name as karat',
+                DB::raw('COUNT(gco.id) as qty'),
+                DB::raw('SUM(gco.weight) as total_gram')
+            )
+            ->groupBy(
+                'p.name',
+                'k.name'
+            )
+            ->orderBy('p.name')
+            ->get();
+
+        /**
+         * GRAND TOTAL GRAM
+         */
+        $totalEmasMasuk = $emasMasukEtalase->sum('total_gram');
+
+        /**
+         * ===============================
+         * EMAS KELUAR ETALASE
+         * ===============================
+         */
+        $emasKeluarEtalase = DB::table('gold_merge_conversion_inputs as gmci')
+            ->join('gold_merge_conversions as gmc', 'gmc.id', '=', 'gmci.gold_merge_conversion_id')
+            ->join('product_variants as pv', 'pv.id', '=', 'gmci.product_variant_id')
+            ->join('products as p', 'p.id', '=', 'pv.product_id')
+            ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+            ->whereBetween(DB::raw('DATE(gmc.created_at)'), [$startDate, $endDate])
+            ->select(
+                'p.name as product_name',
+                'k.name as karat',
+                DB::raw('SUM(gmci.qty) as qty'),
+                DB::raw('SUM(gmci.qty * pv.gram) as total_gram')
+            )
+            ->groupBy(
+                'p.name',
+                'k.name'
+            )
+            ->orderBy('p.name')
+            ->get();
+
+        /**
+         * TOTAL EMAS KELUAR
+         */
+        $totalEmasKeluar = $emasKeluarEtalase->sum('total_gram');
+
+
         // performa karyawan
         $employeePerformance = TransactionDetail::query()
             ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
@@ -230,6 +285,12 @@ class HomeController extends BaseController
             'jamPalingRamai',
             'hariPalingRamai',
             'hariMap',
+            'emasMasukEtalase',
+            'totalEmasMasuk',
+            'emasKeluarEtalase',
+            'totalEmasKeluar',
+
+
         ]));
     }
 

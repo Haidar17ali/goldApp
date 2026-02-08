@@ -28,7 +28,7 @@ class Stock extends Model
 
     public function productVariant()
     {
-        return $this->belongsTo(productVariant::class);
+        return $this->belongsTo(ProductVariant::class);
     }
 
     // public function karat()
