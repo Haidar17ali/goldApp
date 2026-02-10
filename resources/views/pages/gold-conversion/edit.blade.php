@@ -123,6 +123,13 @@
                     </button>
                 </div>
 
+                <div class="mb-4 text-end">
+                    <h5 class="fw-bold">
+                        Grand Total:
+                        <span id="grandTotalGram">0</span>g
+                    </h5>
+                </div>
+
                 <div class="text-end">
                     <button type="submit" class="px-5 btn btn-primary btn-lg">
                         <i class="fas fa-save me-1"></i> Update Proses
@@ -176,6 +183,21 @@
                 $('#inputWeight').val(weight);
                 $('#stockWeight').text(weight);
             });
+
+            /* ================= HITUNG TOTAL GRAM ================= */
+            function updateGrandTotal() {
+                let total = 0;
+
+                $('#detailTable tbody .weight').each(function() {
+                    total += parseFloat($(this).val()) || 0;
+                });
+
+                $('#grandTotalGram').text(
+                    total.toLocaleString('id-ID', {
+                        minimumFractionDigits: 3
+                    })
+                );
+            }
 
             // ==============================
             // Tambah Baris Detail

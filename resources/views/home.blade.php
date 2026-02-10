@@ -435,6 +435,7 @@
                                 <h4 class="fw-bold">
                                     {{ number_format($item->total_gram, 2) }} gr
                                 </h4>
+                                <div>{{ (int) $item->total_qty }}pcs</div>
                                 <div>{{ $item->product_name }}</div>
                                 <small class="text-muted">
                                     Kadar {{ $item->karat_name }}

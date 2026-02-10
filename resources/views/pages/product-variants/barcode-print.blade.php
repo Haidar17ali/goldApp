@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <title>Print QR Label 84x24</title>
 
-    <style>
+    {{-- <style>
         /* ================= PAGE ================= */
         @page {
-            size: 84mm 24mm;
+            size: 84mm 11mm;
             margin: 0;
         }
 
@@ -19,20 +19,22 @@
 
         /* ================= ROW (1 BARIS CETAK) ================= */
         .row {
+            /* margin-top: -4mm; */
             width: 84mm;
-            height: 24mm;
+            height: 11mm;
             display: grid;
             grid-template-columns: 42mm 42mm;
             box-sizing: border-box;
+            margin-bottom: 15mm;
         }
 
         /* ================= LABEL ================= */
         .label {
-            height: 24mm;
+            height: 11mm;
             display: flex;
             align-items: flex-start;
             /* 🔥 NAIK KE ATAS */
-            padding-top: 1.2mm;
+            /* padding-top: 1.2mm; */
             /* 🔥 KOMPENSASI DEAD ZONE */
             box-sizing: border-box;
             overflow: hidden;
@@ -40,7 +42,7 @@
 
         /* ================= SAFE AREA ================= */
         .label.left {
-            padding-left: 2mm;
+            padding-left: 3mm;
             padding-right: 1mm;
         }
 
@@ -70,7 +72,7 @@
 
         /* ================= INFO ================= */
         .info {
-            font-size: 7pt;
+            font-size: 5pt;
             line-height: 1.2;
             white-space: nowrap;
         }
@@ -89,13 +91,103 @@
         }
 
         .detail {
-            font-size: 6.5pt;
+            font-size: 4.5pt;
         }
 
         /* ================= PRINT ================= */
         @media print {
             .row {
                 page-break-after: always;
+            }
+        }
+    </style> --}}
+    <style>
+        @page {
+            size: 84mm 13mm;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* 1 ROW = 1 LABEL */
+        .row {
+            margin-top: 0;
+            width: 84mm;
+            height: 13mm;
+            display: grid;
+            grid-template-columns: 42mm 42mm;
+            box-sizing: border-box;
+        }
+
+        /* LABEL */
+        .label {
+            height: 13mm;
+            display: flex;
+            align-items: center;
+            /* 🔥 lebih aman dari flex-start */
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* SAFE AREA */
+        .label.left {
+            padding-left: 4mm;
+            padding-right: 1mm;
+        }
+
+        .label.right {
+            padding-left: 1mm;
+            padding-right: 3mm;
+            flex-direction: row-reverse;
+            text-align: right;
+        }
+
+        /* QR */
+        .qr-box {
+            width: 10mm;
+            height: 10mm;
+            flex-shrink: 0;
+        }
+
+        .qr-box svg,
+        .qr-box img {
+            width: 100% !important;
+            height: 100% !important;
+            shape-rendering: crispEdges;
+        }
+
+        /* TEXT */
+        .info {
+            font-size: 5pt;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .left .info {
+            margin-left: 2mm;
+        }
+
+        .right .info {
+            margin-right: 2mm;
+        }
+
+        .product {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .detail {
+            font-size: 4.5pt;
+        }
+
+        /* ❌ HAPUS page-break */
+        @media print {
+            .row {
+                page-break-after: always;
+                margin: 0;
             }
         }
     </style>
@@ -117,7 +209,7 @@
                     <div class="info">
                         <div class="product">{{ strtoupper($item->product->name) }}</div>
                         <div class="detail">{{ $item->karat?->name }} | {{ $item->gram }}g</div>
-                        <div class="detail">{{ $item->barcode }}</div>
+                        <div class="detail">{{ substr($item->barcode, 0, 6) }}</div>
                     </div>
                 </div>
             @else

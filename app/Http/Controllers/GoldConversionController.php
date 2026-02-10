@@ -75,7 +75,7 @@ class GoldConversionController extends BaseController
     {
         $validated = $request->validate([
             'stock_id'      => 'required|exists:product_variants,id',
-            'input_weight'  => 'required|numeric|min:0.01',
+            // 'input_weight'  => 'required|numeric|min:0.01',
             'note'          => 'nullable|string',
 
             'details'                   => 'required|array|min:1',

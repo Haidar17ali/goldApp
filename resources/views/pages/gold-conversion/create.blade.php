@@ -45,20 +45,20 @@
                     </div>
 
                     {{-- KARAT --}}
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label class="fw-semibold">Karat</label>
                         <input type="text" id="karatView" class="form-control form-control-lg" readonly>
                     </div>
 
                     {{-- BERAT INPUT --}}
-                    <div class="col-md-3">
+                    {{-- <div class="col-md-3">
                         <label class="fw-semibold">Berat Input (g)</label>
                         <input type="number" step="0.001" min="0" name="input_weight" id="inputWeight"
                             class="form-control form-control-lg" required>
                         <small class="text-muted">
                             Berat stok: <span id="stockWeight">0</span> g
                         </small>
-                    </div>
+                    </div> --}}
 
                 </div>
 
@@ -159,28 +159,28 @@
                 const index = $('#detailTable tbody tr').length;
 
                 const row = `
-        <tr>
-            <td>
-                <select name="details[${index}][product_id]"
-                    class="form-control form-control-lg select2-product" required>
-                    <option value="">-- pilih produk --</option>
-                    ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
-                </select>
-            </td>
+                <tr>
+                    <td>
+                        <select name="details[${index}][product_id]"
+                            class="form-control form-control-lg select2-product" required>
+                            <option value="">-- pilih produk --</option>
+                            ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                        </select>
+                    </td>
 
-            <td>
-                <input type="number" step="0.001" min="0"
-                    name="details[${index}][weight]"
-                    class="form-control form-control-lg weight" required>
-            </td>
+                    <td>
+                        <input type="number" step="0.001" min="0"
+                            name="details[${index}][weight]"
+                            class="form-control form-control-lg weight" required>
+                    </td>
 
-            <td class="text-center">
-                <button type="button"
-                    class="btn btn-danger btn-lg removeRow">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>`;
+                    <td class="text-center">
+                        <button type="button"
+                            class="btn btn-danger btn-lg removeRow">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
 
                 $('#detailTable tbody').append(row);
                 $('.select2-product').last().select2({
