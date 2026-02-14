@@ -149,7 +149,7 @@ class GoldConversionController extends BaseController
                                     $d["weight"] . '-' .
                                     ($productVariant->type == "new" ? $productVariant->type : "sepuh")
                             ),
-                            'barcode'       => strtoupper(Str::random(12)),
+                            'barcode'       => strtoupper(Str::random(6)),
                             'default_price' => 0,
                         ]
                     );
@@ -374,7 +374,7 @@ class GoldConversionController extends BaseController
                                     : "sepuh"
                                 )
                         ),
-                        'barcode'       => strtoupper(Str::random(12)),
+                        'barcode'       => strtoupper(Str::random(6)),
                         'default_price' => 0,
                     ]
                 );

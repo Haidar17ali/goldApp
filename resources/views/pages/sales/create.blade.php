@@ -77,7 +77,7 @@
 
                 <hr class="my-4">
 
-                <div x-data="barcodeInput()" class="mb-4 position-relative">
+                {{-- <div x-data="barcodeInput()" class="mb-4 position-relative">
 
                     <label class="fw-semibold">Scan Barcode / Ketik Barang</label>
 
@@ -109,60 +109,87 @@
                             Tidak ditemukan
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
+                <div x-data="barcodeInput()" class="mb-4 position-relative">
 
-                {{-- ================= DETAIL BARANG ================= --}}
-                <h5 class="mb-3 fw-bold">Detail Barang</h5>
+                    <label class="fw-semibold">Scan Barcode / Ketik Barang</label>
 
-                <div class="table-responsive">
-                    <table class="table align-middle table-bordered" id="detailTable">
-                        <thead class="text-center table-light">
-                            <tr>
-                                <th style="width: 25%">Produk</th>
-                                <th style="width: 15%">Karat</th>
-                                <th style="width: 15%">Gram</th>
-                                <th style="width: 15%">Harga Jual</th>
-                                <th style="width: 5%"></th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="input-group input-group-lg">
 
-                    <div class="mb-4 text-end">
-                        <h5>
-                            <strong>Grand Total Jual:
-                                Rp <span id="grandTotalJual">0</span>
-                            </strong>
-                        </h5>
+                        <input type="text" x-model="query" @input="search" @keydown.enter.prevent="selectFirst"
+                            class="form-control" placeholder="Scan barcode atau ketik nama barang">
+
+                        <!-- BUTTON CAMERA -->
+                        <button type="button" class="btn btn-outline-secondary" @click="openCamera">
+
+                            <i class="fas fa-camera"></i>
+                        </button>
                     </div>
-                </div>
 
-                {{-- <div class="mb-3 text-end">
+                    <!-- AREA CAMERA -->
+                    <div x-show="cameraOpen" class="p-2 mt-2 border rounded bg-light">
+
+                        <div id="reader" style="width:100%"></div>
+
+                        <button class="mt-2 btn btn-danger btn-sm" @click="closeCamera">
+                            Tutup Kamera
+                        </button>
+                    </div>
+
+
+
+                    {{-- ================= DETAIL BARANG ================= --}}
+                    <h5 class="mb-3 fw-bold">Detail Barang</h5>
+
+                    <div class="table-responsive">
+                        <table class="table align-middle table-bordered" id="detailTable">
+                            <thead class="text-center table-light">
+                                <tr>
+                                    <th style="width: 25%">Produk</th>
+                                    <th style="width: 15%">Karat</th>
+                                    <th style="width: 15%">Gram</th>
+                                    <th style="width: 15%">Harga Jual</th>
+                                    <th style="width: 5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                        <div class="mb-4 text-end">
+                            <h5>
+                                <strong>Grand Total Jual:
+                                    Rp <span id="grandTotalJual">0</span>
+                                </strong>
+                            </h5>
+                        </div>
+                    </div>
+
+                    {{-- <div class="mb-3 text-end">
                     <button type="button" id="addRow" class="btn btn-success btn-lg">
                         <i class="fas fa-plus"></i> Tambah Baris
                     </button> --}}
+                </div>
+
+                {{-- ================= PAYMENT ================= --}}
+                @include('components.payment-gateway', [
+                    'bankAccounts' => $bankAccounts,
+                    'payment_method' => $transaction->payment_method ?? null,
+                    'bank_account_id' => $transaction->bank_account_id ?? null,
+                    'transfer_amount' => $transaction->transfer_amount ?? null,
+                    'cash_amount' => $transaction->cash_amount ?? null,
+                    'reference_no' => $transaction->reference_no ?? null,
+                ])
+
+                @include('components.camera')
+
+                <div class="text-end">
+                    <button type="submit" class="px-5 btn btn-primary btn-lg">
+                        <i class="fas fa-save me-1"></i> Simpan Transaksi
+                    </button>
+                </div>
+            </form>
         </div>
-
-        {{-- ================= PAYMENT ================= --}}
-        @include('components.payment-gateway', [
-            'bankAccounts' => $bankAccounts,
-            'payment_method' => $transaction->payment_method ?? null,
-            'bank_account_id' => $transaction->bank_account_id ?? null,
-            'transfer_amount' => $transaction->transfer_amount ?? null,
-            'cash_amount' => $transaction->cash_amount ?? null,
-            'reference_no' => $transaction->reference_no ?? null,
-        ])
-
-        @include('components.camera')
-
-        <div class="text-end">
-            <button type="submit" class="px-5 btn btn-primary btn-lg">
-                <i class="fas fa-save me-1"></i> Simpan Transaksi
-            </button>
-        </div>
-        </form>
-    </div>
     </div>
 @stop
 
@@ -196,6 +223,9 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- barcode scanner --}}
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
 
     <script>
         window.PRODUCT_VARIANTS = @json($productVariants);
@@ -203,6 +233,69 @@
 
 
     <script>
+        // function barcodeInput() {
+        //     return {
+        //         query: '',
+        //         results: [],
+        //         showDropdown: false,
+        //         variants: window.PRODUCT_VARIANTS || [],
+
+        //         search() {
+        //             const q = this.query.trim().toLowerCase();
+        //             const terms = q.split(/\s+/); // pecah per spasi
+
+        //             // ===== EXACT MATCH (SCAN BARCODE / SKU)
+        //             const exact = this.variants.find(v =>
+        //                 v.barcode?.toLowerCase() === q ||
+        //                 v.sku?.toLowerCase() === q
+        //             );
+
+        //             if (exact) {
+        //                 this.select(exact);
+        //                 return;
+        //             }
+
+        //             if (q.length < 2) {
+        //                 this.showDropdown = false;
+        //                 return;
+        //             }
+
+        //             this.results = this.variants.filter(v => {
+        //                 // gabungkan semua field yang mau dicari
+        //                 const searchableText = `
+    //                     ${v.product?.name ?? ''}
+    //                     ${v.karat?.name ?? ''}
+    //                     ${v.gram ?? ''}
+    //                     ${v.sku ?? ''}
+    //                     ${v.barcode ?? ''}
+    //                 `.toLowerCase();
+
+        //                 // SEMUA kata harus ada
+        //                 return terms.every(term => searchableText.includes(term));
+        //             }).slice(0, 10);
+
+        //             this.showDropdown = this.results.length > 0;
+        //         },
+
+
+        //         select(item) {
+        //             window.addItemToTable(item);
+        //             this.reset();
+        //         },
+
+        //         selectFirst() {
+        //             if (this.results.length === 1) {
+        //                 this.select(this.results[0]);
+        //             }
+        //         },
+
+        //         reset() {
+        //             this.query = '';
+        //             this.results = [];
+        //             this.showDropdown = false;
+        //         }
+        //     }
+        // }
         function barcodeInput() {
             return {
                 query: '',
@@ -210,11 +303,13 @@
                 showDropdown: false,
                 variants: window.PRODUCT_VARIANTS || [],
 
+                cameraOpen: false,
+                scanner: null,
+
                 search() {
                     const q = this.query.trim().toLowerCase();
-                    const terms = q.split(/\s+/); // pecah per spasi
+                    const terms = q.split(/\s+/);
 
-                    // ===== EXACT MATCH (SCAN BARCODE / SKU)
                     const exact = this.variants.find(v =>
                         v.barcode?.toLowerCase() === q ||
                         v.sku?.toLowerCase() === q
@@ -231,22 +326,19 @@
                     }
 
                     this.results = this.variants.filter(v => {
-                        // gabungkan semua field yang mau dicari
                         const searchableText = `
-                            ${v.product?.name ?? ''}
-                            ${v.karat?.name ?? ''}
-                            ${v.gram ?? ''}
-                            ${v.sku ?? ''}
-                            ${v.barcode ?? ''}
-                        `.toLowerCase();
+                    ${v.product?.name ?? ''}
+                    ${v.karat?.name ?? ''}
+                    ${v.gram ?? ''}
+                    ${v.sku ?? ''}
+                    ${v.barcode ?? ''}
+                `.toLowerCase();
 
-                        // SEMUA kata harus ada
                         return terms.every(term => searchableText.includes(term));
                     }).slice(0, 10);
 
                     this.showDropdown = this.results.length > 0;
                 },
-
 
                 select(item) {
                     window.addItemToTable(item);
@@ -263,6 +355,66 @@
                     this.query = '';
                     this.results = [];
                     this.showDropdown = false;
+                },
+
+                // ================= CAMERA =================
+
+                openCamera() {
+                    this.cameraOpen = true;
+
+                    this.$nextTick(() => {
+                        this.scanner = new Html5Qrcode("reader");
+
+                        this.scanner.start({
+                                facingMode: {
+                                    exact: "environment"
+                                }
+                            }, {
+                                fps: 20,
+                                qrbox: {
+                                    width: 250,
+                                    height: 120
+                                },
+                                aspectRatio: 1.777,
+                                formatsToSupport: [
+                                    Html5QrcodeSupportedFormats.CODE_128,
+                                    Html5QrcodeSupportedFormats.CODE_39,
+                                    Html5QrcodeSupportedFormats.EAN_13,
+                                    Html5QrcodeSupportedFormats.EAN_8,
+                                    Html5QrcodeSupportedFormats.UPC_A,
+                                    Html5QrcodeSupportedFormats.UPC_E
+                                ]
+                            },
+                            (decodedText) => {
+                                this.onScanSuccess(decodedText);
+                            },
+                        );
+
+                    });
+                },
+
+                closeCamera() {
+                    this.cameraOpen = false;
+
+                    if (this.scanner) {
+                        this.scanner.stop().then(() => {
+                            this.scanner.clear();
+                        });
+                    }
+                },
+
+                onScanSuccess(code) {
+                    this.query = code;
+                    this.search();
+
+                    const exact = this.variants.find(v =>
+                        v.barcode == code || v.sku == code
+                    );
+
+                    if (exact) {
+                        this.select(exact);
+                        this.closeCamera();
+                    }
                 }
             }
         }

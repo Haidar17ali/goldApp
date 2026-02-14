@@ -115,7 +115,7 @@ class GoldMergeConversionController extends BaseController
                 ],
                 [
                     'sku' => strtoupper($emas->name . '-' . ($pv->karat?->name ?? 'NOKRT') . "-" . $pv->type),
-                    'barcode' => strtoupper(Str::random(12)),
+                    'barcode' => strtoupper(Str::random(6)),
                     'default_price' => 0,
                 ]
             );
@@ -324,7 +324,7 @@ class GoldMergeConversionController extends BaseController
                     ],
                     [
                         'sku' => 'EMS-' . $karatId . $pv->type,
-                        'barcode' => strtoupper(Str::random(12)),
+                        'barcode' => strtoupper(Str::random(6)),
                         'default_price' => 0,
                     ]
                 );

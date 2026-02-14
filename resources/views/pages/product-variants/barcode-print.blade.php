@@ -175,12 +175,11 @@
         }
 
         .product {
-            font-weight: bold;
             text-transform: uppercase;
         }
 
         .detail {
-            font-size: 4.5pt;
+            font-size: 5pt;
         }
 
         /* ❌ HAPUS page-break */

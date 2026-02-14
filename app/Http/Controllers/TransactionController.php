@@ -197,7 +197,7 @@ class TransactionController extends BaseController
                         ],
                         [
                             'sku'           => $sku,
-                            'barcode'       => strtoupper(Str::random(12)),
+                            'barcode'       => strtoupper(Str::random(6)),
                             'default_price' => 0,
                         ]
                     );
@@ -241,7 +241,7 @@ class TransactionController extends BaseController
                             ],
                             [
                                 'sku'           => $emasSKU,
-                                'barcode'       => strtoupper(Str::random(12)),
+                                'barcode'       => strtoupper(Str::random(6)),
                                 'default_price' => 0,
                             ]
                         );
@@ -419,7 +419,7 @@ class TransactionController extends BaseController
                             ],
                             [
                                 'sku'           => $emasSKU,
-                                'barcode'       => strtoupper(Str::random(12)),
+                                'barcode'       => strtoupper(Str::random(6)),
                                 'default_price' => 0,
                             ]
                         );
@@ -482,7 +482,7 @@ class TransactionController extends BaseController
                         ],
                         [
                             'sku'           => $sku,
-                            'barcode'       => strtoupper(Str::random(12)),
+                            'barcode'       => strtoupper(Str::random(6)),
                             'default_price' => 0,
                         ]
                     );
@@ -526,7 +526,7 @@ class TransactionController extends BaseController
                             ],
                             [
                                 'sku'           => $emasSKU,
-                                'barcode'       => strtoupper(Str::random(12)),
+                                'barcode'       => strtoupper(Str::random(6)),
                                 'default_price' => 0,
                             ]
                         );
@@ -592,7 +592,7 @@ class TransactionController extends BaseController
                         ],
                         [
                             'sku'           => $emasSKU,
-                            'barcode'       => strtoupper(Str::random(12)),
+                            'barcode'       => strtoupper(Str::random(6)),
                             'default_price' => 0,
                         ]
                     );

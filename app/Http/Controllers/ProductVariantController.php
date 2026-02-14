@@ -53,7 +53,7 @@ class ProductVariantController extends BaseController
 
 
         // Barcode: unik (pakai UUID atau kombinasi angka acak)
-        $barcode = strtoupper(Str::random(12));
+        $barcode = strtoupper(Str::random(6));
 
         ProductVariant::create([
             'product_id'     => $request->product_id,

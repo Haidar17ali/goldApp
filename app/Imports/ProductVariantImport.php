@@ -17,13 +17,13 @@ class ProductVariantImport implements ToModel, WithHeadingRow
         if (empty($row['product_name']) || empty($row['weight'])) {
             return null;
         }
-        
+
         // === Product ===
         $product = Product::firstOrCreate(
             ['name' => trim($row['product_name'])],
             ['code' => strtoupper(Str::slug($row['product_name'], '-'))]
         );
-        
+
         // === Karat (optional) ===
         $karat = null;
         if (!empty($row['karat_name'])) {
@@ -31,9 +31,9 @@ class ProductVariantImport implements ToModel, WithHeadingRow
                 'name' => trim($row['karat_name'])
             ]);
         }
-        
+
         $karatName = $karat ? $karat->name : 'NOKRT';
-        
+
         // === Type (new / sepuh) ===
         $type = 'new'; // default
         if (!empty($row['type'])) {
@@ -42,10 +42,10 @@ class ProductVariantImport implements ToModel, WithHeadingRow
                 $type = $rowType;
             }
         }
-        
+
         // === SKU & Barcode ===
         $sku = strtoupper($product->name . '-' . $karatName . '-' . $row['weight'] . '-' . $type);
-        $barcode = strtoupper(Str::random(12));
+        $barcode = strtoupper(Str::random(6));
 
 
         // === Cegah duplikasi SKU ===
