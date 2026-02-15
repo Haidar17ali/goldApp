@@ -133,6 +133,7 @@
                             'supplier_name',
                             'note',
                             'created_by',
+                            'created_at',
                         ],
                         relations: {
                             'user': ["username"],

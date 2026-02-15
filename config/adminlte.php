@@ -440,6 +440,12 @@ return [
                     'can' => 'opname.index',
                 ],
                 [
+                    'text' => 'Cetak Barcode',
+                    'url' => 'gold-app/barcode/variant/multi-form',
+                    'icon' => 'fas fa-qrcode',
+                    'can' => 'barcode.multi-form',
+                ],
+                [
                     'text' => 'Pengelolaan Emas',
                     'url' => 'gold-app/pengelolaan-emas',
                     'icon' => 'fas fa-tools',

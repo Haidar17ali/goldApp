@@ -50,7 +50,18 @@
                     <input type="date" name="end_date" class="form-control" value="{{ $endDate }}">
                 </div>
 
-                <div class="col-md-3">
+                {{-- TAMBAHAN FILTER JAM --}}
+                <div class="col-md-2">
+                    <label>Dari Jam</label>
+                    <input type="time" name="start_hour" class="form-control" value="{{ request('start_hour') }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label>Sampai Jam</label>
+                    <input type="time" name="end_hour" class="form-control" value="{{ request('end_hour') }}">
+                </div>
+
+                <div class="col-md-2">
                     <button class="btn btn-primary w-100">
                         <i class="fa fa-filter"></i> Terapkan Filter
                     </button>
@@ -173,6 +184,39 @@
             </div>
         </div>
     </div>
+
+    <div class="mt-3 card card-outline card-primary">
+        <div class="card-header">
+            <h3 class="card-title font-weight-bold">Setoran Per Anak</h3>
+        </div>
+        <div class="p-0 card-body table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Total Transaksi</th>
+                        <th>Cash</th>
+                        <th>Transfer</th>
+                        <th>Total Setoran</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($salesByEmployeePayment as $emp)
+                        <tr>
+                            <td>{{ $emp->employee_name }}</td>
+                            <td>{{ $emp->total_transactions }}</td>
+                            <td>Rp {{ number_format($emp->total_cash, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($emp->total_transfer, 0, ',', '.') }}</td>
+                            <td class="font-weight-bold">
+                                Rp {{ number_format($emp->total_setoran, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 
     {{-- masuk etalase --}}
     {{-- ===================================================== --}}

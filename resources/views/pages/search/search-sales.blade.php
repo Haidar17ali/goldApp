@@ -17,7 +17,7 @@
                 <tr style="text-transform: uppercase">
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ $item->invoice_number }}</td>
-                    <td>{{ $item->transaction_date }}</td>
+                    <td>{{ date('d-m-Y H:i', strtotime($item->created_at)) }}</td>
                     <td>{{ $item->customer?->name ?? 'null' }}</td>
                     <td>{{ $item->details->sum(function ($detail) {
                         return $detail->productVariant->gram ?? 0;

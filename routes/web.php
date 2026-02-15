@@ -125,6 +125,10 @@ Route::prefix('gold-app')
         Route::get('/varian-produk/barcode/{id}', [ProductVariantController::class, 'barcodeForm'])->name('varian-produk.barcode-form');
         Route::post('/barcode/{id}/print', [ProductVariantController::class, 'barcodePrint'])->name('varian-produk.barcode-print');
 
+        // 
+        Route::get("/barcode/variant/multi-form", [ProductVariantController::class, "multiFormBarcode"])->name("barcode.multi-form");
+        Route::post("/barcode/variant/multi-form/cetak", [ProductVariantController::class, "barcodePrintMultiple"])->name("barcode.cetak-form");
+
         // transaksi pembelian
         Route::get("/transaksi/{type}/{purchaseType}", [TransactionController::class, 'index'])->name("transaksi.index");
         Route::get('/transaksi/{type}/{purchaseType}/buat', [TransactionController::class, 'create'])->name('transaksi.buat');

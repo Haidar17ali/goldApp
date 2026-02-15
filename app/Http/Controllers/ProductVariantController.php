@@ -146,4 +146,39 @@ class ProductVariantController extends BaseController
             'qty'  => $request->qty
         ]);
     }
+
+    public function multiFormBarcode()
+    {
+        $variants = ProductVariant::with([
+            'product:id,name',
+            'karat:id,name',
+            'stocks:id,product_variant_id,quantity'
+        ])->get();
+
+        return view('pages.barcode.multi-form', compact('variants'));
+    }
+
+    public function barcodePrintMultiple(Request $request)
+    {
+        $request->validate([
+            'variants' => 'required|array|min:1',
+            'variants.*.id' => 'required|exists:product_variants,id',
+            'variants.*.qty' => 'required|integer|min:1|max:100'
+        ]);
+
+        $items = [];
+
+        foreach ($request->variants as $row) {
+
+            $variant = ProductVariant::with(['product', 'karat'])
+                ->findOrFail($row['id']);
+
+            $items[] = [
+                'variant' => $variant,
+                'qty' => $row['qty']
+            ];
+        }
+
+        return view('pages.barcode.barcode-print-multiple', compact('items'));
+    }
 }
