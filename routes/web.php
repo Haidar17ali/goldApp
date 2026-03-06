@@ -11,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\ChartOfAccountController;
 use App\Http\Controllers\CustomerSupplierController;
 use App\Http\Controllers\GoldConversionController;
 use App\Http\Controllers\GoldMergeConversionController;
@@ -221,4 +222,11 @@ Route::prefix('gold-app')
 
 
         Route::post('/backup/export', [BackupController::class, 'export'])->name('backup.export');
+
+        Route::get('/coa', [ChartOfAccountController::class, 'index'])->name('coa.index');
+        Route::get('/coa/buat', [ChartOfAccountController::class, 'create'])->name('coa.buat');
+        Route::post('/coa', [ChartOfAccountController::class, 'store'])->name('coa.simpan');
+        Route::get('/coa/{id}/ubah', [ChartOfAccountController::class, 'edit'])->name('coa.ubah');
+        Route::patch('/coa/{id}/update', [ChartOfAccountController::class, 'update'])->name('coa.update');
+        Route::delete('/coa/{id}/hapus', [ChartOfAccountController::class, 'destroy'])->name('coa.hapus');
     });

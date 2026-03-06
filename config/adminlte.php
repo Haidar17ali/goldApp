@@ -330,6 +330,42 @@ return [
         ],
 
         [
+            'text' => 'Laporan Keuangan',
+            'icon' => 'fas fa-book',
+            'submenu' => [
+                [
+                    'text' => 'Chart Of Account',
+                    'url' => 'gold-app/coa/',
+                    'can' => 'customer-supplier.index',
+                ],
+                [
+                    'text' => 'Jurnal Umum',
+                    'url' => '/gold-app/customer-supplier/supplier',
+                    'can' => 'customer-supplier.index',
+                ],
+                [
+                    'text' => 'General Ledger',
+                    'url' => 'gold-app/cabang',
+                    'can' => 'cabang.index',
+                ],
+                [
+                    'text' => 'Trial Balance',
+                    'url' => 'gold-app/penyimpanan',
+                    'can' => 'penyimpanan.index',
+                ],
+                [
+                    'text' => 'Provit And Loss',
+                    'url' => 'gold-app/produk',
+                    'can' => 'produk.index',
+                ],
+                [
+                    'text' => 'Provit And Loss/Sector',
+                    'url' => 'gold-app/produk',
+                    'can' => 'produk.index',
+                ],
+            ],
+        ],
+        [
             'text' => 'Master Data',
             'icon' => 'fas fa-database',
             'submenu' => [
