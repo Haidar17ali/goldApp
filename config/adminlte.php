@@ -502,6 +502,11 @@ return [
             ],
         ],
         [
+            'text' => 'Payroll',
+            'icon' => 'fas fa-money-bill',
+            'url' => 'gold-app/payroll/',
+        ],
+        [
             'text' => 'Laporan',
             'icon' => 'fas fa-book',
             'submenu' => [

@@ -84,6 +84,25 @@
                     <input type="text" x-model="query" @input="search" @keydown.enter.prevent="selectFirst"
                         class="form-control form-control-lg" placeholder="Scan barcode atau ketik nama barang" autofocus>
 
+                    
+                </div> --}}
+
+                <div x-data="barcodeInput()" class="mb-4 position-relative">
+
+                    <label class="fw-semibold">Scan Barcode / Ketik Barang</label>
+
+                    <div class="input-group input-group-lg">
+
+                        <input type="text" x-model="query" @input="search" @keydown.enter.prevent="selectFirst"
+                            class="form-control" placeholder="Scan barcode atau ketik nama barang">
+
+                        <!-- BUTTON CAMERA -->
+                        <button type="button" class="btn btn-outline-secondary" @click="openCamera">
+
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+
                     <!-- DROPDOWN -->
                     <div class="shadow list-group position-absolute w-100" x-show="showDropdown"
                         @click.outside="showDropdown = false" style="z-index:1050">
@@ -108,23 +127,6 @@
                         <div class="list-group-item text-muted" x-show="results.length === 0">
                             Tidak ditemukan
                         </div>
-                    </div>
-                </div> --}}
-
-                <div x-data="barcodeInput()" class="mb-4 position-relative">
-
-                    <label class="fw-semibold">Scan Barcode / Ketik Barang</label>
-
-                    <div class="input-group input-group-lg">
-
-                        <input type="text" x-model="query" @input="search" @keydown.enter.prevent="selectFirst"
-                            class="form-control" placeholder="Scan barcode atau ketik nama barang">
-
-                        <!-- BUTTON CAMERA -->
-                        <button type="button" class="btn btn-outline-secondary" @click="openCamera">
-
-                            <i class="fas fa-camera"></i>
-                        </button>
                     </div>
 
                     <!-- AREA CAMERA -->
@@ -315,12 +317,14 @@
                         v.sku?.toLowerCase() === q
                     );
 
+
                     if (exact) {
                         this.select(exact);
                         return;
                     }
 
                     if (q.length < 2) {
+
                         this.showDropdown = false;
                         return;
                     }

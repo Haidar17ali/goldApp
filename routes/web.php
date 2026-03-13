@@ -16,6 +16,7 @@ use App\Http\Controllers\CustomerSupplierController;
 use App\Http\Controllers\GoldConversionController;
 use App\Http\Controllers\GoldMergeConversionController;
 use App\Http\Controllers\GoldManagementController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StorageLocationController;
@@ -229,4 +230,15 @@ Route::prefix('gold-app')
         Route::get('/coa/{id}/ubah', [ChartOfAccountController::class, 'edit'])->name('coa.ubah');
         Route::patch('/coa/{id}/update', [ChartOfAccountController::class, 'update'])->name('coa.update');
         Route::delete('/coa/{id}/hapus', [ChartOfAccountController::class, 'destroy'])->name('coa.hapus');
+
+
+        // payroll
+        Route::get('/payroll', [PayrollController::class, 'index'])
+            ->name('payroll.index');
+        Route::get('/payroll/{bulan}', [PayrollController::class, 'detail'])
+            ->name('payroll.detail');
+        Route::get('/payroll-generate', [PayrollController::class, 'generate'])
+            ->name('payroll.generate');
+        Route::post('/payroll-generate', [PayrollController::class, 'storeGenerate'])
+            ->name('payroll.simpan');
     });

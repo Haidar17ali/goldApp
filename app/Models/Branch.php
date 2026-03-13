@@ -11,4 +11,9 @@ class Branch extends Model
         "name",
         "address"
     ];
+
+    public function profiles()
+    {
+        return $this->hasMany(Profile::class);
+    }
 }

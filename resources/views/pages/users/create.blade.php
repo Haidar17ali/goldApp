@@ -22,7 +22,7 @@
 
             <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
-            <div class="badge badge-primary float-right">Buat Pengguna</div>
+            <div class="float-right badge badge-primary">Buat Pengguna</div>
         </div>
     </div>
     <form action="{{ route('pengguna.simpan') }}" method="POST" id="formRP">
@@ -32,63 +32,151 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="form-group row">
-                            <label for="username" class="col-sm-2 col-form-label">Username</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="username" name="username"
-                                    value="{{ old('username') }}">
-                                <span class="text-danger error-text" id="username_error"></span>
-                            </div>
-                            <label for="email" class="col-sm-2 col-form-label">Email</label>
-                            <div class="col-sm-4">
-                                <input type="email" class="form-control" id="email" name="email"
-                                    value="{{ old('email') }}">
-                                <span class="text-danger error-text" id="email_error"></span>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="password" class="col-sm-2 col-form-label">Password</label>
-                            <div class="col-sm-4">
-                                <input type="password" class="form-control" id="password" name="password"
-                                    value="{{ old('password') }}">
-                                <span class="text-danger error-text" id="password_error"></span>
-                            </div>
-                            <label for="password_confirmation" class="col-sm-2 col-form-label">Konfirmasi Password</label>
-                            <div class="col-sm-4">
-                                <input type="password" class="form-control" id="password_confirmation"
-                                    name="password_confirmation" value="{{ old('password_confirmation') }}">
-                                <span class="text-danger error-text" id="password_confirmation_error"></span>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="role_id" class="col-sm-2 col-form-label">Role</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="role_id[]" multiple id="role_id">
-                                    <option value="">Silahkan Pilih Role</option>
-                                    @if (count($roles))
-                                        @foreach ($roles as $role)
-                                            <option value="{{ $role->name }}">
-                                                {{ $role->name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="activation" class="col-sm-2 col-form-label">Aktivasi</label>
-                            <div class="toggle-container col-md-3">
-                                <!-- Tombol Toggle -->
-                                <label class="switch">
-                                    <input type="checkbox" value="true" id="activation" name="activation">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
+                        <div class="card-body">
 
-                        <div class="float-right mt-3">
-                            <a href="{{ route('pengguna.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
-                            <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
+                            {{-- ================= USER ================= --}}
+                            <h5 class="mb-3">Data Akun</h5>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Username</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="username"
+                                        value="{{ old('username') }}">
+                                </div>
+
+                                <label class="col-sm-2 col-form-label">Email</label>
+                                <div class="col-sm-4">
+                                    <input type="email" class="form-control" name="email" value="{{ old('email') }}">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Password</label>
+                                <div class="col-sm-4">
+                                    <input type="password" class="form-control" name="password">
+                                </div>
+
+                                <label class="col-sm-2 col-form-label">Konfirmasi</label>
+                                <div class="col-sm-4">
+                                    <input type="password" class="form-control" name="password_confirmation">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Role</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" name="role_id[]" multiple id="role_id">
+                                        @foreach ($roles as $role)
+                                            <option value="{{ $role->name }}">{{ $role->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            {{-- ================= PROFILE ================= --}}
+                            <h5 class="mb-3">Data Profil Pegawai</h5>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">NIP</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="nip" value="{{ old('nip') }}">
+                                </div>
+
+                                <label class="col-sm-2 col-form-label">NIK</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="nik" value="{{ old('nik') }}">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Nama</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="nama" value="{{ old('nama') }}">
+                                </div>
+
+                                <label class="col-sm-2 col-form-label">Status</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control" name="status" id="status">
+                                        <option value="">Pilih</option>
+                                        <option value="tk-0">{{ ucwords('tk-0') }}</option>
+                                        <option value="tk-1">{{ ucwords('tk-1') }}</option>
+                                        <option value="tk-2">{{ ucwords('tk-2') }}</option>
+                                        <option value="tk-3">{{ ucwords('tk-3') }}</option>
+                                        <option value="k-0">{{ ucwords('k-0') }}</option>
+                                        <option value="k-1">{{ ucwords('k-1') }}</option>
+                                        <option value="k-2">{{ ucwords('k-2') }}</option>
+                                        <option value="k-3">{{ ucwords('k-3') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Alamat</label>
+                                <div class="col-sm-10">
+                                    <textarea class="form-control" name="alamat">{{ old('alamat') }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">No HP</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="no_hp" value="{{ old('no_hp') }}">
+                                </div>
+
+                                <label class="col-sm-2 col-form-label">Cabang</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control" name="branch_id" id="branch_id">
+                                        <option value="">Pilih Cabang</option>
+                                        @foreach ($branches as $branch)
+                                            <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">No Rek</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="no_rek"
+                                        value="{{ old('no_rek') }}">
+                                </div>
+
+                                <label class="col-sm-2 col-form-label">Nama Bank</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="nama_bank"
+                                        value="{{ old('nama_bank') }}">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Gaji</label>
+                                <div class="col-sm-4">
+                                    <input type="number" class="form-control" name="gaji"
+                                        value="{{ old('gaji') }}">
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            {{-- AKTIVASI --}}
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Aktivasi</label>
+                                <div class="col-md-3">
+                                    <label class="switch">
+                                        <input type="checkbox" value="1" name="activation" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="float-right mt-3">
+                                <a href="{{ route('pengguna.index') }}"
+                                    class="mr-2 btn btn-danger rounded-pill">Batal</a>
+                                <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -212,6 +300,26 @@
             $('#employee_id').select2({
                 theme: "bootstrap-5",
             });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+
+            $('#role_id').select2({
+                theme: "bootstrap-5",
+                placeholder: "Pilih Role"
+            });
+
+            $('#branch_id').select2({
+                theme: "bootstrap-5",
+                placeholder: "Pilih Cabang"
+            });
+
+            $('#status').select2({
+                theme: "bootstrap-5",
+                placeholder: "Pilih Status"
+            });
+
         });
     </script>
 @stop

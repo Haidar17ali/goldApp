@@ -52,4 +52,9 @@ class ChartOfAccount extends Model
             set: fn($value) => strtolower($value)
         );
     }
+
+    public function journalItems()
+    {
+        return $this->hasMany(JournalItem::class, 'chart_of_account_id');
+    }
 }

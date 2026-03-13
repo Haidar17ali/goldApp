@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Edit Pengguna')
+@section('title', 'Ubah Data Pengguna')
 
 @section('content_header')
-    <h1>Edit Pengguna</h1>
+    <h1>Ubah Data Pengguna</h1>
 @stop
 
 @section('content')
@@ -19,11 +19,11 @@
                 </div>
             @endif
 
-            <div class="float-right badge badge-warning">Edit Pengguna</div>
+            <div class="float-right badge badge-warning">Ubah Data Pengguna</div>
         </div>
     </div>
 
-    <form action="{{ route('pengguna.update', $user->id) }}" method="POST" id="formRP">
+    <form action="{{ route('profil.update', $user->id) }}" method="POST" id="formRP">
         @csrf
         @method('patch')
         <div class="row">
@@ -292,6 +292,7 @@
     </style>
 @stop
 
+@section('plugins.Toast', true)
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js" crossorigin="anonymous"
         referrerpolicy="no-referrer"></script>
@@ -300,6 +301,20 @@
 
     <script>
         $(document).ready(function() {
+
+            // toast
+            var status = "{{ session('status') }}";
+            if (status == "edited") {
+                Toastify({
+                    text: "Data berhasil diubah!",
+                    className: "info",
+                    close: true,
+                    style: {
+                        background: "#28A745",
+                    }
+                }).showToast();
+            }
+
             $('#role_id').select2({
                 theme: "bootstrap-5",
             });

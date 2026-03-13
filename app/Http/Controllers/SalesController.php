@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Helpers\AccountingHelper;
+use App\Models\Journal;
 
 class SalesController extends BaseController
 {
@@ -160,6 +162,67 @@ class SalesController extends BaseController
 
                 'total' => $total,
                 'created_by' => auth()->id(),
+            ]);
+
+            // journal data penjualan
+            $branchId = $transaction->branch_id;
+
+            $hppAccounts = [
+                1 => '502.01.01',
+                2 => '502.01.02',
+                3 => '502.01.03',
+            ];
+
+            $hppAccount = $hppAccounts[$branchId] ?? '502.01.00';
+
+            $salesAccounts = [
+                1 => '501.00.01', // paserpan
+                2 => '501.00.02', // pasuruan
+                3 => '501.00.03', // sa
+            ];
+
+            $salesAccount = $salesAccounts[$branchId] ?? '501.01.00';
+
+            $hpp = $transaction->details->sum(function ($d) {
+                return $d->productVariant->cost ?? 0;
+            });
+
+
+            AccountingHelper::post([
+                'date' => $transaction->transaction_date,
+                'reference' => $transaction->invoice_number,
+                'description' => 'Penjualan emas ' . $transaction->invoice_number,
+                'source_type' => 'sale',
+                'source_id' => $transaction->id,
+
+                'lines' => [
+
+                    [
+                        'account' => '101.00.01',
+                        'debit' => $transaction->cash_amount
+                    ],
+
+                    [
+                        'account' => '101.00.02',
+                        'debit' => $transaction->transfer_amount
+                    ],
+
+                    [
+                        'account' => $hppAccount,
+                        'debit' => $hpp
+                    ],
+
+                    [
+                        'account' => $salesAccount,
+                        'credit' => $transaction->total
+                    ],
+
+                    [
+                        'account' => '103.00.01',
+                        'credit' => $hpp
+                    ],
+
+                ]
             ]);
 
             // 🔹 DETAIL + STOCK MOVEMENT
@@ -401,6 +464,16 @@ class SalesController extends BaseController
                 'updated_by' => auth()->id(),
             ]);
 
+            // ================= REVERSE JOURNAL LAMA =================
+            $journals = Journal::with('items')
+                ->where('source_type', 'sale')
+                ->where('source_id', $transaction->id)
+                ->get();
+
+            foreach ($journals as $journal) {
+                AccountingHelper::reverse($journal);
+            }
+
             /* === SIMPAN DETAIL BARU + STOCK OUT === */
             foreach ($validated['details'] as $detail) {
 
@@ -424,6 +497,68 @@ class SalesController extends BaseController
                     'new'
                 );
             }
+
+            $hpp = $transaction->details()
+                ->with('productVariant')
+                ->get()
+                ->sum(function ($d) {
+                    return $d->productVariant->cost ?? 0;
+                });
+
+            $branchId = $transaction->branch_id;
+
+            $hppAccounts = [
+                1 => '502.01.01',
+                2 => '502.01.02',
+                3 => '502.01.03',
+            ];
+
+            $hppAccount = $hppAccounts[$branchId] ?? '502.01.00';
+
+            $salesAccounts = [
+                1 => '501.00.01',
+                2 => '501.00.02',
+                3 => '501.00.03',
+            ];
+
+            $salesAccount = $salesAccounts[$branchId] ?? '501.00.00';
+
+            AccountingHelper::post([
+                'date' => $transaction->transaction_date,
+                'reference' => $transaction->invoice_number,
+                'description' => 'Update Penjualan ' . $transaction->invoice_number,
+                'source_type' => 'sale',
+                'source_id' => $transaction->id,
+
+                'lines' => [
+
+                    [
+                        'account' => '101.00.01',
+                        'debit' => $transaction->cash_amount
+                    ],
+
+                    [
+                        'account' => '101.00.02',
+                        'debit' => $transaction->transfer_amount
+                    ],
+
+                    [
+                        'account' => $hppAccount,
+                        'debit' => $hpp
+                    ],
+
+                    [
+                        'account' => $salesAccount,
+                        'credit' => $transaction->total
+                    ],
+
+                    [
+                        'account' => '103.00.01',
+                        'credit' => $hpp
+                    ],
+
+                ]
+            ]);
 
             DB::commit();
 
