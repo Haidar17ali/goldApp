@@ -340,7 +340,7 @@ return [
                 ],
                 [
                     'text' => 'Jurnal Umum',
-                    'url' => '/gold-app/customer-supplier/supplier',
+                    'url' => '/gold-app/jurnal-umum',
                     'can' => 'customer-supplier.index',
                 ],
                 [
@@ -388,6 +388,11 @@ return [
                     'text' => 'Penyimpanan',
                     'url' => 'gold-app/penyimpanan',
                     'can' => 'penyimpanan.index',
+                ],
+                [
+                    'text' => 'Set-Harga',
+                    'url' => 'gold-app/set-harga',
+                    'can' => 'set-harga.index',
                 ],
                 [
                     'text' => 'Produk',

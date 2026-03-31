@@ -19,10 +19,10 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('pengguna.buat') }}" class="btn btn-primary float-right"><i class="fas fa-plus"></i>
+            <a href="{{ route('pengguna.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
                 Pengguna</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="users" class="form-control mb-3 float-right"
+                <input type="text" id="searchBox" data-model="users" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -39,70 +39,70 @@
     {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
 @stop
 
+@section('plugins.Toast', true)
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
     <script src="{{ asset('assets/JS/myHelper.js') }}"></script>
     <script>
         // toast
-        @section('plugins.Toast', true)
-            var status = "{{ session('status') }}";
-            if (status == "saved") {
-                Toastify({
-                    text: "Data baru berhasil ditambahkan!",
-                    className: "info",
-                    close: true,
-                    style: {
-                        background: "#28A745",
+        var status = "{{ session('status') }}";
+        if (status == "saved") {
+            Toastify({
+                text: "Data baru berhasil ditambahkan!",
+                className: "info",
+                close: true,
+                style: {
+                    background: "#28A745",
+                }
+            }).showToast();
+        } else if (status == 'edited') {
+            Toastify({
+                text: "Data berhasil diubah!",
+                className: "info",
+                close: true,
+                style: {
+                    background: "#28A745",
+                }
+            }).showToast();
+        } else if (status == 'deleted') {
+            Toastify({
+                text: "Data berhasil dihapus!",
+                className: "info",
+                close: true,
+                style: {
+                    background: "#28A745",
+                }
+            }).showToast();
+        } else if (status == "used") {
+            Toastify({
+                text: "Data LPB Terpakai Dan Stock Berkurang!",
+                className: "info",
+                close: true,
+                style: {
+                    background: "#17a2b8",
+                }
+            }).showToast();
+        }
+        $(document).ready(function() {
+            // delete 
+            $(document).on("click", ".badge-delete", function(e) {
+                e.preventDefault();
+                var form = $(this).closest("form");
+                Swal.fire({
+                    title: 'Hapus Data!',
+                    text: "Apakah anda yakin akan menghapus data ini?",
+                    icon: 'warning',
+                    confirmButtonColor: '#3085d6',
+                    showCancelButton: true,
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Hapus!!'
+                }).then((result) => {
+                    if (result.value) {
+                        form.submit();
                     }
-                }).showToast();
-            } else if (status == 'edited') {
-                Toastify({
-                    text: "Data berhasil diubah!",
-                    className: "info",
-                    close: true,
-                    style: {
-                        background: "#28A745",
-                    }
-                }).showToast();
-            } else if (status == 'deleted') {
-                Toastify({
-                    text: "Data berhasil dihapus!",
-                    className: "info",
-                    close: true,
-                    style: {
-                        background: "#28A745",
-                    }
-                }).showToast();
-            } else if (status == "used") {
-                Toastify({
-                    text: "Data LPB Terpakai Dan Stock Berkurang!",
-                    className: "info",
-                    close: true,
-                    style: {
-                        background: "#17a2b8",
-                    }
-                }).showToast();
-            }
-            $(document).ready(function() {
-                // delete 
-                $(document).on("click", ".badge-delete", function(e) {
-                    e.preventDefault();
-                    var form = $(this).closest("form");
-                    Swal.fire({
-                        title: 'Hapus Data!',
-                        text: "Apakah anda yakin akan menghapus data ini?",
-                        icon: 'warning',
-                        confirmButtonColor: '#3085d6',
-                        showCancelButton: true,
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Hapus!!'
-                    }).then((result) => {
-                        if (result.value) {
-                            form.submit();
-                        }
-                    });
                 });
-            })
+            });
+        })
     </script>
     <script>
         $(document).ready(function() {

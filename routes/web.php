@@ -16,6 +16,8 @@ use App\Http\Controllers\CustomerSupplierController;
 use App\Http\Controllers\GoldConversionController;
 use App\Http\Controllers\GoldMergeConversionController;
 use App\Http\Controllers\GoldManagementController;
+use App\Http\Controllers\GoldPriceController;
+use App\Http\Controllers\JournalController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StockAdjustmentController;
@@ -224,6 +226,7 @@ Route::prefix('gold-app')
 
         Route::post('/backup/export', [BackupController::class, 'export'])->name('backup.export');
 
+        // coa
         Route::get('/coa', [ChartOfAccountController::class, 'index'])->name('coa.index');
         Route::get('/coa/buat', [ChartOfAccountController::class, 'create'])->name('coa.buat');
         Route::post('/coa', [ChartOfAccountController::class, 'store'])->name('coa.simpan');
@@ -231,6 +234,34 @@ Route::prefix('gold-app')
         Route::patch('/coa/{id}/update', [ChartOfAccountController::class, 'update'])->name('coa.update');
         Route::delete('/coa/{id}/hapus', [ChartOfAccountController::class, 'destroy'])->name('coa.hapus');
 
+        // jurnal umum
+
+        Route::get('/jurnal-umum', [JournalController::class, 'index'])->name('jurnal.index');
+        Route::get('/jurnal-umum/buat', [JournalController::class, 'create'])->name('jurnal.buat');
+        Route::post('/jurnal-umum/simpan', [JournalController::class, 'store'])->name('jurnal.simpan');
+        Route::get('/jurnal/{journal}/detail', [JournalController::class, 'show'])
+            ->name('jurnal.detail');
+        Route::get('/jurnal/{journal}/edit', [JournalController::class, 'edit'])
+            ->name('jurnal.edit');
+
+        Route::put('/jurnal/{journal}', [JournalController::class, 'update'])
+            ->name('jurnal.update');
+        Route::delete('/jurnal/{id}', [JournalController::class, 'destroy'])
+            ->name('jurnal.hapus');
+
+        // set harga emas
+        Route::get('/set-harga', [GoldPriceController::class, 'index'])->name('set-harga.index');
+        Route::get('/set-harga/buat', [GoldPriceController::class, 'create'])->name('set-harga.buat');
+        Route::post('/set-harga/simpan', [GoldPriceController::class, 'store'])->name('set-harga.simpan');
+        Route::get('/set-harga/{journal}/detail', [GoldPriceController::class, 'show'])
+            ->name('set-harga.detail');
+        Route::get('/set-harga/{journal}/edit', [GoldPriceController::class, 'edit'])
+            ->name('set-harga.edit');
+
+        Route::put('/set-harga/{journal}', [GoldPriceController::class, 'update'])
+            ->name('set-harga.update');
+        Route::delete('/set-harga/{id}', [GoldPriceController::class, 'destroy'])
+            ->name('set-harga.hapus');
 
         // payroll
         Route::get('/payroll', [PayrollController::class, 'index'])

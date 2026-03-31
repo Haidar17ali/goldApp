@@ -11,11 +11,23 @@ class Journal extends Model
         'reference',
         'description',
         'source_type',
-        'source_id'
+        'source_id',
+        'reversal_of',
+        'is_reversal',
     ];
 
     public function items()
     {
         return $this->hasMany(JournalItem::class);
+    }
+
+    public function reversedBy()
+    {
+        return $this->hasOne(Journal::class, 'reversal_of');
+    }
+
+    public function original()
+    {
+        return $this->belongsTo(Journal::class, 'reversal_of');
     }
 }

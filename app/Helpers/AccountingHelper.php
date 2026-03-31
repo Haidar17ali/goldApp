@@ -13,12 +13,12 @@ class AccountingHelper
         return AccountingService::post($data);
     }
 
-    public static function reverse($journal)
+    public static function reverse($journal, $note = 'Reversal')
     {
         $newJournal = Journal::create([
             'date' => now(),
             'reference' => $journal->reference,
-            'description' => 'Reversal: ' . $journal->description,
+            'description' => $note . ': ' . $journal->description,
             'source_type' => $journal->source_type,
             'source_id' => $journal->source_id,
             'reversal_of' => $journal->id,
@@ -30,7 +30,6 @@ class AccountingHelper
             JournalItem::create([
                 'journal_id' => $newJournal->id,
                 'chart_of_account_id' => $item->chart_of_account_id,
-
                 'debit' => $item->credit,
                 'credit' => $item->debit
             ]);

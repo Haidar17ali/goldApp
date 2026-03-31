@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Helpers\AccountingHelper;
+use App\Helpers\GoldHelper;
 use App\Models\Journal;
 
 class SalesController extends BaseController
@@ -142,11 +143,17 @@ class SalesController extends BaseController
                 );
             }
 
+            $user = auth()->user();
+
+            if (!$user->profile || !$user->profile->branch_id) {
+                throw new \Exception('User belum memiliki branch / profile');
+            }
+
             // 🔹 TRANSACTION
             $transaction = Transaction::create([
                 'type' => 'penjualan',
                 'purchase_type' => 'new',
-                'branch_id' => 2,
+                'branch_id' => $user->profile->branch_id,
                 'storage_location_id' => 1,
                 'transaction_date' => now(),
 
@@ -164,69 +171,24 @@ class SalesController extends BaseController
                 'created_by' => auth()->id(),
             ]);
 
-            // journal data penjualan
-            $branchId = $transaction->branch_id;
-
-            $hppAccounts = [
-                1 => '502.01.01',
-                2 => '502.01.02',
-                3 => '502.01.03',
-            ];
-
-            $hppAccount = $hppAccounts[$branchId] ?? '502.01.00';
-
-            $salesAccounts = [
-                1 => '501.00.01', // paserpan
-                2 => '501.00.02', // pasuruan
-                3 => '501.00.03', // sa
-            ];
-
-            $salesAccount = $salesAccounts[$branchId] ?? '501.01.00';
-
-            $hpp = $transaction->details->sum(function ($d) {
-                return $d->productVariant->cost ?? 0;
-            });
-
-
-            AccountingHelper::post([
-                'date' => $transaction->transaction_date,
-                'reference' => $transaction->invoice_number,
-                'description' => 'Penjualan emas ' . $transaction->invoice_number,
-                'source_type' => 'sale',
-                'source_id' => $transaction->id,
-
-                'lines' => [
-
-                    [
-                        'account' => '101.00.01',
-                        'debit' => $transaction->cash_amount
-                    ],
-
-                    [
-                        'account' => '101.00.02',
-                        'debit' => $transaction->transfer_amount
-                    ],
-
-                    [
-                        'account' => $hppAccount,
-                        'debit' => $hpp
-                    ],
-
-                    [
-                        'account' => $salesAccount,
-                        'credit' => $transaction->total
-                    ],
-
-                    [
-                        'account' => '103.00.01',
-                        'credit' => $hpp
-                    ],
-
-                ]
-            ]);
+            $totalHpp = 0;
 
             // 🔹 DETAIL + STOCK MOVEMENT
             foreach ($validated['details'] as $detail) {
+
+                $variant = ProductVariant::with('karat')->findOrFail($detail['variant_id']);
+
+                // 🔥 ambil harga emas berdasarkan karat
+                $hargaEmas = GoldHelper::getHargaByKarat($variant->karat_id);
+
+                $gram = $variant->gram ?? 0;
+                $qty = 1; // sistem kamu saat ini
+
+                // 🔥 hitung HPP item
+                $hppItem = $hargaEmas * $gram * $qty;
+
+                // 🔥 akumulasi
+                $totalHpp += $hppItem;
 
                 TransactionDetail::create([
                     'transaction_id' => $transaction->id,
@@ -249,6 +211,63 @@ class SalesController extends BaseController
                     'new'
                 );
             }
+
+
+            // journal data penjualan
+            $branchId = $transaction->branch_id;
+
+            $hppAccounts = [
+                1 => '502.01.01',
+                2 => '502.01.02',
+                3 => '502.01.03',
+            ];
+
+            $hppAccount = $hppAccounts[$branchId] ?? '502.01.00';
+
+            $salesAccounts = [
+                1 => '501.00.01', // paserpan
+                2 => '501.00.02', // pasuruan
+                3 => '501.00.03', // sa
+            ];
+
+            $salesAccount = $salesAccounts[$branchId] ?? '501.01.00';
+
+            AccountingHelper::post([
+                'date' => $transaction->transaction_date,
+                'reference' => $transaction->invoice_number,
+                'description' => 'Penjualan emas ' . $transaction->invoice_number,
+                'source_type' => 'sale',
+                'source_id' => $transaction->id,
+
+                'lines' => [
+
+                    [
+                        'account' => '101.00.01',
+                        'debit' => $transaction->cash_amount
+                    ],
+
+                    [
+                        'account' => '101.00.02',
+                        'debit' => $transaction->transfer_amount
+                    ],
+
+                    [
+                        'account' => $hppAccount,
+                        'debit' => $totalHpp
+                    ],
+
+                    [
+                        'account' => $salesAccount,
+                        'credit' => $transaction->total
+                    ],
+
+                    [
+                        'account' => '103.00.01',
+                        'credit' => $totalHpp
+                    ],
+
+                ]
+            ]);
 
             DB::commit();
 
@@ -475,7 +494,22 @@ class SalesController extends BaseController
             }
 
             /* === SIMPAN DETAIL BARU + STOCK OUT === */
+            $totalHpp = 0;
             foreach ($validated['details'] as $detail) {
+
+                $variant = ProductVariant::with('karat')->findOrFail($detail['variant_id']);
+
+                // 🔥 ambil harga emas berdasarkan karat
+                $hargaEmas = GoldHelper::getHargaByKarat($variant->karat_id);
+
+                $gram = $variant->gram ?? 0;
+                $qty = 1; // sistem kamu saat ini
+
+                // 🔥 hitung HPP item
+                $hppItem = $hargaEmas * $gram * $qty;
+
+                // 🔥 akumulasi
+                $totalHpp += $hppItem;
 
                 TransactionDetail::create([
                     'transaction_id' => $transaction->id,
@@ -497,13 +531,6 @@ class SalesController extends BaseController
                     'new'
                 );
             }
-
-            $hpp = $transaction->details()
-                ->with('productVariant')
-                ->get()
-                ->sum(function ($d) {
-                    return $d->productVariant->cost ?? 0;
-                });
 
             $branchId = $transaction->branch_id;
 
@@ -544,7 +571,7 @@ class SalesController extends BaseController
 
                     [
                         'account' => $hppAccount,
-                        'debit' => $hpp
+                        'debit' => $totalHpp
                     ],
 
                     [
@@ -554,7 +581,7 @@ class SalesController extends BaseController
 
                     [
                         'account' => '103.00.01',
-                        'credit' => $hpp
+                        'credit' => $totalHpp
                     ],
 
                 ]
