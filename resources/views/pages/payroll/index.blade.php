@@ -15,19 +15,19 @@
 @section('content')
 
     {{-- ALERT --}}
-    @if(session('error'))
+    @if (session('error'))
         <div class="alert alert-danger">
             {{ session('error') }}
         </div>
     @endif
 
-    @if(session('status'))
+    @if (session('status'))
         <div class="alert alert-success">
             {{ session('status') }}
         </div>
     @endif
 
-    @if(session('warning'))
+    @if (session('warning'))
         <div class="alert alert-warning">
             {{ session('warning') }}
         </div>
@@ -76,9 +76,25 @@
                             </td>
 
                             <td>
-                                <a href="{{ route('payroll.detail', ['year' => $m->tahun, 'month'=> $m->bulan]) }}" class="btn btn-info btn-sm">
-                                    <i class="fas fa-eye"></i> Detail
+                                <a href="{{ route('payroll.detail', ['year' => $m->tahun, 'month' => $m->bulan]) }}"
+                                    class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i>
                                 </a>
+                                <a href="{{ route('payroll.edit', ['year' => $m->tahun, 'month' => $m->bulan]) }}"
+                                    class="btn btn-success btn-sm">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                <form action="{{ route('payroll.hapus', ['year' => $m->tahun, 'month' => $m->bulan]) }}"
+                                    method="POST" class="d-inline form-delete">
+
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+
+                                </form>
                             </td>
                         </tr>
                     @empty
@@ -95,4 +111,60 @@
         </div>
     </div>
 
+@stop
+
+
+@section('Sweetalert2')
+@section('js')
+    <script>
+        $(document).on('submit', '.form-delete', function(e) {
+
+            e.preventDefault()
+
+            let form = this
+
+            Swal.fire({
+                title: 'Hapus payroll?',
+                text: "Semua data payroll bulan ini akan dihapus & jurnal akan direverse!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+
+                if (result.value) {
+                    console.log('confirm');
+                    form.submit()
+                }
+
+
+            })
+
+        })
+    </script>
+    <script>
+        @if (session('status'))
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '{{ session('status') }}',
+                showConfirmButton: false,
+                timer: 3000
+            })
+        @endif
+
+        @if (session('error'))
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: '{{ session('error') }}',
+                showConfirmButton: false,
+                timer: 3000
+            })
+        @endif
+    </script>
 @stop

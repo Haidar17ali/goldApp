@@ -272,4 +272,8 @@ Route::prefix('gold-app')
             ->name('payroll.generate');
         Route::post('/payroll-generate', [PayrollController::class, 'storeGenerate'])
             ->name('payroll.simpan');
+        Route::get('/payroll/{year}/{month}/edit', [PayrollController::class, 'edit'])->name('payroll.edit');
+        Route::patch('/payroll/{year}/{month}', [PayrollController::class, 'update'])->name('payroll.update');
+        Route::delete('/payroll/{year}/{month}', [PayrollController::class, 'destroy'])
+            ->name('payroll.hapus');
     });
