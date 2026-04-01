@@ -15,6 +15,11 @@
 
             {{-- Header --}}
             <div class="card-header">
+                @if(session('error'))
+                    <div class="alert alert-warning">
+                        {{ session('warning') }}
+                    </div>
+                @endif
 
                 <div class="row">
 

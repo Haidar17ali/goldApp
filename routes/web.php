@@ -266,7 +266,7 @@ Route::prefix('gold-app')
         // payroll
         Route::get('/payroll', [PayrollController::class, 'index'])
             ->name('payroll.index');
-        Route::get('/payroll/{bulan}', [PayrollController::class, 'detail'])
+        Route::get('/payroll/detail/{year}/{month}', [PayrollController::class, 'detail'])
             ->name('payroll.detail');
         Route::get('/payroll-generate', [PayrollController::class, 'generate'])
             ->name('payroll.generate');

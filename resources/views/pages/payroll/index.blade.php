@@ -14,6 +14,25 @@
 
 @section('content')
 
+    {{-- ALERT --}}
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if(session('status'))
+        <div class="alert alert-success">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    @if(session('warning'))
+        <div class="alert alert-warning">
+            {{ session('warning') }}
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Rekap Payroll per Bulan</h3>
@@ -57,7 +76,7 @@
                             </td>
 
                             <td>
-                                <a href="{{ route('payroll.detail', $m->bulan) }}" class="btn btn-info btn-sm">
+                                <a href="{{ route('payroll.detail', ['year' => $m->tahun, 'month'=> $m->bulan]) }}" class="btn btn-info btn-sm">
                                     <i class="fas fa-eye"></i> Detail
                                 </a>
                             </td>
