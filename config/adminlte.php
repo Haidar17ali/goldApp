@@ -507,6 +507,11 @@ return [
             ],
         ],
         [
+            'text' => 'Pengeluaran Toko',
+            'icon' => 'fas fa-store',
+            'url' => 'gold-app/expenses/',
+        ],
+        [
             'text' => 'Payroll',
             'icon' => 'fas fa-money-bill',
             'url' => 'gold-app/payroll/',

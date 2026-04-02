@@ -13,6 +13,7 @@ use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\ChartOfAccountController;
 use App\Http\Controllers\CustomerSupplierController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\GoldConversionController;
 use App\Http\Controllers\GoldMergeConversionController;
 use App\Http\Controllers\GoldManagementController;
@@ -276,4 +277,13 @@ Route::prefix('gold-app')
         Route::patch('/payroll/{year}/{month}', [PayrollController::class, 'update'])->name('payroll.update');
         Route::delete('/payroll/{year}/{month}', [PayrollController::class, 'destroy'])
             ->name('payroll.hapus');
+
+        // pengeluaran toko
+        Route::get('/expenses', [ExpenseController::class, 'index'])->name('pengeluaran-toko.index');
+        Route::get('/expenses/create', [ExpenseController::class, 'create'])->name('pengeluaran-toko.buat');
+        Route::post('/expenses', [ExpenseController::class, 'store'])->name('pengeluaran-toko.simpan');
+        Route::get('/expenses/{id}', [ExpenseController::class, 'show'])->name('pengeluaran-toko.detail');
+        Route::get('/expenses/{id}/edit', [ExpenseController::class, 'edit'])->name('pengeluaran-toko.edit');
+        Route::patch('/expenses/{id}', [ExpenseController::class, 'update'])->name('pengeluaran-toko.update');
+        Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy'])->name('pengeluaran-toko.hapus');
     });
