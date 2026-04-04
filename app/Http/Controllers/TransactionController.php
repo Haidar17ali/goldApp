@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AccountingHelper;
+use App\Helpers\GoldHelper;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Helpers\StockHelper;
 use App\Models\BankAccount;
 use App\Models\CustomerSupplier;
+use App\Models\Journal;
 use App\Models\Karat;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -263,6 +266,74 @@ class TransactionController extends BaseController
                 }
 
                 $transaction->update(['total' => $total]);
+
+                // jurnal
+                $totalBeli = $transaction->total; // uang keluar
+                $totalInventory = 0;
+
+                foreach ($validated['details'] as $detail) {
+
+                    $karat = \App\Models\Karat::firstOrCreate([
+                        'name' => trim($detail['karat_name'])
+                    ]);
+
+                    $gram = (float) $detail['gram'];
+
+                    // 🔥 ambil harga emas aktif
+                    $hargaEmas = GoldHelper::getHargaByKarat($karat->id);
+
+                    // 🔥 nilai inventory
+                    $nilaiInventory = $hargaEmas * $gram;
+
+                    $totalInventory += $nilaiInventory;
+                }
+
+                $selisih = $totalInventory - $totalBeli;
+
+                $lines = [];
+
+                // 🔹 Persediaan (SELALU DEBIT)
+                $lines[] = [
+                    'account' => '103.00.02',
+                    'debit' => $totalInventory
+                ];
+
+                if ($transaction->cash_amount > 0) {
+                    $lines[] = [
+                        'account' => '101.00.01', // Kas Tunai
+                        'credit' => $transaction->cash_amount
+                    ];
+                }
+
+                if ($transaction->transfer_amount > 0) {
+                    $lines[] = [
+                        'account' => '101.00.02', // Bank (BCA)
+                        'credit' => $transaction->transfer_amount
+                    ];
+                }
+
+                if ($selisih > 0) {
+                    // ✅ UNTUNG
+                    $lines[] = [
+                        'account' => '501.00.04',
+                        'credit' => $selisih
+                    ];
+                } elseif ($selisih < 0) {
+                    // ✅ RUGI (akun sama, dibalik)
+                    $lines[] = [
+                        'account' => '501.00.04',
+                        'debit' => abs($selisih)
+                    ];
+                }
+
+                AccountingHelper::post([
+                    'date' => $transaction->transaction_date,
+                    'reference' => $transaction->invoice_number,
+                    'description' => 'Pembelian emas sepuh ' . $transaction->invoice_number,
+                    'source_type' => 'purchase',
+                    'source_id' => $transaction->id,
+                    'lines' => $lines
+                ]);
             });
 
             return redirect()
@@ -397,6 +468,19 @@ class TransactionController extends BaseController
             DB::transaction(function () use ($validated, $type, $purchaseType, $id) {
 
                 $transaction = \App\Models\Transaction::with("details.productVariant.karat")->findOrFail($id);
+
+                // reverse Journal 
+                $journal = Journal::where('source_type', 'purchase')
+                    ->where('source_id', $transaction->id)
+                    // ->where('is_reversal', false)
+                    ->whereNull('reversal_of') // hanya jurnal asli
+                    ->latest()
+                    ->first();
+
+                if ($journal) {
+                    \App\Helpers\AccountingHelper::reverse($journal, 'Update Pembelian');
+                }
+
 
                 foreach ($transaction->details as $oldDetail) {
 
@@ -547,8 +631,68 @@ class TransactionController extends BaseController
                     );
                 }
 
-
+                // post ulang jurnal
                 $transaction->update(['total' => $total]);
+
+                $totalBeli = $transaction->total;
+                $totalInventory = 0;
+
+                foreach ($validated['details'] as $detail) {
+
+                    $karat = \App\Models\Karat::findOrFail($detail['karat_id']);
+                    $gram = (float) $detail['gram'];
+
+                    $hargaEmas = \App\Helpers\GoldHelper::getHargaByKarat($karat->id);
+
+                    $totalInventory += $hargaEmas * $gram;
+                }
+
+                $selisih = $totalInventory - $totalBeli;
+
+                $lines = [];
+
+                // 🔹 Persediaan
+                $lines[] = [
+                    'account' => '103.00.02',
+                    'debit' => $totalInventory
+                ];
+
+                // 🔹 Kas / Bank
+                if ($transaction->cash_amount > 0) {
+                    $lines[] = [
+                        'account' => '101.00.01',
+                        'credit' => $transaction->cash_amount
+                    ];
+                }
+
+                if ($transaction->transfer_amount > 0) {
+                    $lines[] = [
+                        'account' => '101.00.02',
+                        'credit' => $transaction->transfer_amount
+                    ];
+                }
+
+                // 🔹 Selisih
+                if ($selisih > 0) {
+                    $lines[] = [
+                        'account' => '501.00.04',
+                        'credit' => $selisih
+                    ];
+                } elseif ($selisih < 0) {
+                    $lines[] = [
+                        'account' => '501.00.04',
+                        'debit' => abs($selisih)
+                    ];
+                }
+
+                \App\Helpers\AccountingHelper::post([
+                    'date' => $transaction->transaction_date,
+                    'reference' => $transaction->invoice_number,
+                    'description' => 'Update pembelian emas sepuh ' . $transaction->invoice_number,
+                    'source_type' => 'purchase',
+                    'source_id' => $transaction->id,
+                    'lines' => $lines
+                ]);
             });
 
             return redirect()
@@ -571,11 +715,22 @@ class TransactionController extends BaseController
         $transaction->load("details.productVariant");
         try {
             DB::transaction(function () use ($transaction, $purchaseType) {
+                // reverse Journal 
+                $journal = Journal::where('source_type', 'purchase')
+                    ->where('source_id', $transaction->id)
+                    // ->where('is_reversal', false)
+                    ->whereNull('reversal_of') // hanya jurnal asli
+                    ->latest()
+                    ->first();
+
+                if ($journal) {
+                    \App\Helpers\AccountingHelper::reverse($journal, 'Hapus Pembelian');
+                }
+
                 // rollback semua stok
                 foreach ($transaction->details as $detail) {
 
                     $productStock = Product::where("name", "emas")->first();
-                    dd($detail);
 
                     $emasSKU =  strtoupper(
                         $productStock->name . '-' .
