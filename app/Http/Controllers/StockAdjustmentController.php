@@ -151,10 +151,9 @@ class StockAdjustmentController extends BaseController
                     'type' => $type,
                 ]);
 
-                dd($stock);
                 /* ===============================
                 * 5️⃣ CATAT STOCK MOVEMENT
-                 * =============================== */
+                * =============================== */
                 StockHelper::moveStock(
                     product_variant_id: $variant->id,
                     branchId: $adjustment->branch_id,
@@ -168,6 +167,7 @@ class StockAdjustmentController extends BaseController
                     userId: auth()->id(),
                     goldType: $type
                 );
+                dd($stock);
             }
         });
 
