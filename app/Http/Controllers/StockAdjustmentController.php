@@ -77,6 +77,7 @@ class StockAdjustmentController extends BaseController
                 'note' => 'Manual Stock Opname',
                 'created_by' => auth()->id(),
             ]);
+            dd("ok");
 
             foreach ($request->details as $item) {
 
@@ -105,8 +106,8 @@ class StockAdjustmentController extends BaseController
                 }
 
                 /* ===============================
-                * 2️⃣ RESOLVE KARAT NAME
-                * =============================== */
+                        * 2️⃣ RESOLVE KARAT NAME
+                        * =============================== */
                 if ($karatValue && is_numeric($karatValue)) {
                     $karat = Karat::findOrFail($karatValue);
                     $karatName = $karat->name;
@@ -126,8 +127,8 @@ class StockAdjustmentController extends BaseController
                 );
 
                 /* ===============================
-                * 3️⃣ AMBIL STOK SISTEM
-                * =============================== */
+                    * 3️⃣ AMBIL STOK SISTEM
+                    * =============================== */
                 $stock = Stock::where([
                     'product_variant_id' => $variant->id,
                     'branch_id' => 1,
@@ -139,8 +140,8 @@ class StockAdjustmentController extends BaseController
                 $difference = $actualQty - $systemQty;
 
                 /* ===============================
-                 * 4️⃣ SIMPAN DETAIL OPNAME
-                 * =============================== */
+                * 4️⃣ SIMPAN DETAIL OPNAME
+                * =============================== */
                 StockAdjustmentDetail::create([
                     'stock_adjustment_id' => $adjustment->id,
                     'product_variant_id' => $variant->id,
@@ -151,7 +152,7 @@ class StockAdjustmentController extends BaseController
                 ]);
 
                 /* ===============================
-                 * 5️⃣ CATAT STOCK MOVEMENT
+                * 5️⃣ CATAT STOCK MOVEMENT
                  * =============================== */
                 StockHelper::moveStock(
                     product_variant_id: $variant->id,
