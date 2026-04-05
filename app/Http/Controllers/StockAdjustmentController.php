@@ -77,7 +77,7 @@ class StockAdjustmentController extends BaseController
                 'note' => 'Manual Stock Opname',
                 'created_by' => auth()->id(),
             ]);
-            dd("ok");
+            dd($adjustment);
 
             foreach ($request->details as $item) {
 
