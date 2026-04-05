@@ -125,17 +125,17 @@ class StockAdjustmentController extends BaseController
                     $weight,
                     $type
                 );
-                dd($variant);
 
                 /* ===============================
-                    * 3️⃣ AMBIL STOK SISTEM
-                    * =============================== */
+                * 3️⃣ AMBIL STOK SISTEM
+                * =============================== */
                 $stock = Stock::where([
                     'product_variant_id' => $variant->id,
                     'branch_id' => 1,
                     'storage_location_id' => 1,
                     'type' => $type,
                 ])->first();
+                dd($stock);
 
                 $systemQty = $stock?->quantity ?? 0;
                 $difference = $actualQty - $systemQty;
