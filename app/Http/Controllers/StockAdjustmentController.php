@@ -167,7 +167,6 @@ class StockAdjustmentController extends BaseController
                     userId: auth()->id(),
                     goldType: $type
                 );
-                dd($stock);
             }
         });
 
