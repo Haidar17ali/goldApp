@@ -171,8 +171,8 @@ class StockAdjustmentController extends BaseController
         });
 
         return redirect()
-            ->back()
-            ->with('success', 'Stock opname berhasil disimpan');
+            ->route('opname.index')
+            ->with('status', 'saved');
     }
 
     public function importForm()

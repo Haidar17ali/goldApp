@@ -197,10 +197,11 @@ class SalesController extends BaseController
                     'type' => 'new',
                 ]);
 
+                $branchId = $transaction->branch_id;
                 // === STOCK KELUAR ===
                 StockHelper::stockOut(
                     $detail['variant_id'],
-                    1,
+                    $branchId,
                     1,
                     1, // qty
                     null,
@@ -214,23 +215,65 @@ class SalesController extends BaseController
 
 
             // journal data penjualan
-            $branchId = $transaction->branch_id;
 
             $hppAccounts = [
-                1 => '502.01.01',
-                2 => '502.01.02',
+                2 => '502.01.01',
+                1 => '502.01.02',
                 3 => '502.01.03',
             ];
 
             $hppAccount = $hppAccounts[$branchId] ?? '502.01.00';
 
             $salesAccounts = [
-                1 => '501.00.01', // paserpan
-                2 => '501.00.02', // pasuruan
+                2 => '501.00.01', // paserpan
+                1 => '501.00.02', // pasuruan
                 3 => '501.00.03', // sa
             ];
 
             $salesAccount = $salesAccounts[$branchId] ?? '501.01.00';
+
+            $lines = [];
+
+            // ================== KAS ==================
+            if ($transaction->cash_amount > 0) {
+                $lines[] = [
+                    'account' => '101.00.01', // kas tunai
+                    'debit' => $transaction->cash_amount
+                ];
+            }
+
+            // ================== TRANSFER ==================
+            if ($transaction->transfer_amount > 0 && $transaction->bank_account_id) {
+
+                $bank = BankAccount::find($transaction->bank_account_id);
+
+                if (!$bank || !$bank->account_code) {
+                    throw new \Exception('Mapping akun bank belum diset');
+                }
+
+                $lines[] = [
+                    'account' => $bank->account_code, // 🔥 dinamis sesuai bank
+                    'debit' => $transaction->transfer_amount
+                ];
+            }
+
+            // ================== HPP ==================
+            $lines[] = [
+                'account' => $hppAccount,
+                'debit' => $totalHpp
+            ];
+
+            // ================== PENJUALAN ==================
+            $lines[] = [
+                'account' => $salesAccount,
+                'credit' => $transaction->total
+            ];
+
+            // ================== PERSEDIAAN ==================
+            $lines[] = [
+                'account' => '103.00.01',
+                'credit' => $totalHpp
+            ];
 
             AccountingHelper::post([
                 'date' => $transaction->transaction_date,
@@ -238,35 +281,7 @@ class SalesController extends BaseController
                 'description' => 'Penjualan emas ' . $transaction->invoice_number,
                 'source_type' => 'sale',
                 'source_id' => $transaction->id,
-
-                'lines' => [
-
-                    [
-                        'account' => '101.00.01',
-                        'debit' => $transaction->cash_amount
-                    ],
-
-                    [
-                        'account' => '101.00.02',
-                        'debit' => $transaction->transfer_amount
-                    ],
-
-                    [
-                        'account' => $hppAccount,
-                        'debit' => $totalHpp
-                    ],
-
-                    [
-                        'account' => $salesAccount,
-                        'credit' => $transaction->total
-                    ],
-
-                    [
-                        'account' => '103.00.01',
-                        'credit' => $totalHpp
-                    ],
-
-                ]
+                'lines' => $lines
             ]);
 
             DB::commit();
@@ -451,7 +466,7 @@ class SalesController extends BaseController
             foreach ($transaction->details as $oldDetail) {
                 StockHelper::stockIn(
                     $oldDetail->product_variant_id,
-                    1,
+                    $transaction->branch_id,
                     1,
                     1,
                     null,
@@ -518,9 +533,10 @@ class SalesController extends BaseController
                     'type' => 'new',
                 ]);
 
+                $branchId = $transaction->branch_id;
                 StockHelper::stockOut(
                     $detail['variant_id'],
-                    1,
+                    $branchId,
                     1,
                     1,
                     null,
@@ -532,59 +548,76 @@ class SalesController extends BaseController
                 );
             }
 
-            $branchId = $transaction->branch_id;
+
+
+            // journal data penjualan
 
             $hppAccounts = [
-                1 => '502.01.01',
-                2 => '502.01.02',
+                2 => '502.01.01',
+                1 => '502.01.02',
                 3 => '502.01.03',
             ];
 
             $hppAccount = $hppAccounts[$branchId] ?? '502.01.00';
 
             $salesAccounts = [
-                1 => '501.00.01',
-                2 => '501.00.02',
-                3 => '501.00.03',
+                2 => '501.00.01', // paserpan
+                1 => '501.00.02', // pasuruan
+                3 => '501.00.03', // sa
             ];
 
-            $salesAccount = $salesAccounts[$branchId] ?? '501.00.00';
+            $salesAccount = $salesAccounts[$branchId] ?? '501.01.00';
+
+            $lines = [];
+
+            // ================== KAS ==================
+            if ($transaction->cash_amount > 0) {
+                $lines[] = [
+                    'account' => '101.00.01', // kas tunai
+                    'debit' => $transaction->cash_amount
+                ];
+            }
+
+            // ================== TRANSFER ==================
+            if ($transaction->transfer_amount > 0 && $transaction->bank_account_id) {
+
+                $bank = BankAccount::find($transaction->bank_account_id);
+
+                if (!$bank || !$bank->account_code) {
+                    throw new \Exception('Mapping akun bank belum diset');
+                }
+
+                $lines[] = [
+                    'account' => $bank->account_code, // 🔥 dinamis sesuai bank
+                    'debit' => $transaction->transfer_amount
+                ];
+            }
+
+            // ================== HPP ==================
+            $lines[] = [
+                'account' => $hppAccount,
+                'debit' => $totalHpp
+            ];
+
+            // ================== PENJUALAN ==================
+            $lines[] = [
+                'account' => $salesAccount,
+                'credit' => $transaction->total
+            ];
+
+            // ================== PERSEDIAAN ==================
+            $lines[] = [
+                'account' => '103.00.01',
+                'credit' => $totalHpp
+            ];
 
             AccountingHelper::post([
                 'date' => $transaction->transaction_date,
                 'reference' => $transaction->invoice_number,
-                'description' => 'Update Penjualan ' . $transaction->invoice_number,
+                'description' => 'Update Penjualan Emas ' . $transaction->invoice_number,
                 'source_type' => 'sale',
                 'source_id' => $transaction->id,
-
-                'lines' => [
-
-                    [
-                        'account' => '101.00.01',
-                        'debit' => $transaction->cash_amount
-                    ],
-
-                    [
-                        'account' => '101.00.02',
-                        'debit' => $transaction->transfer_amount
-                    ],
-
-                    [
-                        'account' => $hppAccount,
-                        'debit' => $totalHpp
-                    ],
-
-                    [
-                        'account' => $salesAccount,
-                        'credit' => $transaction->total
-                    ],
-
-                    [
-                        'account' => '103.00.01',
-                        'credit' => $totalHpp
-                    ],
-
-                ]
+                'lines' => $lines
             ]);
 
             DB::commit();
@@ -612,7 +645,7 @@ class SalesController extends BaseController
 
                     StockHelper::stockIn(
                         $detail->product_variant_id,
-                        1,
+                        $transaction->branch_id,
                         1,
                         1, // qty
                         null,

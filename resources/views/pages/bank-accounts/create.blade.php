@@ -22,7 +22,7 @@
 
             <div id="error-datas" style="color: red; margin-bottom: 10px;"></div>
             <div id="error-messages"></div>
-            <div class="badge badge-primary float-right">Buat Rekening</div>
+            <div class="float-right badge badge-primary">Buat Rekening</div>
         </div>
     </div>
     <form action="{{ route('rekening.simpan') }}" method="POST" id="formRP">
@@ -32,6 +32,14 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
+                        <div class="form-group row">
+                            <label for="account_code" class="col-sm-2 col-form-label">Code Akun</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="account_code" name="account_code"
+                                    value="{{ old('account_code') }}">
+                                <span class="text-danger error-text" id="account_code_error"></span>
+                            </div>
+                        </div>
                         <div class="form-group row">
                             <label for="bank_name" class="col-sm-2 col-form-label">Nama Bank</label>
                             <div class="col-sm-4">
@@ -63,7 +71,7 @@
                             </div>
                         </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('rekening.index') }}" class="btn btn-danger rounded-pill mr-2">Batal</a>
+                            <a href="{{ route('rekening.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>

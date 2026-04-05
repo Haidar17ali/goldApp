@@ -144,7 +144,7 @@ class TransactionController extends BaseController
                 $transaction = \App\Models\Transaction::create([
                     'type'                => $type,
                     'purchase_type'       => $purchaseType,
-                    'branch_id'           => 2,
+                    'branch_id'           => auth()->user()->branch_id ?? 1,
                     'storage_location_id' => 1,
                     'transaction_date'    => now(),
                     'invoice_number'      => $validated['invoice_number'] ?? null,
@@ -252,7 +252,7 @@ class TransactionController extends BaseController
 
                     \App\Helpers\StockHelper::moveStock(
                         $emasProductVariant->id,
-                        1,
+                        $transaction->branch_id,
                         1,
                         $movementType,
                         $qty, // selalu 1
@@ -290,36 +290,48 @@ class TransactionController extends BaseController
 
                 $selisih = $totalInventory - $totalBeli;
 
-                $lines = [];
 
                 // 🔹 Persediaan (SELALU DEBIT)
+                $lines = [];
+
+                // ================== PERSEDIAAN ==================
                 $lines[] = [
                     'account' => '103.00.02',
                     'debit' => $totalInventory
                 ];
 
+                // ================== KAS ==================
                 if ($transaction->cash_amount > 0) {
                     $lines[] = [
-                        'account' => '101.00.01', // Kas Tunai
+                        'account' => '101.00.01', // kas tunai
                         'credit' => $transaction->cash_amount
                     ];
                 }
 
-                if ($transaction->transfer_amount > 0) {
+                // ================== TRANSFER ==================
+                if ($transaction->transfer_amount > 0 && $transaction->bank_account_id) {
+
+                    $bank = BankAccount::find($transaction->bank_account_id);
+
+                    if (!$bank || !$bank->account_code) {
+                        throw new \Exception('Mapping akun bank belum diset');
+                    }
+
                     $lines[] = [
-                        'account' => '101.00.02', // Bank (BCA)
+                        'account' => $bank->account_code, // 🔥 dinamis
                         'credit' => $transaction->transfer_amount
                     ];
                 }
 
+                // ================== SELISIH ==================
                 if ($selisih > 0) {
-                    // ✅ UNTUNG
+                    // untung
                     $lines[] = [
                         'account' => '501.00.04',
                         'credit' => $selisih
                     ];
                 } elseif ($selisih < 0) {
-                    // ✅ RUGI (akun sama, dibalik)
+                    // rugi
                     $lines[] = [
                         'account' => '501.00.04',
                         'debit' => abs($selisih)
@@ -512,7 +524,7 @@ class TransactionController extends BaseController
 
                     \App\Helpers\StockHelper::moveStock(
                         $emasProductVariant->id,
-                        1,
+                        $transaction->branch_id,
                         1,
                         $movementType,
                         1,
@@ -618,7 +630,7 @@ class TransactionController extends BaseController
 
                     \App\Helpers\StockHelper::moveStock(
                         $newEmasProductVariant->id,
-                        1,
+                        $transaction->branch_id,
                         1,
                         $movementType,
                         $qty,
@@ -649,36 +661,47 @@ class TransactionController extends BaseController
 
                 $selisih = $totalInventory - $totalBeli;
 
+                // 🔹 Persediaan (SELALU DEBIT)
                 $lines = [];
 
-                // 🔹 Persediaan
+                // ================== PERSEDIAAN ==================
                 $lines[] = [
                     'account' => '103.00.02',
                     'debit' => $totalInventory
                 ];
 
-                // 🔹 Kas / Bank
+                // ================== KAS ==================
                 if ($transaction->cash_amount > 0) {
                     $lines[] = [
-                        'account' => '101.00.01',
+                        'account' => '101.00.01', // kas tunai
                         'credit' => $transaction->cash_amount
                     ];
                 }
 
-                if ($transaction->transfer_amount > 0) {
+                // ================== TRANSFER ==================
+                if ($transaction->transfer_amount > 0 && $transaction->bank_account_id) {
+
+                    $bank = BankAccount::find($transaction->bank_account_id);
+
+                    if (!$bank || !$bank->account_code) {
+                        throw new \Exception('Mapping akun bank belum diset');
+                    }
+
                     $lines[] = [
-                        'account' => '101.00.02',
+                        'account' => $bank->account_code, // 🔥 dinamis
                         'credit' => $transaction->transfer_amount
                     ];
                 }
 
-                // 🔹 Selisih
+                // ================== SELISIH ==================
                 if ($selisih > 0) {
+                    // untung
                     $lines[] = [
                         'account' => '501.00.04',
                         'credit' => $selisih
                     ];
                 } elseif ($selisih < 0) {
+                    // rugi
                     $lines[] = [
                         'account' => '501.00.04',
                         'debit' => abs($selisih)
@@ -754,7 +777,7 @@ class TransactionController extends BaseController
 
                     \App\Helpers\StockHelper::moveStock(
                         $emasProductVariant?->id ?? 0,
-                        1,
+                        $transaction->branch_id,
                         1,
                         'out',
                         1,

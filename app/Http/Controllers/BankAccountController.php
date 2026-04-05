@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\BankAccount;
@@ -21,6 +22,7 @@ class BankAccountController extends BaseController
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'account_code' => 'required|string|max:50',
             'bank_name' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',
             'account_holder' => 'required|string|max:100',
@@ -42,6 +44,7 @@ class BankAccountController extends BaseController
     public function update(Request $request, BankAccount $bankAccount)
     {
         $validated = $request->validate([
+            'account_code' => 'required|string|max:50',
             'bank_name' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',
             'account_holder' => 'required|string|max:100',
@@ -60,4 +63,3 @@ class BankAccountController extends BaseController
         return redirect()->route('rekening.index')->with('status', 'deleted');
     }
 }
-
