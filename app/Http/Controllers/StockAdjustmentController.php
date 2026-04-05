@@ -77,7 +77,6 @@ class StockAdjustmentController extends BaseController
                 'note' => 'Manual Stock Opname',
                 'created_by' => auth()->id(),
             ]);
-            dd($adjustment);
 
             foreach ($request->details as $item) {
 
@@ -91,6 +90,13 @@ class StockAdjustmentController extends BaseController
                 $type      = strtolower(trim($item['gold_type']));
                 $actualQty = (int) $item['actual_qty'];
                 $weight    = isset($item['weight']) ? (float) $item['weight'] : null;
+                dd([
+                    $productValue,
+                    $karatValue,
+                    $type,
+                    $actualQty,
+                    $weight
+                ]);
 
                 if ($actualQty < 0) continue;
 
