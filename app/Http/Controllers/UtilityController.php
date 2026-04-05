@@ -214,7 +214,7 @@ class UtilityController extends BaseController
             'relations' => []
         ],
         'storageLocations' => [
-            'model' => 'App\\Models\\storageLocation',
+            'model' => 'App\\Models\\StorageLocation',
             'columns' => [
                 'id',
                 'name',
