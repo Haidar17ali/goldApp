@@ -134,7 +134,6 @@ class StockAdjustmentController extends BaseController
                     'storage_location_id' => 1,
                     'type' => $type,
                 ])->first();
-                dd($stock);
 
                 $systemQty = $stock?->quantity ?? 0;
                 $difference = $actualQty - $systemQty;
