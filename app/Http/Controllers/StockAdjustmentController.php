@@ -90,13 +90,7 @@ class StockAdjustmentController extends BaseController
                 $type      = strtolower(trim($item['gold_type']));
                 $actualQty = (int) $item['actual_qty'];
                 $weight    = isset($item['weight']) ? (float) $item['weight'] : null;
-                dd([
-                    $productValue,
-                    $karatValue,
-                    $type,
-                    $actualQty,
-                    $weight
-                ]);
+
 
                 if ($actualQty < 0) continue;
 
@@ -131,6 +125,7 @@ class StockAdjustmentController extends BaseController
                     $weight,
                     $type
                 );
+                dd($variant);
 
                 /* ===============================
                     * 3️⃣ AMBIL STOK SISTEM
