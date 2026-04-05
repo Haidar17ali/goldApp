@@ -22,7 +22,7 @@
             <a href="{{ route('penyimpanan.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
                 Penyimpanan</a>
             <div class="float-left">
-                <input type="text" id="searchBox" data-model="storageLocations" class="float-right mb-3 form-control"
+                <input type="text" id="searchBox" data-model="StorageLocations" class="float-right mb-3 form-control"
                     placeholder="Cari Data...">
             </div>
         </div>
@@ -139,7 +139,7 @@
                     }
                 });
             }
-            fetchData("", 1, "storageLocations");
+            fetchData("", 1, "StorageLocations");
 
             $('#searchBox').on('keyup', function() {
                 fetchData(this, 1);
@@ -153,11 +153,11 @@
                 // Ambil model dari inputElement jika ada, jika tidak gunakan default model dari parameter
                 let model = inputElement.length ? $(inputElement).data('model') : null;
 
-                fetchData(inputElement, page, 'storageLocations');
+                fetchData(inputElement, page, 'StorageLocations');
             });
 
             $('#searchBox').each(function() {
-                fetchData(this, 1, 'storageLocations');
+                fetchData(this, 1, 'StorageLocations');
             });
         });
     </script>
