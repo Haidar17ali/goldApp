@@ -84,9 +84,10 @@ class GoldConversionController extends BaseController
             'details.*.weight'          => 'required|numeric|min:0.01',
             'details.*.note'            => 'nullable|string',
         ]);
+        $createdVariants = [];
 
         try {
-            DB::transaction(function () use ($validated, $request) {
+            DB::transaction(function () use ($validated, $request,  &$createdVariants) {
 
                 $productVariant = ProductVariant::with(["stocks"])->find($validated['stock_id']);
 
@@ -161,6 +162,7 @@ class GoldConversionController extends BaseController
                     $productVariant->type // biasanya "second"
                 );
 
+
                 // =======================================================================================
                 // 3. Simpan DETAIL + tambahkan stok hasil pecahan
                 // =======================================================================================
@@ -184,6 +186,10 @@ class GoldConversionController extends BaseController
                         ]
                     );
 
+                    $createdVariants[] = [
+                        'variant' => $newPV,
+                        'qty' => 1 // karena tiap detail = 1 label
+                    ];
 
                     GoldConversionOutput::create([
                         'gold_conversion_id' => $conversion->id,
@@ -209,7 +215,10 @@ class GoldConversionController extends BaseController
                 }
             });
 
-            return redirect()->route("konversi-emas.index")->with("status", "saved");
+            return view('pages.barcode.barcode-print-multiple', [
+                'items' => $createdVariants
+            ]);
+            // return redirect()->route("konversi-emas.index")->with("status", "saved");
         } catch (\Throwable $e) {
 
             \Log::error("Gagal menyimpan gold conversion", [
