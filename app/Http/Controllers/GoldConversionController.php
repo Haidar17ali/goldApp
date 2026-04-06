@@ -129,13 +129,13 @@ class GoldConversionController extends BaseController
                     'source_id' => $conversion->id,
                     'lines' => [
                         [
-                            'account' => '1102', // Persediaan Etalase
+                            'account' => '103.00.00', // Persediaan Etalase
                             'debit' => $totalNilai,
                             'credit' => 0,
                             'description' => 'Hasil pecahan masuk etalase'
                         ],
                         [
-                            'account' => '1101', // Persediaan Gelondongan
+                            'account' => '103.00.00', // Persediaan Gelondongan
                             'debit' => 0,
                             'credit' => $totalNilai,
                             'description' => 'Pengurangan gelondongan'
