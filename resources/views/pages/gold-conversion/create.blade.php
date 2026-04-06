@@ -35,8 +35,8 @@
                         <select name="stock_id" id="stockSelect" class="form-control form-control-lg select2" required>
                             <option value="">-- pilih stok emas --</option>
                             @foreach ($productVariants as $s)
-                                <option value="{{ $s->id }}" data-karat-name="{{ $s->karat->name }}"
-                                    data-weight="{{ $s->weight }}">
+                                <option value="{{ $s->id }}" data-karat-id="{{ $s->karat->id }}"
+                                    data-karat-name="{{ $s->karat->name }}" data-weight="{{ $s->weight }}">
                                     {{ $s->product->name }} — {{ $s->karat->name }} — {{ $s->weight }} g —
                                     {{ $s->type }}
                                 </option>

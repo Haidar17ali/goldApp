@@ -57,7 +57,7 @@ class GoldConversionController extends BaseController
             // }, 'weight')
 
             ->get();
-        // dd($productVariants);
+        dd($productVariants);
 
 
 
