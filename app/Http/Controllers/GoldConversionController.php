@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AccountingHelper;
+use App\Helpers\GoldHelper;
 use App\Helpers\StockHelper;
 use App\Models\GoldStock;
 use App\Models\Product;
@@ -102,15 +104,44 @@ class GoldConversionController extends BaseController
                     ]
                 );
 
+                // untuk jurnal
+                $totalWeight = array_sum(array_column($request->details, "weight"));
+                $harga = GoldHelper::getHargaByKarat($productVariant->karat_id);
+
+                $totalNilai = $totalWeight * $harga;
+
                 // =======================================================================================
                 // 1. Simpan HEADER
                 // =======================================================================================
                 $conversion = GoldConversion::create([
                     'stock_id'      => $stock->id,
                     'product_variant_id'    => $productVariant->id,
-                    'input_weight'  => array_sum(array_column($request->details, "weight")),
+                    'input_weight'  => $totalWeight,
                     'note'          => $validated['note'] ?? null,
                     'created_by'    => auth()->id(),
+                ]);
+
+                // input jurnal
+                AccountingHelper::post([
+                    'date' => now(),
+                    'reference' => 'GC-' . $conversion->id,
+                    'description' => 'Konversi emas (pecah gelondongan)',
+                    'source_type' => 'GoldConversion',
+                    'source_id' => $conversion->id,
+                    'lines' => [
+                        [
+                            'account' => '1102', // Persediaan Etalase
+                            'debit' => $totalNilai,
+                            'credit' => 0,
+                            'description' => 'Hasil pecahan masuk etalase'
+                        ],
+                        [
+                            'account' => '1101', // Persediaan Gelondongan
+                            'debit' => 0,
+                            'credit' => $totalNilai,
+                            'description' => 'Pengurangan gelondongan'
+                        ]
+                    ]
                 ]);
 
 
@@ -119,7 +150,7 @@ class GoldConversionController extends BaseController
                 // =======================================================================================
                 StockHelper::moveStock(
                     $productVariant->id,
-                    1,
+                    auth()->user()->branch_id ?? 1,
                     1,
                     'out',
                     1,
@@ -165,7 +196,7 @@ class GoldConversionController extends BaseController
                     // stok masuk untuk item hasil pecahan
                     StockHelper::moveStock(
                         $newPV->id,
-                        1,
+                        auth()->user()->branch_id ?? 1,
                         1,
                         'in',
                         1,
@@ -341,7 +372,7 @@ class GoldConversionController extends BaseController
             // stok utama keluar lagi
             StockHelper::moveStock(
                 $productVariant->id,
-                1,
+                auth()->user()->branch_id ?? 1,
                 1,
                 'out',
                 1,
@@ -389,7 +420,7 @@ class GoldConversionController extends BaseController
                 // stok output masuk
                 StockHelper::moveStock(
                     $newPV->id,
-                    1,
+                    auth()->user()->branch_id ?? 1,
                     1,
                     'in',
                     1,
@@ -446,7 +477,7 @@ class GoldConversionController extends BaseController
         // rollback bahan baku (stock_id)
         StockHelper::moveStock(
             $conversion->product_variant_id,
-            1,
+            auth()->user()->branch_id ?? 1,
             1,
             'in',   // karena saat create dulu keluar (out)
             1,
