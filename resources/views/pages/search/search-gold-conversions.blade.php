@@ -17,8 +17,8 @@
                 <tr style="text-transform: uppercase">
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ date('d-m-Y', strtotime($item->created_at)) }}</td>
-                    <td>{{ $item->productVariant->product?->name }}</td>
-                    <td>{{ $item->productVariant->karat?->name }}</td>
+                    <td>{{ $item->productVariant?->product?->name }}</td>
+                    <td>{{ $item->productVariant?->karat?->name }}</td>
                     <td>{{ $item->input_weight }}g</td>
                     <td>{{ $item->productVariant->type }}</td>
                     <td>{{ $item->note }}</td>
