@@ -93,6 +93,7 @@ class ProductVariantController extends BaseController
 
         // SKU regenerate setiap kali edit product/karat/size
         $sku = strtoupper($product->name . '-' . $karatName . '-' . $request->gram);
+        dd($request->karat_id);
 
         $productVariant->update([
             'product_id' => $request->product_id,
