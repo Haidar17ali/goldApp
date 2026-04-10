@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Karat;
 use App\Models\GoldConversion;
 use App\Models\GoldConversionOutput;
+use App\Models\Journal;
 use App\Models\ProductVariant;
 use App\Models\Stock;
 use Illuminate\Http\Request;
@@ -130,13 +131,13 @@ class GoldConversionController extends BaseController
                     'source_id' => $conversion->id,
                     'lines' => [
                         [
-                            'account' => '103.00.00', // Persediaan Etalase
+                            'account' => '103.00.01', // Persediaan Etalase
                             'debit' => $totalNilai,
                             'credit' => 0,
                             'description' => 'Hasil pecahan masuk etalase'
                         ],
                         [
-                            'account' => '103.00.00', // Persediaan Gelondongan
+                            'account' => '103.00.02', // Persediaan Gelondongan
                             'debit' => 0,
                             'credit' => $totalNilai,
                             'description' => 'Pengurangan gelondongan'
@@ -320,6 +321,17 @@ class GoldConversionController extends BaseController
 
         try {
 
+            // reverse journal
+            $journal = Journal::with('items')
+                ->where('source_type', 'GoldConversion')
+                ->where('source_id', $conversion->id)
+                ->where('is_reversal', false)
+                ->first();
+
+            if ($journal) {
+                AccountingHelper::reverse($journal, 'Reversal edit Gold Conversion');
+            }
+
             //---------------------------------------------------------
             // 1. KEMBALIKAN stok lama (rollback output lama)
             //---------------------------------------------------------
@@ -365,6 +377,10 @@ class GoldConversionController extends BaseController
             // 3. UPDATE HEADER
             //---------------------------------------------------------
 
+            $totalWeight = array_sum(array_column($request->details, "weight"));
+            $harga = GoldHelper::getHargaByKarat($productVariant->karat_id);
+            $totalNilai = $totalWeight * $harga;
+
             $conversion->update([
                 'stock_id'     => $productVariant->stocks->id,
                 'product_variant_id'   => $productVariant->id,
@@ -372,6 +388,28 @@ class GoldConversionController extends BaseController
                 'input_weight' => array_sum(array_column($request->details, "weight")),
                 'note'         => $validated['note'] ?? null,
                 'edited_by'    => auth()->id(),
+            ]);
+
+            AccountingHelper::post([
+                'date' => now(),
+                'reference' => 'GC-' . $conversion->id,
+                'description' => 'Edit Konversi emas (pecah gelondongan)',
+                'source_type' => 'GoldConversion',
+                'source_id' => $conversion->id,
+                'lines' => [
+                    [
+                        'account' => '103.00.01',
+                        'debit' => $totalNilai,
+                        'credit' => 0,
+                        'description' => 'Hasil pecahan masuk etalase (edit)'
+                    ],
+                    [
+                        'account' => '103.00.02',
+                        'debit' => 0,
+                        'credit' => $totalNilai,
+                        'description' => 'Pengurangan gelondongan (edit)'
+                    ]
+                ]
             ]);
 
             //---------------------------------------------------------
@@ -461,6 +499,18 @@ class GoldConversionController extends BaseController
 
         DB::beginTransaction();
         $stock = Stock::find($conversion->stock_id);
+
+        // reverse journal
+        $journal = Journal::where('source_type', 'GoldConversion')
+            ->where('source_id', $conversion->id)
+            // ->where('is_reversal', false)
+            ->whereNull('reversal_of') // hanya jurnal asli
+            ->latest()
+            ->first();
+
+        if ($journal) {
+            AccountingHelper::reverse($journal, 'Hapus Gold Conversion');
+        }
 
         //---------------------------------------------------------
         // 1. KEMBALIKAN stok lama (rollback output lama) output detail

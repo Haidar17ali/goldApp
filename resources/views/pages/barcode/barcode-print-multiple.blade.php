@@ -20,7 +20,7 @@
         .row {
             margin-top: 0;
             width: 84mm;
-            height: 13mm;
+            height: 23mm;
             display: grid;
             grid-template-columns: 42mm 42mm;
             box-sizing: border-box;
@@ -28,11 +28,13 @@
 
         /* LABEL */
         .label {
-            height: 13mm;
+            height: 23mm;
             display: flex;
-            align-items: center;
+            flex-direction: column; /* 🔥 ubah jadi vertikal */
+            align-items: center;   /* 🔥 center horizontal */
+            justify-content: center; /* 🔥 center vertical */
             box-sizing: border-box;
-            overflow: hidden;
+            /* overflow: hidden; */
         }
 
         /* SAFE AREA */
@@ -44,8 +46,7 @@
         .label.right {
             padding-left: 1mm;
             padding-right: 3mm;
-            flex-direction: row-reverse;
-            text-align: right;
+            text-align: center;
         }
 
         /* QR */
@@ -64,9 +65,19 @@
 
         /* TEXT */
         .info {
-            font-size: 5pt;
+            font-size: 6pt;   /* 🔥 naik dari 5pt */
             line-height: 1.1;
-            white-space: nowrap;
+            text-align: center;
+            margin-top: 3mm; /* 🔥 jarak dari QR */
+        }
+
+        .product {
+            font-weight: bold;
+            font-size: 6.5pt; /* 🔥 lebih menonjol */
+        }
+
+        .detail {
+            font-size: 5.5pt;
         }
 
         .left .info {
@@ -74,15 +85,7 @@
         }
 
         .right .info {
-            margin-right: 2mm;
-        }
-
-        .product {
-            text-transform: uppercase;
-        }
-
-        .detail {
-            font-size: 5pt;
+            /* margin-right: 2mm; */
         }
 
         @media print {

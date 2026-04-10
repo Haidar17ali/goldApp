@@ -640,6 +640,17 @@ class SalesController extends BaseController
         try {
             DB::transaction(function () use ($transaction) {
 
+                $journal = Journal::where('source_type', 'sale')
+                    ->where('source_id', $transaction->id)
+                    // ->where('is_reversal', false)
+                    ->whereNull('reversal_of') // hanya jurnal asli
+                    ->latest()
+                    ->first();
+
+                if ($journal) {
+                    \App\Helpers\AccountingHelper::reverse($journal, 'Hapus Pembelian');
+                }
+
                 /* === ROLLBACK STOK === */
                 foreach ($transaction->details as $detail) {
 
