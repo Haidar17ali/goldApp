@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Print QR Label 84x24</title>
 
-    <style>
+    {{-- <style>
         @page {
             size: 84mm 13mm;
             margin: 0;
@@ -30,9 +30,12 @@
         .label {
             height: 23mm;
             display: flex;
-            flex-direction: column; /* 🔥 ubah jadi vertikal */
-            align-items: center;   /* 🔥 center horizontal */
-            justify-content: center; /* 🔥 center vertical */
+            flex-direction: column;
+            /* 🔥 ubah jadi vertikal */
+            align-items: center;
+            /* 🔥 center horizontal */
+            justify-content: center;
+            /* 🔥 center vertical */
             box-sizing: border-box;
             /* overflow: hidden; */
         }
@@ -65,15 +68,18 @@
 
         /* TEXT */
         .info {
-            font-size: 6pt;   /* 🔥 naik dari 5pt */
+            font-size: 6pt;
+            /* 🔥 naik dari 5pt */
             line-height: 1.1;
             text-align: center;
-            margin-top: 3mm; /* 🔥 jarak dari QR */
+            margin-top: 3mm;
+            /* 🔥 jarak dari QR */
         }
 
         .product {
             font-weight: bold;
-            font-size: 6.5pt; /* 🔥 lebih menonjol */
+            font-size: 6.5pt;
+            /* 🔥 lebih menonjol */
         }
 
         .detail {
@@ -88,6 +94,96 @@
             /* margin-right: 2mm; */
         }
 
+        @media print {
+            .row {
+                page-break-after: always;
+                margin: 0;
+            }
+        }
+    </style> --}}
+
+    <style>
+        @page {
+            size: 84mm 13mm;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* 1 ROW = 1 LABEL */
+        .row {
+            margin-top: -4px;
+            width: 84mm;
+            height: 13mm;
+            display: grid;
+            grid-template-columns: 42mm 42mm;
+            box-sizing: border-box;
+        }
+
+        /* LABEL */
+        .label {
+            height: 13mm;
+            display: flex;
+            align-items: center;
+            /* 🔥 lebih aman dari flex-start */
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* SAFE AREA */
+        .label.left {
+            padding-left: 4mm;
+            padding-right: 1mm;
+        }
+
+        .label.right {
+            padding-left: 1mm;
+            padding-right: 3mm;
+            flex-direction: row-reverse;
+            text-align: right;
+        }
+
+        /* QR */
+        .qr-box {
+            width: 10mm;
+            height: 10mm;
+            flex-shrink: 0;
+        }
+
+        .qr-box svg,
+        .qr-box img {
+            width: 100% !important;
+            height: 100% !important;
+            shape-rendering: crispEdges;
+        }
+
+        /* TEXT */
+        .info {
+            font-size: 5pt;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .left .info {
+            margin-left: 2mm;
+        }
+
+        .right .info {
+            margin-right: 2mm;
+        }
+
+        .product {
+            text-transform: uppercase;
+        }
+
+        .detail {
+            font-size: 5pt;
+        }
+
+        /* ❌ HAPUS page-break */
         @media print {
             .row {
                 page-break-after: always;

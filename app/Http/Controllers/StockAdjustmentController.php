@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AccountingHelper;
+use App\Helpers\GoldHelper;
 use App\Models\Stock;
 use App\Models\StockAdjustment;
 use App\Models\StockAdjustmentDetail;
@@ -14,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StockOpnameImport;
+use App\Models\Journal;
 use App\Models\ProductVariant;
 
 class StockAdjustmentController extends BaseController
@@ -65,7 +68,10 @@ class StockAdjustmentController extends BaseController
         ]);
 
 
+        $createdVariants = [];
         DB::transaction(function () use ($request) {
+            $totalPlus = 0;   // selisih +
+            $totalMinus = 0;  // selisih -
 
             /* ===============================
             * 1️⃣ BUAT HEADER ADJUSTMENT
@@ -126,6 +132,14 @@ class StockAdjustmentController extends BaseController
                     $type
                 );
 
+                if ($actualQty > 0) {
+                    $createdVariants[] = [
+                        'variant' => $variant,
+                        'qty' => $actualQty
+                    ];
+                }
+
+
                 /* ===============================
                 * 3️⃣ AMBIL STOK SISTEM
                 * =============================== */
@@ -138,6 +152,15 @@ class StockAdjustmentController extends BaseController
 
                 $systemQty = $stock?->quantity ?? 0;
                 $difference = $actualQty - $systemQty;
+
+                $harga = GoldHelper::getHargaByKarat($variant->karat_id ?? null) ?? 0;
+                $nilai = $difference * $weight * $harga;
+
+                if ($difference > 0) {
+                    $totalPlus += $nilai;
+                } elseif ($difference < 0) {
+                    $totalMinus += abs($nilai);
+                }
 
                 /* ===============================
                 * 4️⃣ SIMPAN DETAIL OPNAME
@@ -168,11 +191,60 @@ class StockAdjustmentController extends BaseController
                     goldType: $type
                 );
             }
+
+            $lines = [];
+
+            // jika stok bertambah
+            if ($totalPlus > 0) {
+                $lines[] = [
+                    'account' => '103.00.01',
+                    'debit' => $totalPlus,
+                    'credit' => 0,
+                    'description' => 'Penyesuaian stok opname (lebih)'
+                ];
+
+                $lines[] = [
+                    'account' => '501.00.04', // akun selisih
+                    'debit' => 0,
+                    'credit' => $totalPlus,
+                    'description' => 'Selisih stok opname'
+                ];
+            }
+
+            // jika stok berkurang
+            if ($totalMinus > 0) {
+                $lines[] = [
+                    'account' => '501.00.04',
+                    'debit' => $totalMinus,
+                    'credit' => 0,
+                    'description' => 'Selisih stok opname'
+                ];
+
+                $lines[] = [
+                    'account' => '103.00.01',
+                    'debit' => 0,
+                    'credit' => $totalMinus,
+                    'description' => 'Penyesuaian stok opname (kurang)'
+                ];
+            }
+
+            $journal = null;
+
+            if (!empty($lines)) {
+                $journal = AccountingHelper::post([
+                    'date' => now(),
+                    'reference' => 'OPN-' . $adjustment->id,
+                    'description' => 'Stock Opname Adjustment',
+                    'source_type' => StockAdjustment::class,
+                    'source_id' => $adjustment->id,
+                    'lines' => $lines
+                ]);
+            }
         });
 
         return redirect()
             ->route('opname.index')
-            ->with('status', 'saved');
+            ->with('print_barcode', $createdVariants);
     }
 
     public function importForm()
@@ -194,12 +266,34 @@ class StockAdjustmentController extends BaseController
         }
     }
 
+    public function show($id)
+    {
+        $adjustment = StockAdjustment::with([
+            'details.productVariant.product',
+            'details.productVariant.karat'
+        ])->findOrFail($id);
+
+        return view('pages.stock-adjustments.show', compact('adjustment'));
+    }
+
 
     public function destroy($id)
     {
         $adjustment = StockAdjustment::with('details.productVariant')->findOrFail($id);
 
         DB::transaction(function () use ($adjustment) {
+
+            $journal = Journal::where('source_type', StockAdjustment::class)
+                ->where('source_id', $adjustment->id)
+                // ->where('is_reversal', false)
+                ->whereNull('reversal_of') // hanya jurnal asli
+                ->latest()
+                ->first();
+
+            if ($journal) {
+                \App\Helpers\AccountingHelper::reverse($journal, 'Hapus Opname');
+            }
+
             foreach ($adjustment->details as $detail) {
                 $difference = $detail->difference;
                 $weight = $detail->productVariant?->gram ?? 0;

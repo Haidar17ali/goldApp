@@ -13,12 +13,15 @@
             @foreach ($data as $index => $item)
                 <tr style="text-transform: uppercase">
                     <th scope="row">{{ $index + 1 }}</th>
-                    <td>{{ date("d-m-Y",strtotime($item->adjustment_date)) }}</td>
+                    <td>{{ date('d-m-Y', strtotime($item->adjustment_date)) }}</td>
                     <td>{{ $item->note }}</td>
                     <td>
                         {{-- <a href="{{ route('opname.ubah', $item->id) }}" class="badge badge-success">
                             <i class="fas fa-pencil-alt"></i>
                         </a> --}}
+                        <a href="{{ route('opname.detail', $item->id) }}" class="badge badge-pill badge-info badge-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
                         <form action="{{ route('opname.hapus', $item->id) }}" class="d-inline" method="post">
                             @csrf
                             @method('DELETE')

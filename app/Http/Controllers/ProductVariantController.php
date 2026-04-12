@@ -163,7 +163,7 @@ class ProductVariantController extends BaseController
         $request->validate([
             'variants' => 'required|array|min:1',
             'variants.*.id' => 'required|exists:product_variants,id',
-            'variants.*.qty' => 'required|integer|min:1|max:100'
+            'variants.*.qty' => 'required|min:1|max:100'
         ]);
 
         $items = [];
@@ -180,5 +180,14 @@ class ProductVariantController extends BaseController
         }
 
         return view('pages.barcode.barcode-print-multiple', compact('items'));
+    }
+
+    public function printFromSession(Request $request)
+    {
+        session(['barcode_items' => $request->items]);
+
+        return response()->json([
+            'url' => route('barcode.cetak-form')
+        ]);
     }
 }

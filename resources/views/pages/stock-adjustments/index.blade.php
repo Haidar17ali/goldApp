@@ -19,7 +19,7 @@
                 </div>
             @endif
             <!-- Button trigger modal -->
-            <a href="{{ route('opname.import-form') }}" class="float-right btn btn-success ml-1"><i
+            <a href="{{ route('opname.import-form') }}" class="float-right ml-1 btn btn-success"><i
                     class="fas fa-file-excel"></i>
                 Import</a>
             <a href="{{ route('opname.buat') }}" class="float-right btn btn-primary"><i class="fas fa-plus"></i>
@@ -168,4 +168,31 @@
             });
         });
     </script>
+
+    @if (session('print_barcode'))
+        <script>
+            window.onload = function() {
+
+                let data = @json(session('print_barcode'));
+
+                fetch("{{ route('barcode.print.data') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify({
+                            items: data
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.url) {
+                            window.open(res.url, '_blank');
+                        }
+                    });
+
+            }
+        </script>
+    @endif
 @stop

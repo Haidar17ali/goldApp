@@ -133,6 +133,8 @@ Route::prefix('gold-app')
         // 
         Route::get("/barcode/variant/multi-form", [ProductVariantController::class, "multiFormBarcode"])->name("barcode.multi-form");
         Route::post("/barcode/variant/multi-form/cetak", [ProductVariantController::class, "barcodePrintMultiple"])->name("barcode.cetak-form");
+        Route::post('/barcode/print-data', [ProductVariantController::class, 'printFromSession'])
+            ->name('barcode.print.data');
 
         // transaksi pembelian
         Route::get("/transaksi/{type}/{purchaseType}", [TransactionController::class, 'index'])->name("transaksi.index");
@@ -158,10 +160,12 @@ Route::prefix('gold-app')
         Route::get("/opname", [StockAdjustmentController::class, 'index'])->name("opname.index");
         Route::get('/opname/buat', [StockAdjustmentController::class, 'create'])->name('opname.buat');
         Route::post('/opname/buat', [StockAdjustmentController::class, 'store'])->name('opname.simpan');
+        Route::get('/opname/get-stock', [StockAdjustmentController::class, 'getStock'])->name('opname.dapatStock');
+        Route::get('/opname/{id}', [StockAdjustmentController::class, 'show'])
+            ->name('opname.detail');
         Route::get('/opname/import', [StockAdjustmentController::class, 'importForm'])->name('opname.import-form');
         Route::post('/opname/import', [StockAdjustmentController::class, 'import'])->name('opname.import');
         Route::delete('/opname/{bankAccount}/hapus', [StockAdjustmentController::class, 'destroy'])->name('opname.hapus');
-        Route::get('/opname/get-stock', [StockAdjustmentController::class, 'getStock'])->name('opname.dapatStock');
 
         // pengelolaan emas
         Route::get("/pengelolaan-emas", [GoldManagementController::class, 'index'])->name("pengelolaan-emas.index");
