@@ -90,7 +90,7 @@
         }
 
         .detail {
-            font-size: 7.5pt;
+            font-size: 7pt;
         }
 
         .left .info {
