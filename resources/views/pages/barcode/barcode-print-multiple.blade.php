@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Print QR Label 84x24</title>
 
-    {{-- <style>
+    <style>
         @page {
             size: 84mm 13mm;
             margin: 0;
@@ -100,9 +100,9 @@
                 margin: 0;
             }
         }
-    </style> --}}
+    </style>
 
-    <style>
+    {{-- <style>
         @page {
             size: 84mm 13mm;
             margin: 0;
@@ -190,7 +190,7 @@
                 margin: 0;
             }
         }
-    </style>
+    </style> --}}
 </head>
 
 <body>

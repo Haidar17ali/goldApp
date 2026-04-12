@@ -31,6 +31,7 @@
                         <option value="{{ $v->id }}" data-stock="{{ $v->stocks?->quantity ?? 0 }}">
                             {{ $v->product->name }}
                             {{ $v->karat?->name }}
+                            {{ ucfirst($v->type) }}
                             {{ $v->gram }}g
                             {{ $v->barcode }}
                             Stock: {{ $v->stocks?->quantity ?? 0 }}
