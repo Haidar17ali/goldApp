@@ -11,6 +11,23 @@
     <div class="shadow card">
         <div class="card-header">
             <h4 class="mb-0">Informasi Header</h4>
+
+
+            <form action="{{ route('barcode.cetak-form') }}" method="POST" target="_blank" class="float-right">
+                @csrf
+
+                @php $i = 0; @endphp
+
+                @foreach ($conversion->outputs as $d)
+                    <input type="hidden" name="variants[{{ $i }}][id]" value="{{ $d->product_variant_id }}">
+                    <input type="hidden" name="variants[{{ $i }}][qty]" value="1">
+                    @php $i++; @endphp
+                @endforeach
+
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Print Barcode
+                </button>
+            </form>
         </div>
         <div class="card-body">
 

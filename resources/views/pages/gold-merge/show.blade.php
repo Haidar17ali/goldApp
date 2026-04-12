@@ -1,3 +1,6 @@
+@php
+    $groupedInputs = $conversion->inputs->groupBy(fn($item) => $item->productVariant->karat->name);
+@endphp
 @extends('adminlte::page')
 
 @section('title', 'Detail Konversi Gabung Emas')
@@ -40,9 +43,6 @@
         </div>
 
         <div class="card-body">
-            @php
-                $groupedInputs = $conversion->inputs->groupBy(fn($item) => $item->productVariant->karat->name);
-            @endphp
 
             <table class="table table-bordered table-striped">
                 <thead class="table-dark">
