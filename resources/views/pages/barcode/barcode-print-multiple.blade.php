@@ -32,7 +32,7 @@
             display: flex;
             flex-direction: column;
             /* 🔥 ubah jadi vertikal */
-            align-items: center;
+            /* align-items: center; */
             /* 🔥 center horizontal */
             justify-content: center;
             /* 🔥 center vertical */
@@ -42,14 +42,14 @@
 
         /* SAFE AREA */
         .label.left {
-            padding-left: 4mm;
+            padding-left: 8mm;
             padding-right: 1mm;
         }
 
         .label.right {
-            padding-left: 1mm;
+            padding-left: 25mm;
             padding-right: 3mm;
-            text-align: center;
+            text-align: right;
         }
 
         /* QR */
@@ -71,19 +71,26 @@
             font-size: 6pt;
             /* 🔥 naik dari 5pt */
             line-height: 1.1;
-            text-align: center;
+            text-align: left;
             margin-top: 3mm;
             /* 🔥 jarak dari QR */
         }
 
         .product {
             font-weight: bold;
-            font-size: 6.5pt;
+            font-size: 5.5pt;
+            /* 🔥 lebih menonjol */
+        }
+
+        .detail-code {
+            font-weight: bold;
+            font-size: 5.5pt;
+            margin-top: 3px;
             /* 🔥 lebih menonjol */
         }
 
         .detail {
-            font-size: 5.5pt;
+            font-size: 7.5pt;
         }
 
         .left .info {
@@ -226,7 +233,7 @@
                         <div class="product">{{ strtoupper($item->product->name) }}</div>
                         <div class="detail">{{ $item->karat?->name }} {{ $item->type == 'new' ? 'N' : '' }} |
                             {{ $item->gram }}g</div>
-                        <div class="detail">{{ substr($item->barcode, 0, 6) }}</div>
+                        <div class="detail-code">{{ substr($item->barcode, 0, 6) }}</div>
                     </div>
                 </div>
             @else
@@ -243,7 +250,7 @@
                         <div class="product">{{ strtoupper($item->product->name) }}</div>
                         <div class="detail">{{ $item->karat?->name }} {{ $item->type == 'new' ? 'N' : '' }} |
                             {{ $item->gram }}g</div>
-                        <div class="detail">{{ $item->barcode }}</div>
+                        <div class="detail-code">{{ substr($item->barcode, 0, 6) }}</div>
                     </div>
                 </div>
             @else
