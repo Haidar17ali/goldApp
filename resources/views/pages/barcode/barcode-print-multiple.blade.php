@@ -224,7 +224,8 @@
                     <div class="qr-box" id="qr-{{ $i * 2 }}"></div>
                     <div class="info">
                         <div class="product">{{ strtoupper($item->product->name) }}</div>
-                        <div class="detail">{{ $item->karat?->name }} | {{ $item->gram }}g</div>
+                        <div class="detail">{{ $item->karat?->name }} {{ $item->type == 'new' ? 'N' : '' }} |
+                            {{ $item->gram }}g</div>
                         <div class="detail">{{ substr($item->barcode, 0, 6) }}</div>
                     </div>
                 </div>
@@ -240,7 +241,8 @@
                     <div class="qr-box" id="qr-{{ $i * 2 + 1 }}"></div>
                     <div class="info">
                         <div class="product">{{ strtoupper($item->product->name) }}</div>
-                        <div class="detail">{{ $item->karat?->name }} | {{ $item->gram }}g</div>
+                        <div class="detail">{{ $item->karat?->name }} {{ $item->type == 'new' ? 'N' : '' }} |
+                            {{ $item->gram }}g</div>
                         <div class="detail">{{ $item->barcode }}</div>
                     </div>
                 </div>

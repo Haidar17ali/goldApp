@@ -95,7 +95,7 @@
                         <div class="form-group row">
                             <label class="col-sm-2 col-form-label">NIP</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" name="nip"
+                                <input type="text" class="form-control" name="nip" readonly
                                     value="{{ old('nip', $user->profile->nip ?? '') }}">
                             </div>
 
@@ -169,13 +169,16 @@
                             </div>
                         </div>
 
-                        <div class="form-group row">
-                            <label class="col-sm-2 col-form-label">Gaji</label>
-                            <div class="col-sm-4">
-                                <input type="number" class="form-control" name="gaji"
-                                    value="{{ old('gaji', $user->profile->gaji ?? '') }}">
+
+                        @role(['super-admin'])
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Gaji</label>
+                                <div class="col-sm-4">
+                                    <input type="number" class="form-control" name="gaji"
+                                        value="{{ old('gaji', $user->profile->gaji ?? '') }}">
+                                </div>
                             </div>
-                        </div>
+                        @endrole
 
                         <hr>
 
