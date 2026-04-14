@@ -72,7 +72,12 @@ class TransactionController extends BaseController
         // ✅ Validasi dasar
         $validator = \Validator::make($data, [
             'invoice_number'  => 'nullable|string|max:255',
-            'customer_name'   => 'nullable|string|max:255',
+
+
+            'customer_name' => 'nullable|string|max:255',
+            'customer_phone' => 'nullable|string|max:50',
+            'customer_address' => 'nullable|string|max:255',
+
             'note'            => 'nullable|string|max:1000',
             'payment_method'  => 'required|string|in:cash,transfer,cash_transfer',
             'bank_account_id' => 'nullable|exists:bank_accounts,id',
@@ -136,9 +141,21 @@ class TransactionController extends BaseController
 
         try {
             DB::transaction(function () use ($validated, $type, $purchaseType) {
-                $customer = CustomerSupplier::firstOrCreate([
-                    "name" => $validated["customer_name"],
-                ]);
+
+                // 🔹 CUSTOMER
+                $customer = null;
+                if (!empty($validated['customer_name'])) {
+                    $customer = CustomerSupplier::firstOrCreate(
+                        [
+                            'name' => trim($validated['customer_name']),
+                            'address' => $validated['customer_address'],
+                        ],
+                        [
+                            'phone_number' => $validated['customer_phone'],
+                            'type' => 'customer',
+                        ]
+                    );
+                }
 
                 // 🧾 Buat header transaksi
                 $transaction = \App\Models\Transaction::create([

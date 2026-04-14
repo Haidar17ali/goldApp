@@ -7,117 +7,143 @@
 @stop
 
 @section('content')
-<div class="shadow-lg card">
-    <div class="card-body">
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <strong>Terjadi kesalahan!</strong><br>
-                {{ $errors->first('msg') }}
-            </div>
-        @endif
-
-        <form id="transactionForm" method="POST"
-            action="{{ route('transaksi.update', ['id' => $transaction->id, 'type' => $type, 'purchaseType' => $purchaseType]) }}"
-            enctype="multipart/form-data">
-            @csrf
-            @method('PATCH')
-
-            {{-- HEADER --}}
-            <div class="mb-4 row">
-                <div class="col-md-4">
-                    <label class="fw-semibold">Nomor Invoice</label>
-                    <input type="text" name="invoice_number"
-                        class="form-control form-control-lg"
-                        value="{{ old('invoice_number', $transaction->invoice_number) }}" required>
+    <div class="shadow-lg card">
+        <div class="card-body">
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <strong>Terjadi kesalahan!</strong><br>
+                    {{ $errors->first('msg') }}
                 </div>
-
-                <div class="col-md-4">
-                    <label class="fw-semibold">Customer</label>
-                    <select name="customer_name" id="customerSelect"
-                        class="form-control form-control-lg" required>
-                        <option value="">-- pilih / ketik customer --</option>
-                        @foreach ($customers as $c)
-                            <option value="{{ $c->name }}"
-                                {{ $transaction->customer_id == $c->id ? 'selected' : '' }}
-                                data-phone="{{ $c->phone_number }}"
-                                data-address="{{ $c->address }}">
-                                {{ $c->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="fw-semibold">Catatan</label>
-                    <input type="text" name="note"
-                        class="form-control form-control-lg"
-                        value="{{ old('note', $transaction->note) }}">
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            {{-- DETAIL --}}
-            <h5 class="mb-3 fw-bold">Detail Barang</h5>
-
-            <div class="table-responsive">
-                <table class="table align-middle table-bordered" id="detailTable">
-                    <thead class="text-center table-light">
-                        <tr>
-                            <th width="25%">Produk</th>
-                            <th width="15%">Karat</th>
-                            <th width="15%">Gram</th>
-                            <th width="15%">
-                                {{ $type == 'penjualan' ? 'Harga Jual' : 'Harga Beli' }}
-                            </th>
-                            <th width="5%"></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-
-                <div class="text-end mb-4">
-                    <h5>
-                        <strong>
-                            Grand Total {{ $type == 'penjualan' ? 'Jual' : 'Beli' }}:
-                            Rp <span id="grandTotal">0</span>
-                        </strong>
-                    </h5>
-                </div>
-            </div>
-
-            <div class="text-end mb-3">
-                <button type="button" id="addRow" class="btn btn-success btn-lg">
-                    <i class="fas fa-plus"></i> Tambah Baris
-                </button>
-            </div>
-
-            {{-- PAYMENT --}}
-            @include('components.payment-gateway', [
-                'bankAccounts' => $bankAccounts,
-                'payment_method' => $transaction->payment_method,
-                'bank_account_id' => $transaction->bank_account_id,
-                'transfer_amount' => $transaction->transfer_amount,
-                'cash_amount' => $transaction->cash_amount,
-                'reference_no' => $transaction->reference_no,
-            ])
-
-            {{-- CAMERA --}}
-            @if ($type === 'penjualan')
-                @include('components.camera', [
-                    'existingPhotos' => $transaction->photos ?? []
-                ])
             @endif
 
-            <div class="text-end">
-                <button type="submit" class="btn btn-primary btn-lg px-5">
-                    <i class="fas fa-save me-1"></i> Update Transaksi
-                </button>
-            </div>
+            <form id="transactionForm" method="POST"
+                action="{{ route('transaksi.update', ['id' => $transaction->id, 'type' => $type, 'purchaseType' => $purchaseType]) }}"
+                enctype="multipart/form-data">
+                @csrf
+                @method('PATCH')
 
-        </form>
+                {{-- HEADER --}}
+                <div class="mb-4 row">
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Nomor Invoice</label>
+                        <input type="text" name="invoice_number" class="form-control form-control-lg"
+                            value="{{ old('invoice_number', $transaction->invoice_number) }}" required>
+                    </div>
+
+                    <div class="col-md-4 position-relative" x-data="customerInput(
+                        {{ Js::from($customers) }},
+                        '{{ $transaction->customer->name ?? '' }}'
+                    )">
+
+                        <label class="fw-semibold">Customer</label>
+
+                        <input type="text" name="customer_name" x-model="query" @input="search" @focus="search"
+                            class="form-control form-control-lg" placeholder="Ketik / pilih customer" required>
+
+                        <!-- DROPDOWN -->
+                        <div class="shadow list-group position-absolute w-100" x-show="show" @click.outside="show = false"
+                            style="z-index:1050">
+
+                            <template x-for="item in results" :key="item.id">
+                                <button type="button" class="list-group-item list-group-item-action" @click="select(item)">
+                                    <strong x-text="item.name"></strong><br>
+                                    <small class="text-muted" x-text="item.address"></small>
+                                </button>
+                            </template>
+
+                            <div class="list-group-item text-muted" x-show="results.length === 0">
+                                Customer baru — isi manual
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Catatan</label>
+                        <input type="text" name="note" class="form-control form-control-lg"
+                            value="{{ old('note', $transaction->note) }}">
+                    </div>
+
+                    <div class="mb-4 row">
+                        <div class="col-md-4">
+                            <label class="fw-semibold">No. Telp</label>
+                            <input type="text" name="customer_phone" id="customerPhone"
+                                class="form-control form-control-lg"
+                                value="{{ $transaction->customer->phone_number ?? '' }}"
+                                placeholder="Nomor telepon customer">
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="fw-semibold">Alamat</label>
+                            <input type="text" name="customer_address" id="customerAddress"
+                                class="form-control form-control-lg" value="{{ $transaction->customer->address ?? '' }}"
+                                placeholder="Alamat customer">
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                {{-- DETAIL --}}
+                <h5 class="mb-3 fw-bold">Detail Barang</h5>
+
+                <div class="table-responsive">
+                    <table class="table align-middle table-bordered" id="detailTable">
+                        <thead class="text-center table-light">
+                            <tr>
+                                <th width="25%">Produk</th>
+                                <th width="15%">Karat</th>
+                                <th width="15%">Gram</th>
+                                <th width="15%">
+                                    {{ $type == 'penjualan' ? 'Harga Jual' : 'Harga Beli' }}
+                                </th>
+                                <th width="5%"></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <div class="mb-4 text-end">
+                        <h5>
+                            <strong>
+                                Grand Total {{ $type == 'penjualan' ? 'Jual' : 'Beli' }}:
+                                Rp <span id="grandTotal">0</span>
+                            </strong>
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="mb-3 text-end">
+                    <button type="button" id="addRow" class="btn btn-success btn-lg">
+                        <i class="fas fa-plus"></i> Tambah Baris
+                    </button>
+                </div>
+
+                {{-- PAYMENT --}}
+                @include('components.payment-gateway', [
+                    'bankAccounts' => $bankAccounts,
+                    'payment_method' => $transaction->payment_method,
+                    'bank_account_id' => $transaction->bank_account_id,
+                    'transfer_amount' => $transaction->transfer_amount,
+                    'cash_amount' => $transaction->cash_amount,
+                    'reference_no' => $transaction->reference_no,
+                ])
+
+                {{-- CAMERA --}}
+                @if ($type === 'penjualan')
+                    @include('components.camera', [
+                        'existingPhotos' => $transaction->photos ?? [],
+                    ])
+                @endif
+
+                <div class="text-end">
+                    <button type="submit" class="px-5 btn btn-primary btn-lg">
+                        <i class="fas fa-save me-1"></i> Update Transaksi
+                    </button>
+                </div>
+
+            </form>
+        </div>
     </div>
-</div>
 @stop
 
 
@@ -191,9 +217,10 @@
     @stack('scripts')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script>
-         // ===== Customer Select2 =====
+        // ===== Customer Select2 =====
         $('#customerSelect').select2({
             tags: true,
             width: '100%',
@@ -205,6 +232,48 @@
             $('#customerPhone').val(selected.data('phone') || '');
             $('#customerAddress').val(selected.data('address') || '');
         });
+
+        // alpine js
+        function customerInput(customers, initialName = '') {
+            return {
+                query: initialName,
+                results: [],
+                show: false,
+
+                init() {
+                    // 🔹 isi data awal kalau ada
+                    const found = customers.find(c => c.name === this.query);
+                    if (found) {
+                        this.fillDetail(found);
+                    }
+                },
+
+                search() {
+                    if (!this.query) {
+                        this.results = []
+                        this.show = false
+                        return
+                    }
+
+                    this.results = customers.filter(c =>
+                        c.name.toLowerCase().includes(this.query.toLowerCase())
+                    )
+
+                    this.show = true
+                },
+
+                select(item) {
+                    this.query = item.name
+                    this.show = false
+                    this.fillDetail(item)
+                },
+
+                fillDetail(item) {
+                    document.getElementById('customerPhone').value = item.phone_number ?? ''
+                    document.getElementById('customerAddress').value = item.address ?? ''
+                }
+            }
+        }
     </script>
 
     <script>

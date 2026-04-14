@@ -21,7 +21,7 @@
                 enctype="multipart/form-data">
                 @csrf
 
-                <div class="mb-4 row">
+                {{-- <div class="mb-4 row">
                     <div class="col-md-4">
                         <label class="fw-semibold">Nomor Invoice</label>
                         <input type="text" name="invoice_number" class="form-control form-control-lg"
@@ -47,6 +47,59 @@
                         <label class="fw-semibold">Catatan</label>
                         <input type="text" name="note" class="form-control form-control-lg"
                             placeholder="Catatan tambahan (opsional)">
+                    </div>
+                </div> --}}
+
+                <div class="mb-4 row">
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Nomor Invoice</label>
+                        <input type="text" name="invoice_number" class="form-control form-control-lg"
+                            value="{{ $invoiceNumber }}" required>
+                    </div>
+
+                    <div class="col-md-4 position-relative" x-data="customerInput({{ Js::from($customers) }})">
+
+                        <label class="fw-semibold">Customer</label>
+
+                        <input type="text" name="customer_name" x-model="query" @input="search" @focus="search"
+                            class="form-control form-control-lg" placeholder="Ketik / pilih customer" required>
+
+                        <!-- DROPDOWN -->
+                        <div class="shadow list-group position-absolute w-100" x-show="show" @click.outside="show = false"
+                            style="z-index:1050">
+
+                            <template x-for="item in results" :key="item.id">
+                                <button type="button" class="list-group-item list-group-item-action" @click="select(item)">
+                                    <strong x-text="item.name"></strong><br>
+                                    <small class="text-muted" x-text="item.address"></small>
+                                </button>
+                            </template>
+
+                            <div class="list-group-item text-muted" x-show="results.length === 0">
+                                Customer baru — isi manual
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Catatan</label>
+                        <input type="text" name="note" class="form-control form-control-lg"
+                            placeholder="Catatan tambahan (opsional)">
+                    </div>
+                </div>
+
+                {{-- ================= CUSTOMER DETAIL ================= --}}
+                <div class="mb-4 row">
+                    <div class="col-md-4">
+                        <label class="fw-semibold">No. Telp</label>
+                        <input type="text" name="customer_phone" id="customerPhone" class="form-control form-control-lg"
+                            placeholder="Nomor telepon customer">
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="fw-semibold">Alamat</label>
+                        <input type="text" name="customer_address" id="customerAddress"
+                            class="form-control form-control-lg" placeholder="Alamat customer">
                     </div>
                 </div>
 
@@ -181,9 +234,10 @@
     @stack('scripts')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script>
-         // ===== Customer Select2 =====
+        // ===== Customer Select2 =====
         $('#customerSelect').select2({
             tags: true,
             width: '100%',
@@ -195,6 +249,38 @@
             $('#customerPhone').val(selected.data('phone') || '');
             $('#customerAddress').val(selected.data('address') || '');
         });
+
+        // alpine js
+        function customerInput(customers) {
+            return {
+                query: '',
+                results: [],
+                show: false,
+
+                search() {
+                    if (!this.query) {
+                        this.results = []
+                        this.show = false
+                        return
+                    }
+
+                    this.results = customers.filter(c =>
+                        c.name.toLowerCase().includes(this.query.toLowerCase())
+                    )
+
+                    this.show = true
+                },
+
+                select(item) {
+                    this.query = item.name
+                    this.show = false
+
+                    // AUTO ISI
+                    document.getElementById('customerPhone').value = item.phone_number ?? ''
+                    document.getElementById('customerAddress').value = item.address ?? ''
+                }
+            }
+        }
     </script>
 
     <script>
@@ -219,11 +305,15 @@
                 });
 
                 // tampilkan di UI
-                grandTotalEl.textContent = total.toLocaleString('id-ID', { minimumFractionDigits: 2 });
+                grandTotalEl.textContent = total.toLocaleString('id-ID', {
+                    minimumFractionDigits: 2
+                });
 
                 // 🔹 kirim event ke payment gateway
                 document.dispatchEvent(new CustomEvent('grandTotalChanged', {
-                    detail: { total: total }
+                    detail: {
+                        total: total
+                    }
                 }));
             }
 
