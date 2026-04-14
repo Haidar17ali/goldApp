@@ -7,7 +7,7 @@
             <th scope="col">Nama Customer</th>
             <th scope="col">Total Berat</th>
             <th scope="col">Total Transaksi</th>
-            <th scope="col">Keterangan</th>
+            <th scope="col">Produk</th>
             <th scope="col">Aksi</th>
         </tr>
     </thead>
@@ -24,7 +24,14 @@
                     }) }}g
                     </td>
                     <td>{{ money_format($item->total) }}</td>
-                    <td>{{ $item->note }}</td>
+                    <td>
+                        <ul>
+                            @foreach ($item->details as $detail)
+                                <li>{{ $detail->productVariant?->product?->name }}
+                                    {{ $detail->productVariant?->karat?->name }}</li>
+                            @endforeach
+                        </ul>
+                    </td>
                     <td>
                         <a href="#" class="badge badge-info btn-detail" data-id="{{ $item->id }}">
                             <i class="fas fa-eye"></i>

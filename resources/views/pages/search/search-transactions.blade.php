@@ -7,7 +7,7 @@
             <th scope="col">Nama Customer</th>
             <th scope="col">Total Berat</th>
             <th scope="col">Total Transaksi</th>
-            <th scope="col">Keterangan</th>
+            <th scope="col">Produk</th>
             <th scope="col">Aksi</th>
         </tr>
     </thead>
@@ -18,10 +18,20 @@
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ $item->invoice_number }}</td>
                     <td>{{ $item->transaction_date }}</td>
-                    <td>{{ $item->customer?->name ??"" }}</td>
-                    <td>0g</td>
+                    <td>{{ $item->customer?->name ?? '' }}</td>
+                    <td>{{ $item->details->sum(function ($detail) {
+                        return $detail->productVariant->gram ?? 0;
+                    }) }}g
+                    </td>
                     <td>{{ money_format($item->total) }}</td>
-                    <td>{{ $item->note }}</td>
+                    <td>
+                        <ul>
+                            @foreach ($item->details as $detail)
+                                <li>{{ $detail->productVariant?->product?->name }}
+                                    {{ $detail->productVariant?->karat?->name }}</li>
+                            @endforeach
+                        </ul>
+                    </td>
                     <td>
                         <a href="{{ route('transaksi.ubah', ['type' => $type, 'purchaseType' => $purchaseType, 'transaction' => $item->id]) }}"
                             class="badge badge-success">
