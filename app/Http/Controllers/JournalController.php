@@ -8,7 +8,7 @@ use App\Models\Journal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class JournalController extends Controller
+class JournalController extends BaseController
 {
     public function index(Request $request)
     {

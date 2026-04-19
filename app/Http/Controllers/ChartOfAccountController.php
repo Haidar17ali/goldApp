@@ -6,7 +6,7 @@ use App\Models\ChartOfAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class ChartOfAccountController extends Controller
+class ChartOfAccountController extends BaseController
 {
 
     public function index()
