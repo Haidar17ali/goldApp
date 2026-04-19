@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Stock;
 use Illuminate\Http\Request;
+use App\Exports\StockExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockController extends BaseController
 {
@@ -136,5 +138,13 @@ class StockController extends BaseController
 
 
         return response()->json($weights);
+    }
+
+    public function exportStock($type)
+    {
+        // Nama file akan dinamis sesuai type, misal: stock-perhiasan.xlsx
+        $fileName = 'stock-' . $type . '.xlsx';
+        
+        return Excel::download(new StockExport($type), $fileName);
     }
 }

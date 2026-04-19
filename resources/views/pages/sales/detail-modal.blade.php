@@ -2,6 +2,7 @@
     <strong>No Invoice:</strong> {{ $transaction->invoice_number }} <br>
     <strong>Tanggal:</strong> {{ $transaction->transaction_date }} <br>
     <strong>Pelanggan:</strong> {{ $transaction->customer?->name ?? '-' }} <br>
+    <strong>No Hp:</strong> {{ $transaction->customer?->phone_number ?? '-' }} <br>
     <strong>Alamat:</strong> {{ $transaction->customer?->address ?? '-' }}
 </div>
 

@@ -210,6 +210,8 @@ Route::prefix('gold-app')
         Route::get('/stocks/detail', [StockController::class, 'detail'])->name('stocks.detail');
         Route::get('/stocks/info', [StockController::class, 'info'])->name("stock.info");
         Route::get('/stocks/weights', [StockController::class, 'weights'])->name("stock.berat");
+        // export stock
+        Route::get('/stock/export', [StockController::class, 'exportStock'])->name('stock.export');
 
 
 
