@@ -185,6 +185,117 @@
         </div>
     </div>
 
+    {{-- ===================================================== --}}
+        {{-- PEMBELIAN --}}
+        {{-- ===================================================== --}}
+        <div class="mt-4 card card-outline card-danger">
+            <div class="card-header">
+                <h3 class="card-title">Pembelian per Product & Karat</h3>
+                <div class="card-tools">
+                    <span class="badge badge-danger">
+                        {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+                        -
+                        {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-0 card-body table-responsive">
+                <table class="table mb-0 table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Product</th>
+                            <th>Karat</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-right">Total Gram</th>
+                            <th class="text-right">Nominal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($purchaseByProduct as $row)
+                            <tr>
+                                <td>{{ $row->product_name }}</td>
+                                <td>{{ $row->karat }}</td>
+                                <td class="text-center fw-bold">{{ $row->qty }}</td>
+                                <td class="text-right text-muted">
+                                    {{ number_format($row->total_gram, 2) }} gr
+                                </td>
+                                <td class="text-right fw-bold">
+                                    Rp {{ number_format($row->total_nominal, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    Tidak ada pembelian
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot class="bg-light font-weight-bold">
+                        <tr>
+                            <td colspan="4" class="text-right">Grand Total</td>
+                            <td class="text-right">
+                                Rp {{ number_format($purchaseGrandTotal, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <h4 class="mt-4 mb-3">💸 Ringkasan Pembelian</h4>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon">
+                        <i class="fas fa-wallet"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Cash</span>
+                        <span class="info-box-number fs-5">
+                            Rp {{ number_format($purchaseCashTotal, 0, ',', '.') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card card-outline card-secondary">
+                    <div class="card-header">
+                        <h3 class="card-title">Transfer per Bank</h3>
+                    </div>
+                    <div class="p-0 card-body">
+                        <table class="table mb-0 table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Bank</th>
+                                    <th class="text-right">Total Transfer</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($purchaseTransferByBank as $bank)
+                                    <tr>
+                                        <td>{{ $bank->bank_name }}</td>
+                                        <td class="text-right">
+                                            Rp {{ number_format($bank->total_transfer, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">
+                                            Tidak ada transfer
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <div class="mt-3 card card-outline card-primary">
         <div class="card-header">
             <h3 class="card-title font-weight-bold">Setoran Per Anak</h3>

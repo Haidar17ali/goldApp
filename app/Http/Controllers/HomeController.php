@@ -126,6 +126,47 @@ class HomeController extends BaseController
          */
         $grandTotal = $salesByProduct->sum('total_nominal');
 
+        /**
+         * ===============================
+         * PEMBELIAN GROUP PRODUCT + KARAT
+         * ===============================
+         */
+        $purchaseByProduct = TransactionDetail::query()
+            ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
+            ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
+            ->join('products', 'products.id', '=', 'product_variants.product_id')
+            ->join('karats', 'karats.id', '=', 'product_variants.karat_id')
+            ->where('transactions.type', 'purchase') // 🔥 BEDANYA DI SINI
+            ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
+            ->select([
+                'products.name as product_name',
+                'karats.name as karat',
+                DB::raw('COUNT(transaction_details.id) as qty'),
+                DB::raw('SUM(product_variants.gram) as total_gram'),
+                DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
+            ])
+            ->groupBy('products.name', 'karats.name')
+            ->orderBy('products.name')
+            ->get();
+
+            $purchaseCashTotal = Transaction::where('type', 'purchase')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('cash_amount');
+
+            $purchaseTransferByBank = Transaction::query()
+            ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
+            ->where('transactions.type', 'purchase')
+            ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
+            ->whereNotNull('transactions.transfer_amount')
+            ->select([
+                'bank_accounts.bank_name',
+                DB::raw('SUM(transactions.transfer_amount) as total_transfer')
+            ])
+            ->groupBy('bank_accounts.bank_name')
+            ->get();
+
+            $purchaseGrandTotal = $purchaseByProduct->sum('total_nominal');
+
         // masuk etalase
         $emasMasukEtalase = DB::table('gold_conversion_outputs as gco')
             ->join('gold_conversions as gc', 'gc.id', '=', 'gco.gold_conversion_id')
@@ -297,6 +338,12 @@ class HomeController extends BaseController
             'totalEmasMasuk',
             'emasKeluarEtalase',
             'totalEmasKeluar',
+
+             // 🔥 TAMBAHAN PEMBELIAN
+            'purchaseByProduct',
+            'purchaseCashTotal',
+            'purchaseTransferByBank',
+            'purchaseGrandTotal',
 
 
         ]));
