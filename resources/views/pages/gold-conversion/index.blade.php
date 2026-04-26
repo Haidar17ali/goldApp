@@ -137,6 +137,7 @@
                             'productVariant.product': ["name"],
                             'productVariant.karat': ["name"],
                             'outputs.productVariant.product': ["name"],
+                            'outputs.productVariant': ["gram"],
                         },
                         page: page
                     },
