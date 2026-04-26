@@ -140,11 +140,11 @@ class StockController extends BaseController
         return response()->json($weights);
     }
 
-    public function exportStock($type)
+    public function exportStock()
     {
-        // Nama file akan dinamis sesuai type, misal: stock-perhiasan.xlsx
-        $fileName = 'stock-' . $type . '.xlsx';
-        
-        return Excel::download(new StockExport($type), $fileName);
+        // Nama file akan dinamis sesuai, misal: stock-perhiasan.xlsx
+        $fileName = 'stock.xlsx';
+
+        return Excel::download(new StockExport(), $fileName);
     }
 }

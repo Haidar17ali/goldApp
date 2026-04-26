@@ -42,7 +42,7 @@ class StockHelper
             ],
             [
                 'sku' => strtoupper($product->name . '-' . ($karat?->name ?? 'NOKRT') . '-' . ($gram ?? 'GEN')),
-                'barcode' => strtoupper(Str::random(6)),
+                'barcode' => generateUniqueBarcode(),
                 'default_price' => 0,
             ]
         );

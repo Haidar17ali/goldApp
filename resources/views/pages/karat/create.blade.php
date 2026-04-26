@@ -39,6 +39,12 @@
                                     value="{{ old('name') }}">
                                 <span class="text-danger error-text" id="name_error"></span>
                             </div>
+                            <label for="percentage" class="col-sm-2 col-form-label">Persentase (%)</label>
+                            <div class="col-sm-4">
+                                <input type="number" step="0.01" class="form-control" id="percentage" name="percentage"
+                                    value="{{ old('percentage') }}" placeholder="Contoh: 75 untuk 18K">
+                                <span class="text-danger error-text" id="percentage_error"></span>
+                            </div>
                         </div>
                         <div class="float-right mt-3">
                             <a href="{{ route('karat.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>

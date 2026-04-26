@@ -163,8 +163,8 @@ Route::prefix('gold-app')
         Route::get('/opname/get-stock', [StockAdjustmentController::class, 'getStock'])->name('opname.dapatStock');
         Route::get('/opname/{id}', [StockAdjustmentController::class, 'show'])
             ->name('opname.detail');
-        Route::get('/opname/import', [StockAdjustmentController::class, 'importForm'])->name('opname.import-form');
-        Route::post('/opname/import', [StockAdjustmentController::class, 'import'])->name('opname.import');
+        Route::get('/opname/data/import', [StockAdjustmentController::class, 'importForm'])->name('opname.import-form');
+        Route::post('/opname/data/import', [StockAdjustmentController::class, 'import'])->name('opname.import');
         Route::delete('/opname/{bankAccount}/hapus', [StockAdjustmentController::class, 'destroy'])->name('opname.hapus');
 
         // pengelolaan emas

@@ -28,7 +28,7 @@ class SalesController extends BaseController
     protected function generateUniqueInvoiceNumber()
     {
         do {
-            $invoice = 'INV-' . strtoupper(Str::random(6));
+            $invoice = 'INV-' . generateUniqueBarcode();
         } while (Transaction::where('invoice_number', $invoice)->exists());
 
         return $invoice;

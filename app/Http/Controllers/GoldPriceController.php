@@ -35,39 +35,36 @@ class GoldPriceController extends Controller
     {
         $request->validate([
             'active_at' => 'required|date',
-            'details' => 'required|array',
-            'details.*.karat_id' => 'required|exists:karats,id',
-            'details.*.price' => 'required|numeric|min:0',
+            'price_24k' => 'required|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($request) {
 
             $activeAt = Carbon::parse($request->active_at);
 
-            // 🔥 1. Cari harga yang masih aktif
+            // expire yang lama
             $currentActive = GoldPrice::whereNull('expired_at')->get();
 
             foreach ($currentActive as $old) {
-                // 👉 set expired = H-1 dari active baru
                 $old->update([
                     'expired_at' => $activeAt->copy()->subDay()
                 ]);
             }
 
-            // 🔥 2. Insert header baru
+            // insert header
             $goldPrice = GoldPrice::create([
                 'active_at' => $activeAt,
                 'expired_at' => null
             ]);
 
-            // 🔥 3. Insert detail per kadar
-            foreach ($request->details as $detail) {
-                GoldPriceDetail::create([
-                    'gold_price_id' => $goldPrice->id,
-                    'karat_id' => $detail['karat_id'],
-                    'price' => $detail['price'],
-                ]);
-            }
+            // 🔥 ambil karat 24K
+            $karat24 = \App\Models\Karat::where('name', '24K')->first();
+
+            GoldPriceDetail::create([
+                'gold_price_id' => $goldPrice->id,
+                'karat_id' => $karat24->id,
+                'price' => $request->price_24k,
+            ]);
         });
 
         return redirect()

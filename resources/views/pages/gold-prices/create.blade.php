@@ -20,37 +20,11 @@
                         <label>Tanggal Aktif</label>
                         <input type="date" name="active_at" class="form-control" value="{{ date('Y-m-d') }}" required>
                     </div>
-                </div>
 
-                <hr>
-
-                {{-- Harga per Kadar --}}
-                <h5>Harga per Kadar</h5>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Kadar</th>
-                                <th>Harga</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($karats as $karat)
-                                <tr>
-                                    <td>
-                                        {{ $karat->name }}
-                                        <input type="hidden" name="details[{{ $loop->index }}][karat_id]"
-                                            value="{{ $karat->id }}">
-                                    </td>
-                                    <td>
-                                        <input type="number" name="details[{{ $loop->index }}][price]"
-                                            class="form-control" placeholder="Masukkan harga" required>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <div class="col-md-6">
+                        <label>Harga Emas 24K (per gram)</label>
+                        <input type="number" name="price_24k" class="form-control" placeholder="Contoh: 1000000" required>
+                    </div>
                 </div>
 
             </div>

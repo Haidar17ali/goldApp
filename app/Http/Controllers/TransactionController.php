@@ -31,7 +31,7 @@ class TransactionController extends BaseController
     protected function generateUniqueInvoiceNumber()
     {
         do {
-            $invoice = 'INV-' . strtoupper(Str::random(6));
+            $invoice = 'INV-' . generateUniqueBarcode();
         } while (Transaction::where('invoice_number', $invoice)->exists());
 
         return $invoice;
@@ -217,7 +217,7 @@ class TransactionController extends BaseController
                         ],
                         [
                             'sku'           => $sku,
-                            'barcode'       => strtoupper(Str::random(6)),
+                            'barcode'       => generateUniqueBarcode(),
                             'default_price' => 0,
                         ]
                     );
@@ -261,7 +261,7 @@ class TransactionController extends BaseController
                             ],
                             [
                                 'sku'           => $emasSKU,
-                                'barcode'       => strtoupper(Str::random(6)),
+                                'barcode'       => generateUniqueBarcode(),
                                 'default_price' => 0,
                             ]
                         );
@@ -532,7 +532,7 @@ class TransactionController extends BaseController
                             ],
                             [
                                 'sku'           => $emasSKU,
-                                'barcode'       => strtoupper(Str::random(6)),
+                                'barcode'       => generateUniqueBarcode(),
                                 'default_price' => 0,
                             ]
                         );
@@ -595,7 +595,7 @@ class TransactionController extends BaseController
                         ],
                         [
                             'sku'           => $sku,
-                            'barcode'       => strtoupper(Str::random(6)),
+                            'barcode'       => generateUniqueBarcode(),
                             'default_price' => 0,
                         ]
                     );
@@ -639,7 +639,7 @@ class TransactionController extends BaseController
                             ],
                             [
                                 'sku'           => $emasSKU,
-                                'barcode'       => strtoupper(Str::random(6)),
+                                'barcode'       => generateUniqueBarcode(),
                                 'default_price' => 0,
                             ]
                         );
@@ -787,7 +787,7 @@ class TransactionController extends BaseController
                         ],
                         [
                             'sku'           => $emasSKU,
-                            'barcode'       => strtoupper(Str::random(6)),
+                            'barcode'       => generateUniqueBarcode(),
                             'default_price' => 0,
                         ]
                     );

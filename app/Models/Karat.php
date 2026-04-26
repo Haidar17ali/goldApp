@@ -7,15 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Karat extends Model
 {
     protected $fillable = [
-            "name",
+        "name",
+        "percentage",
     ];
 
-    public function variants(){
+    public function variants()
+    {
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function stocks(){
+    public function stocks()
+    {
         return $this->hasMany(\App\Models\Stock::class);
     }
-
 }

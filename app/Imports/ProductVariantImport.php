@@ -45,7 +45,7 @@ class ProductVariantImport implements ToModel, WithHeadingRow
 
         // === SKU & Barcode ===
         $sku = strtoupper($product->name . '-' . $karatName . '-' . $row['weight'] . '-' . $type);
-        $barcode = strtoupper(Str::random(6));
+        $barcode = generateUniqueBarcode();
 
 
         // === Cegah duplikasi SKU ===
