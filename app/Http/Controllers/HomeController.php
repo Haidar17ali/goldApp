@@ -224,23 +224,28 @@ class HomeController extends BaseController
 
         // performa karyawan
         $employeePerformance = TransactionDetail::query()
-            ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
-            ->join('users', 'users.id', '=', 'transactions.created_by')
-            ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
-            ->where('transactions.type', 'penjualan')
-            ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
+        ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
+        ->join('users', 'users.id', '=', 'transactions.created_by')
+        ->leftJoin('profiles', 'profiles.user_id', '=', 'users.id') // 🔥 tambahkan ini
+        ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
+        ->where('transactions.type', 'penjualan')
+        ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
 
-            ->select([
-                'users.id',
-                'users.username as employee_name',
-                DB::raw('COUNT(DISTINCT transactions.id) as total_transactions'),
-                DB::raw('COUNT(transaction_details.id) as qty'),
-                DB::raw('SUM(product_variants.gram) as total_gram'),
-                DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
-            ])
-            ->groupBy('users.id', 'users.username')
-            ->orderByDesc('total_nominal')
-            ->get();
+        ->select([
+            'users.id',
+
+            // 🔥 ini bagian penting
+            DB::raw('COALESCE(profiles.nama, users.username) as employee_name'),
+
+            DB::raw('COUNT(DISTINCT transactions.id) as total_transactions'),
+            DB::raw('COUNT(transaction_details.id) as qty'),
+            DB::raw('SUM(product_variants.gram) as total_gram'),
+            DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
+        ])
+
+        ->groupBy('users.id', 'profiles.nama', 'users.username') // 🔥 wajib karena pakai COALESCE
+        ->orderByDesc('total_nominal')
+        ->get();
 
         // produk paling laku
         $bestProducts = DB::table('transaction_details as td')
