@@ -21,7 +21,16 @@
                     <td>{{ $item->productVariant?->karat?->name }}</td>
                     <td>{{ $item->input_weight }}g</td>
                     <td>{{ $item->productVariant->type }}</td>
-                    <td>{{ $item->note }}</td>
+                    <td>
+                        <ul>
+                            @foreach ($item->outputs as $detail)
+                                <li>{{ $detail->productVariant?->product?->name }} |
+                                    {{ $detail->productVariant?->karat?->name }} |
+                                    {{ $detail->productVariant?->gram }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </td>
                     <td>
                         {{-- <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank" class="badge badge-success">
                             <i class="fas fa-print"></i>

@@ -20,7 +20,16 @@
                         }) }}
                         g
                     </td>
-                    <td>{{ $item->note }}</td>
+                    <td>
+                        <ul>
+                            @foreach ($item->inputs as $detail)
+                                <li>{{ $detail->productVariant?->product?->name }} |
+                                    {{ $detail->productVariant?->karat?->name }} |
+                                    {{ $detail->productVariant?->gram }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </td>
                     <td>
                         {{-- <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank" class="badge badge-success">
                             <i class="fas fa-print"></i>

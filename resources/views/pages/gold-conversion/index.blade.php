@@ -136,6 +136,7 @@
                         relations: {
                             'productVariant.product': ["name"],
                             'productVariant.karat': ["name"],
+                            'outputs.productVariant.product': ["name"],
                         },
                         page: page
                     },
