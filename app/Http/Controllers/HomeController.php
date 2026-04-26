@@ -125,6 +125,7 @@ class HomeController extends BaseController
          * ===============================
          */
         $grandTotal = $salesByProduct->sum('total_nominal');
+        $grandTotalBerat = $salesByProduct->sum('total_gram');
 
         /**
          * ===============================
@@ -166,6 +167,7 @@ class HomeController extends BaseController
             ->get();
 
             $purchaseGrandTotal = $purchaseByProduct->sum('total_nominal');
+            $purchaseGrandTotalBerat = $purchaseByProduct->sum('total_gram');
 
         // masuk etalase
         $emasMasukEtalase = DB::table('gold_conversion_outputs as gco')
@@ -330,6 +332,7 @@ class HomeController extends BaseController
             'cashTotal',
             'transferByBank',
             'grandTotal',
+            'grandTotalBerat',
             'startDate',
             'endDate',
             'users',
@@ -349,6 +352,7 @@ class HomeController extends BaseController
             'purchaseCashTotal',
             'purchaseTransferByBank',
             'purchaseGrandTotal',
+            'purchaseGrandTotalBerat',
 
 
         ]));

@@ -120,7 +120,10 @@
                 </tbody>
                 <tfoot class="bg-light font-weight-bold">
                     <tr>
-                        <td colspan="4" class="text-right">Grand Total</td>
+                        <td colspan="3" class="text-right">Grand Total</td>
+                        <td class="text-right">
+                             {{ number_format($grandTotalBerat, 2, ',', '.') }}
+                        </td>
                         <td class="text-right">
                             Rp {{ number_format($grandTotal, 0, ',', '.') }}
                         </td>
@@ -234,7 +237,10 @@
                 </tbody>
                 <tfoot class="bg-light font-weight-bold">
                     <tr>
-                        <td colspan="4" class="text-right">Grand Total</td>
+                        <td colspan="3" class="text-right">Grand Total</td>
+                        <td class="text-right">
+                            {{ number_format($purchaseGrandTotalBerat, 2, ',', '.') }}
+                        </td>
                         <td class="text-right">
                             Rp {{ number_format($purchaseGrandTotal, 0, ',', '.') }}
                         </td>
