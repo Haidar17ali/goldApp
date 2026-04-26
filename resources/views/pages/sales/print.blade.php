@@ -137,7 +137,7 @@
         /* ===================== */
         .cashier {
             position: absolute;
-            bottom: 0;
+            bottom: 10px;
             right: 1cm;
             font-size: 0.35cm;
             font-weight: bold;
@@ -195,7 +195,7 @@
     <div class="items">
         @foreach ($transaction->details as $detail)
             <div class="item-row">
-                <div class="col-name">{{ ucfirst($detail->productVariant->product->name) }}</div>
+                <div class="col-name">{{ ucfirst($detail->productVariant->product->name) }} @if ($transaction->manik_price) Perhiasan @endif</div>
                 <div class="col-karat">{{ $detail->productVariant->karat->name }}
                     {{ $detail->productVariant->type == 'new' ? ' - N' : '' }}
                 </div>
@@ -208,6 +208,20 @@
                 </div>
             </div>
         @endforeach
+
+        <!-- MANIK -->
+        @if ($transaction->manik_price)
+            <div class="item-row">
+                <div class="col-name">Manik</div>
+                <div class="col-karat"></div>
+                <div class="col-size"></div>
+                <div class="col-weight"></div>
+                <div class="col-weight"></div>
+                <div class="col-price">
+                    Rp {{ number_format($transaction->manik_price, 0, ',', '.') }}
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- TOTAL -->

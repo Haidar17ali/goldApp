@@ -74,6 +74,8 @@ class SalesController extends BaseController
             'details.*.harga_jual' => 'required|numeric|min:0',
 
             'photo_base64' => 'nullable',
+
+            'manik_price' => 'nullable|numeric|min:0',
         ]);
 
         // ================= FOTO =================
@@ -91,9 +93,13 @@ class SalesController extends BaseController
             }
         }
 
+        $manikPrice = (float) ($validated['manik_price'] ?? 0);
+
         // ================= HITUNG TOTAL =================
         $total = collect($validated['details'])
             ->sum(fn($d) => (float) $d['harga_jual']);
+
+        $total += $manikPrice;
 
         // ================= NORMALISASI PEMBAYARAN =================
         $cash = (float) ($validated['cash_amount'] ?? 0);
@@ -144,6 +150,7 @@ class SalesController extends BaseController
             }
 
             $user = auth()->user();
+            
 
             if (!$user->profile || !$user->profile->branch_id) {
                 throw new \Exception('User belum memiliki branch / profile');
@@ -168,6 +175,7 @@ class SalesController extends BaseController
                 'transfer_amount' => $transfer,
 
                 'total' => $total,
+                'manik_price' => $manikPrice,
                 'created_by' => auth()->id(),
             ]);
 
@@ -392,6 +400,7 @@ class SalesController extends BaseController
             'details.*.harga_jual' => 'required|numeric|min:0',
 
             'photo_base64' => 'nullable',
+            'manik_price' => 'nullable|numeric|min:0',
         ]);
 
         /* ================= FOTO ================= */
@@ -410,9 +419,13 @@ class SalesController extends BaseController
             }
         }
 
+        $manikPrice = (float) ($validated['manik_price'] ?? 0);
+
         /* ================= HITUNG TOTAL ================= */
         $total = collect($validated['details'])
             ->sum(fn($d) => (float) $d['harga_jual']);
+
+        $total += $manikPrice;
 
         /* ================= NORMALISASI PEMBAYARAN ================= */
         $cash = (float) ($validated['cash_amount'] ?? 0);
@@ -495,8 +508,11 @@ class SalesController extends BaseController
                 // 'reference_no' => $validated['reference_no'],
 
                 'total' => $total,
+                'manik_price' => $manikPrice,
                 'updated_by' => auth()->id(),
             ]);
+            
+            $branchId = $transaction->branch_id;
 
             // ================= REVERSE JOURNAL LAMA =================
             $journals = Journal::with('items')
@@ -533,7 +549,6 @@ class SalesController extends BaseController
                     'type' => 'new',
                 ]);
 
-                $branchId = $transaction->branch_id;
                 StockHelper::stockOut(
                     $detail['variant_id'],
                     $branchId,

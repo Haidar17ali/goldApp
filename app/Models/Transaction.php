@@ -14,6 +14,7 @@ class Transaction extends Model
         'transaction_date',
         'invoice_number',
         'total',
+        'manik_price',
         'customer_id',
         'supplier_name',
         'note',

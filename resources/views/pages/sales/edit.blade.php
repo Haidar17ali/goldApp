@@ -133,6 +133,16 @@
                             <tbody></tbody>
                         </table>
 
+                        <div class="col-md-12 mb-2">
+                            <label class="fw-semibold">Harga Manik</label>
+                            <input type="number"
+                                name="manik_price"
+                                id="hargaManik"
+                                class="form-control form-control-lg"
+                                value="{{ old('manik_price', $transaction->manik_price) }}"
+                                placeholder="30000">
+                        </div>
+
                         <div class="mb-4 text-end">
                             <h5>
                                 <strong>Grand Total Jual:
@@ -231,8 +241,8 @@
 
     <script>
         /* ======================================================
-                                               GLOBAL DATA
-                                            ====================================================== */
+            GLOBAL DATA
+        ====================================================== */
         window.PRODUCT_VARIANTS = @json($productVariants);
         window.EXISTING_DETAILS = @json($details);
 
@@ -279,16 +289,21 @@
                 total += parseFloat(el.value || 0);
             });
 
+            // 🔥 TAMBAH MANIK
+            const manik = parseFloat(document.getElementById('hargaManik')?.value || 0);
+            total += manik;
+
             grandTotalEl.textContent = total.toLocaleString('id-ID', {
                 minimumFractionDigits: 2
             });
 
             document.dispatchEvent(new CustomEvent('grandTotalChanged', {
-                detail: {
-                    total
-                }
+                detail: { total }
             }));
         };
+
+        document.getElementById('hargaManik')
+        ?.addEventListener('input', updateGrandTotal);
 
         /* ======================================================
            ADD ITEM TO TABLE (EDIT + CREATE)

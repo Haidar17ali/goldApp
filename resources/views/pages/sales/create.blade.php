@@ -158,6 +158,12 @@
                             <tbody></tbody>
                         </table>
 
+                        <div class="col-md-12 mb-2">
+                            <label class="fw-semibold">Harga Manik</label>
+                            <input type="text" name="manik_price" id="hargaManik"
+                                class="form-control form-control-lg" placeholder="30000">
+                        </div>
+
                         <div class="mb-4 text-end">
                             <h5>
                                 <strong>Grand Total Jual:
@@ -502,16 +508,24 @@
                 total += parseFloat(el.value || 0);
             });
 
+            // 🔥 tambah manik price
+            const manik = parseFloat(document.getElementById('hargaManik')?.value || 0);
+
+            total += manik;
+
             grandTotalEl.textContent = total.toLocaleString('id-ID', {
                 minimumFractionDigits: 2
             });
 
+            // kirim ke payment system
             document.dispatchEvent(new CustomEvent('grandTotalChanged', {
-                detail: {
-                    total
-                }
+                detail: { total }
             }));
         };
+
+        
+        // harga manik
+        document.getElementById('hargaManik').addEventListener('input', updateGrandTotal);
 
         document.addEventListener('DOMContentLoaded', function() {
             const products = @json($products ?? []);
