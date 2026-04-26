@@ -437,14 +437,14 @@
             const rowIndex = tableBody.children.length;
 
             // CEGAH DUPLIKAT
-            if ([...tableBody.querySelectorAll('input[name$="[variant_id]"]')]
-                .some(i => i.value == item.id)) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Barang sudah ditambahkan'
-                });
-                return;
-            }
+            // if ([...tableBody.querySelectorAll('input[name$="[variant_id]"]')]
+            //     .some(i => i.value == item.id)) {
+            //     Swal.fire({
+            //         icon: 'warning',
+            //         title: 'Barang sudah ditambahkan'
+            //     });
+            //     return;
+            // }
 
             const tr = document.createElement('tr');
 

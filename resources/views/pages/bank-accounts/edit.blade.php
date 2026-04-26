@@ -73,7 +73,7 @@
                             </div>
                         </div>
                         <div class="float-right mt-3">
-                            <a href="{{ route('pengguna.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
+                            <a href="{{ route('rekening.index') }}" class="mr-2 btn btn-danger rounded-pill">Batal</a>
                             <button type="submit" class="btn btn-primary rounded-pill">Simpan Data</button>
                         </div>
                     </div>

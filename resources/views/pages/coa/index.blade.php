@@ -53,7 +53,7 @@
 @section('js')
 
     <script>
-        $('.form-delete').submit(function(e) {
+        $(document).on('submit', '.form-delete', function(e) {
 
             e.preventDefault()
 
@@ -71,6 +71,8 @@
                     cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Ya, hapus semua!'
                 }).then((result) => {
+                    console.log(result);
+                    
 
                     if (result.isConfirmed) {
                         form.submit()

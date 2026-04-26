@@ -210,7 +210,7 @@
         @endforeach
 
         <!-- MANIK -->
-        @if ($transaction->manik_price)
+        @if ($transaction->manik_price != 0)
             <div class="item-row">
                 <div class="col-name">Manik</div>
                 <div class="col-karat"></div>

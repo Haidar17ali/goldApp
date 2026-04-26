@@ -8,6 +8,12 @@
 
         <div class="card-header">
             <h3 class="card-title">Edit Chart Of Account</h3>
+
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    Ada kesalahan pada form
+                </div>
+            @endif
         </div>
 
         <form action="{{ route('coa.update', $account->id) }}" method="POST">
