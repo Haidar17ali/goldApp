@@ -158,6 +158,10 @@
             function addRow() {
                 const index = $('#detailTable tbody tr').length;
 
+                // 🔥 ambil product dari row terakhir
+                let lastRow = $('#detailTable tbody tr:last');
+                let lastProduct = lastRow.find('select').val();
+
                 const row = `
                 <tr>
                     <td>
@@ -186,6 +190,21 @@
                 $('.select2-product').last().select2({
                     width: '100%'
                 });
+
+                 let newSelect = $('.select2-product').last();
+
+                newSelect.select2({
+                    width: '100%'
+                });
+
+                  // 🔥 AUTO FOLLOW ROW ATAS
+                if (lastProduct) {
+                    newSelect.val(lastProduct).trigger('change');
+                }
+
+                // setTimeout(() => {
+                //     newSelect.select2('open');
+                // }, 100);
             }
 
             /* ================= EVENT ================= */
@@ -200,6 +219,21 @@
 
             /* BARIS PERTAMA */
             addRow();
+        });
+
+        $(document).on('select2:open', () => {
+            document.querySelector('.select2-container--open .select2-search__field').focus();
+        });
+
+        // scroll wheel
+        $(document).on('focus', '.weight', function () {
+            $(this).on('wheel.disableScroll', function (e) {
+                e.preventDefault();
+            });
+        });
+
+        $(document).on('blur', '.weight', function () {
+            $(this).off('wheel.disableScroll');
         });
     </script>
 

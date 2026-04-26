@@ -138,6 +138,7 @@
                         relations: {
                             'user': ["username"],
                             'customer': ["name"],
+                            'details.productVariant.product': ["name"],
                         },
                         page: page
                     },
