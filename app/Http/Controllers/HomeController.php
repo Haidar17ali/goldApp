@@ -144,10 +144,10 @@ class HomeController extends BaseController
             ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
             ->whereNotNull('transactions.transfer_amount')
             ->select([
-                'bank_accounts.bank_name',
+                'bank_accounts.account_holder',
                 DB::raw('SUM(transactions.transfer_amount) as total_transfer')
             ])
-            ->groupBy('bank_accounts.bank_name')
+            ->groupBy('bank_accounts.account_holder')
             ->get();
 
         /**
@@ -191,10 +191,10 @@ class HomeController extends BaseController
             ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
             ->whereNotNull('transactions.transfer_amount')
             ->select([
-                'bank_accounts.bank_name',
+                'bank_accounts.account_holder',
                 DB::raw('SUM(transactions.transfer_amount) as total_transfer')
             ])
-            ->groupBy('bank_accounts.bank_name')
+            ->groupBy('bank_accounts.account_holder')
             ->get();
 
         $purchaseGrandTotal = $purchaseByProduct->sum('total_nominal');

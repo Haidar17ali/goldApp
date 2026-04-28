@@ -122,7 +122,7 @@
                     <tr>
                         <td colspan="3" class="text-right">Grand Total</td>
                         <td class="text-right">
-                             {{ number_format($grandTotalBerat, 2, ',', '.') }}
+                            {{ number_format($grandTotalBerat, 2, ',', '.') }}
                         </td>
                         <td class="text-right">
                             Rp {{ number_format($grandTotal, 0, ',', '.') }}
@@ -169,7 +169,7 @@
                         <tbody>
                             @forelse ($transferByBank as $bank)
                                 <tr>
-                                    <td>{{ $bank->bank_name }}</td>
+                                    <td>{{ $bank->account_holder }}</td>
                                     <td class="text-right">
                                         Rp {{ number_format($bank->total_transfer, 0, ',', '.') }}
                                     </td>
@@ -283,7 +283,7 @@
                         <tbody>
                             @forelse ($purchaseTransferByBank as $bank)
                                 <tr>
-                                    <td>{{ $bank->bank_name }}</td>
+                                    <td>{{ $bank->account_holder }}</td>
                                     <td class="text-right">
                                         Rp {{ number_format($bank->total_transfer, 0, ',', '.') }}
                                     </td>
