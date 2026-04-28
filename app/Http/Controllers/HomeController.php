@@ -73,20 +73,51 @@ class HomeController extends BaseController
          * PENJUALAN GROUP PRODUCT + KARAT
          * ===============================
          */
+        // $salesByProduct = TransactionDetail::query()
+        //     ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
+        //     ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
+        //     ->join('products', 'products.id', '=', 'product_variants.product_id')
+        //     ->join('karats', 'karats.id', '=', 'product_variants.karat_id')
+        //     ->where('transactions.type', 'penjualan')
+        //     ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
+        //     ->select([
+        //         'products.name as product_name',
+        //         'karats.name as karat',
+        //         DB::raw('COUNT(transaction_details.id) as qty'),
+        //         DB::raw('SUM(product_variants.gram) as total_gram'),
+        //         DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
+        //     ])
+        //     ->groupBy('products.name', 'karats.name')
+        //     ->orderBy('products.name')
+        //     ->get();
+
+        $manikSub = DB::table('transactions')
+            ->select('id', 'manik_price')
+            ->where('type', 'penjualan')
+            ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+
         $salesByProduct = TransactionDetail::query()
-            ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
+            ->joinSub($manikSub, 't', function ($join) {
+                $join->on('t.id', '=', 'transaction_details.transaction_id');
+            })
             ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
             ->join('products', 'products.id', '=', 'product_variants.product_id')
             ->join('karats', 'karats.id', '=', 'product_variants.karat_id')
-            ->where('transactions.type', 'penjualan')
-            ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
+
             ->select([
                 'products.name as product_name',
                 'karats.name as karat',
+
                 DB::raw('COUNT(transaction_details.id) as qty'),
                 DB::raw('SUM(product_variants.gram) as total_gram'),
-                DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
+                DB::raw('SUM(transaction_details.unit_price) as total_detail'),
+
+                // 🔥 aman karena sudah per transaksi
+                DB::raw('SUM(t.manik_price) as total_manik'),
+
+                DB::raw('SUM(transaction_details.unit_price) + SUM(t.manik_price) as total_nominal'),
             ])
+
             ->groupBy('products.name', 'karats.name')
             ->orderBy('products.name')
             ->get();
@@ -150,11 +181,11 @@ class HomeController extends BaseController
             ->orderBy('products.name')
             ->get();
 
-            $purchaseCashTotal = Transaction::where('type', 'purchase')
+        $purchaseCashTotal = Transaction::where('type', 'purchase')
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('cash_amount');
 
-            $purchaseTransferByBank = Transaction::query()
+        $purchaseTransferByBank = Transaction::query()
             ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
             ->where('transactions.type', 'purchase')
             ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
@@ -166,8 +197,8 @@ class HomeController extends BaseController
             ->groupBy('bank_accounts.bank_name')
             ->get();
 
-            $purchaseGrandTotal = $purchaseByProduct->sum('total_nominal');
-            $purchaseGrandTotalBerat = $purchaseByProduct->sum('total_gram');
+        $purchaseGrandTotal = $purchaseByProduct->sum('total_nominal');
+        $purchaseGrandTotalBerat = $purchaseByProduct->sum('total_gram');
 
         // masuk etalase
         $emasMasukEtalase = DB::table('gold_conversion_outputs as gco')
@@ -226,28 +257,28 @@ class HomeController extends BaseController
 
         // performa karyawan
         $employeePerformance = TransactionDetail::query()
-        ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
-        ->join('users', 'users.id', '=', 'transactions.created_by')
-        ->leftJoin('profiles', 'profiles.user_id', '=', 'users.id') // 🔥 tambahkan ini
-        ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
-        ->where('transactions.type', 'penjualan')
-        ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
+            ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
+            ->join('users', 'users.id', '=', 'transactions.created_by')
+            ->leftJoin('profiles', 'profiles.user_id', '=', 'users.id') // 🔥 tambahkan ini
+            ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
+            ->where('transactions.type', 'penjualan')
+            ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
 
-        ->select([
-            'users.id',
+            ->select([
+                'users.id',
 
-            // 🔥 ini bagian penting
-            DB::raw('COALESCE(profiles.nama, users.username) as employee_name'),
+                // 🔥 ini bagian penting
+                DB::raw('COALESCE(profiles.nama, users.username) as employee_name'),
 
-            DB::raw('COUNT(DISTINCT transactions.id) as total_transactions'),
-            DB::raw('COUNT(transaction_details.id) as qty'),
-            DB::raw('SUM(product_variants.gram) as total_gram'),
-            DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
-        ])
+                DB::raw('COUNT(DISTINCT transactions.id) as total_transactions'),
+                DB::raw('COUNT(transaction_details.id) as qty'),
+                DB::raw('SUM(product_variants.gram) as total_gram'),
+                DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
+            ])
 
-        ->groupBy('users.id', 'profiles.nama', 'users.username') // 🔥 wajib karena pakai COALESCE
-        ->orderByDesc('total_nominal')
-        ->get();
+            ->groupBy('users.id', 'profiles.nama', 'users.username') // 🔥 wajib karena pakai COALESCE
+            ->orderByDesc('total_nominal')
+            ->get();
 
         // produk paling laku
         $bestProducts = DB::table('transaction_details as td')
@@ -347,7 +378,7 @@ class HomeController extends BaseController
             'emasKeluarEtalase',
             'totalEmasKeluar',
 
-             // 🔥 TAMBAHAN PEMBELIAN
+            // 🔥 TAMBAHAN PEMBELIAN
             'purchaseByProduct',
             'purchaseCashTotal',
             'purchaseTransferByBank',
