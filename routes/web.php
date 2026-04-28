@@ -14,6 +14,7 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\ChartOfAccountController;
 use App\Http\Controllers\CustomerSupplierController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FinancialStatementController;
 use App\Http\Controllers\GoldConversionController;
 use App\Http\Controllers\GoldMergeConversionController;
 use App\Http\Controllers\GoldManagementController;
@@ -292,4 +293,7 @@ Route::prefix('gold-app')
         Route::get('/expenses/{id}/edit', [ExpenseController::class, 'edit'])->name('pengeluaran-toko.edit');
         Route::patch('/expenses/{id}', [ExpenseController::class, 'update'])->name('pengeluaran-toko.update');
         Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy'])->name('pengeluaran-toko.hapus');
+
+        // laporan accounting
+        Route::get('/trial-balance', [FinancialStatementController::class, 'trialBalance'])->name('accounting.trial-balance');
     });

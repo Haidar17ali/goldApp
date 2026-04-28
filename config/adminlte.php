@@ -336,22 +336,17 @@ return [
                 [
                     'text' => 'Chart Of Account',
                     'url' => 'gold-app/coa/',
-                    'can' => 'customer-supplier.index',
+                    'can' => 'coa.index',
                 ],
                 [
                     'text' => 'Jurnal Umum',
                     'url' => '/gold-app/jurnal-umum',
-                    'can' => 'customer-supplier.index',
-                ],
-                [
-                    'text' => 'General Ledger',
-                    'url' => 'gold-app/cabang',
-                    'can' => 'cabang.index',
+                    'can' => 'jurnal.index',
                 ],
                 [
                     'text' => 'Trial Balance',
-                    'url' => 'gold-app/penyimpanan',
-                    'can' => 'penyimpanan.index',
+                    'url' => 'gold-app/trial-balance',
+                    'can' => 'accounting.trial-balance',
                 ],
                 [
                     'text' => 'Provit And Loss',
