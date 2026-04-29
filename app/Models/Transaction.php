@@ -50,4 +50,9 @@ class Transaction extends Model
     {
         return $this->belongsTo(CustomerSupplier::class, 'customer_id');
     }
+
+    public function bank()
+    {
+        return $this->belongsTo(BankAccount::class, 'bank_account_id');
+    }
 }

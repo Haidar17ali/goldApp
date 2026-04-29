@@ -6,6 +6,7 @@
             <th scope="col">Tanggal Transaksi</th>
             <th scope="col">Nama Customer</th>
             <th scope="col">Total Berat</th>
+            <th scope="col">Metode Pembayaran</th>
             <th scope="col">Total Transaksi</th>
             <th scope="col">Produk</th>
             <th scope="col">Aksi</th>
@@ -23,6 +24,7 @@
                         return $detail->productVariant->gram ?? 0;
                     }) }}g
                     </td>
+                    <td>{{ $item->payment_method . ' (' . $item->bank?->account_holder . ')' ?? 'Akun tidak ada' }}</td>
                     <td>{{ money_format($item->total) }}</td>
                     <td>
                         <ul>
@@ -37,7 +39,8 @@
                             <i class="fas fa-eye"></i>
                         </a>
 
-                        <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank" class="badge badge-success">
+                        <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank"
+                            class="badge badge-success">
                             <i class="fas fa-print"></i>
                         </a>
                         <a href="{{ route('penjualan.ubah', ['type' => $type, 'id' => $item->id]) }}"

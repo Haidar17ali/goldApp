@@ -132,6 +132,8 @@
                             'customer_id',
                             'supplier_name',
                             'note',
+                            'payment_method',
+                            'bank_account_id',
                             'created_by',
                             'created_at',
                         ],
