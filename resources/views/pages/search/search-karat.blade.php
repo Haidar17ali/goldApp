@@ -3,6 +3,7 @@
         <tr>
             <th scope="col">#</th>
             <th scope="col">Nama</th>
+            <th scope="col">Persentase</th>
             <th scope="col">Aksi</th>
         </tr>
     </thead>
@@ -12,6 +13,7 @@
                 <tr style="text-transform: uppercase">
                     <th scope="row">{{ $index + 1 }}</th>
                     <td>{{ $item->name }}</td>
+                    <td>{{ $item->percentage }}%</td>
                     <td>
                         <a href="{{ route('karat.ubah', $item->id) }}" class="badge badge-success">
                             <i class="fas fa-pencil-alt"></i>
