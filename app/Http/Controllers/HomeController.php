@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Journal;
 use App\Models\User;
 use App\Models\Stock;
 use App\Models\Product;
@@ -355,7 +356,29 @@ class HomeController extends BaseController
             ->orderByDesc('total_setoran')
             ->get();
 
+        $cashBankJournals = Journal::query()
+            ->whereHas('items.account', function ($q) {
+                $q->where('parent_id', 2);
+            })
+            ->with([
+                'items.account'
+            ])
+            ->whereBetween('date', [$startDate, $endDate])
+            ->latest()
+            ->get();
 
+        $cashBankSummary = DB::table('journal_items as ji')
+            ->join('chart_of_accounts as coa', 'coa.id', '=', 'ji.chart_of_account_id')
+
+            ->where('coa.parent_id', 2)
+
+            ->select(
+                'coa.id',
+                'coa.name',
+                DB::raw('SUM(ji.debit - ji.credit) as balance')
+            )
+            ->groupBy('coa.id', 'coa.name')
+            ->get();
 
         return view('home', compact([
             'salesByProduct',
@@ -377,6 +400,8 @@ class HomeController extends BaseController
             'totalEmasMasuk',
             'emasKeluarEtalase',
             'totalEmasKeluar',
+            'cashBankJournals',
+            'cashBankSummary',
 
             // 🔥 TAMBAHAN PEMBELIAN
             'purchaseByProduct',

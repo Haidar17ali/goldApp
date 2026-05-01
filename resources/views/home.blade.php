@@ -189,6 +189,63 @@
     </div>
 
     {{-- ===================================================== --}}
+    {{-- KAS & BANK (COA PARENT = 2) --}}
+    {{-- ===================================================== --}}
+    <h4 class="mt-4 mb-3">🏦 Kas & Bank</h4>
+
+    <div class="row">
+
+        {{-- ========================= --}}
+        {{-- SALDO PER BANK --}}
+        {{-- ========================= --}}
+        <div class="col-md-6">
+            <div class="card card-outline card-success">
+                <div class="card-header">
+                    <h3 class="card-title">Saldo Kas & Bank</h3>
+                </div>
+
+                <div class="p-0 card-body">
+                    <table class="table mb-0 table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th class="text-right">Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($cashBankSummary as $row)
+                                <tr>
+                                    <td class="fw-bold text-uppercase">
+                                        {{ $row->name }}
+                                    </td>
+
+                                    <td class="text-right fw-bold">
+                                        Rp {{ number_format($row->balance, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">
+                                        Tidak ada data kas/bank
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot class="bg-light font-weight-bold">
+                            <tr>
+                                <td class="text-right">Total</td>
+                                <td class="text-right">
+                                    Rp {{ number_format($cashBankSummary->sum('balance'), 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ===================================================== --}}
     {{-- PEMBELIAN --}}
     {{-- ===================================================== --}}
     <div class="mt-4 card card-outline card-danger">
