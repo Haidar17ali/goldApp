@@ -95,7 +95,7 @@ class HomeController extends BaseController
         $manikSub = DB::table('transactions')
             ->select('id', 'manik_price')
             ->where('type', 'penjualan')
-            ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+            ->whereBetween('transaction_date', [$startDateTime, $endDateTime]);
 
         $salesByProduct = TransactionDetail::query()
             ->joinSub($manikSub, 't', function ($join) {
