@@ -92,18 +92,18 @@ class HomeController extends BaseController
         //     ->orderBy('products.name')
         //     ->get();
 
-        $manikSub = DB::table('transactions')
-            ->select('id', 'manik_price')
-            ->where('type', 'penjualan')
-            ->whereBetween('transaction_date', [$startDateTime, $endDateTime]);
+        $totalManik = Transaction::where('type', 'penjualan')
+            ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->sum('manik_price');
 
         $salesByProduct = TransactionDetail::query()
-            ->joinSub($manikSub, 't', function ($join) {
-                $join->on('t.id', '=', 'transaction_details.transaction_id');
-            })
+            ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
             ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
             ->join('products', 'products.id', '=', 'product_variants.product_id')
             ->join('karats', 'karats.id', '=', 'product_variants.karat_id')
+
+            ->where('transactions.type', 'penjualan')
+            ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
 
             ->select([
                 'products.name as product_name',
@@ -113,10 +113,20 @@ class HomeController extends BaseController
                 DB::raw('SUM(product_variants.gram) as total_gram'),
                 DB::raw('SUM(transaction_details.unit_price) as total_detail'),
 
-                // 🔥 aman karena sudah per transaksi
-                DB::raw('SUM(t.manik_price) as total_manik'),
-
-                DB::raw('SUM(transaction_details.unit_price) + SUM(t.manik_price) as total_nominal'),
+                // 🔥 sekarang total_nominal = detail saja (manik dipisah)
+                DB::raw('
+                    SUM(
+                        transaction_details.unit_price +
+                        (
+                            COALESCE(transactions.manik_price,0) /
+                            (
+                                SELECT COUNT(*) 
+                                FROM transaction_details td2 
+                                WHERE td2.transaction_id = transactions.id
+                            )
+                        )
+                    ) as total_nominal
+                '),
             ])
 
             ->groupBy('products.name', 'karats.name')
@@ -131,7 +141,7 @@ class HomeController extends BaseController
          * ===============================
          */
         $cashTotal = Transaction::where('type', 'penjualan')
-            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->whereBetween('created_at', [$startDateTime, $endDateTime])
             ->sum('cash_amount');
 
         /**
@@ -142,7 +152,7 @@ class HomeController extends BaseController
         $transferByBank = Transaction::query()
             ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
             ->where('transactions.type', 'penjualan')
-            ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
+            ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
             ->whereNotNull('transactions.transfer_amount')
             ->select([
                 'bank_accounts.account_holder',
@@ -183,13 +193,13 @@ class HomeController extends BaseController
             ->get();
 
         $purchaseCashTotal = Transaction::where('type', 'purchase')
-            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('cash_amount');
 
         $purchaseTransferByBank = Transaction::query()
             ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
             ->where('transactions.type', 'purchase')
-            ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->whereNotNull('transactions.transfer_amount')
             ->select([
                 'bank_accounts.account_holder',
@@ -363,7 +373,7 @@ class HomeController extends BaseController
             ->with([
                 'items.account'
             ])
-            ->whereBetween('date', [$startDate, $endDate])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->latest()
             ->get();
 
@@ -371,6 +381,7 @@ class HomeController extends BaseController
             ->join('chart_of_accounts as coa', 'coa.id', '=', 'ji.chart_of_account_id')
 
             ->where('coa.parent_id', 2)
+            ->where('ji.created_at', '<=', $endDateTime) // 🔥 kunci utama
 
             ->select(
                 'coa.id',
