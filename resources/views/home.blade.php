@@ -390,6 +390,20 @@
                             </td>
                         </tr>
                     @endforeach
+                    @php
+                        $grandTotalTransaksi = $salesByEmployeePayment->sum('total_transactions');
+                        $grandCash = $salesByEmployeePayment->sum('total_cash');
+                        $grandTransfer = $salesByEmployeePayment->sum('total_transfer');
+                        $grandSetoran = $salesByEmployeePayment->sum('total_setoran');
+                    @endphp
+
+                    <tr style="background-color: #f4f6f9; font-weight: bold;">
+                        <td class="text-center">TOTAL</td>
+                        <td>{{ $grandTotalTransaksi }}</td>
+                        <td>Rp {{ number_format($grandCash, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($grandTransfer, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($grandSetoran, 0, ',', '.') }}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>

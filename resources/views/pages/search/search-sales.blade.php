@@ -9,6 +9,7 @@
             <th scope="col">Metode Pembayaran</th>
             <th scope="col">Total Transaksi</th>
             <th scope="col">Produk</th>
+            <th scope="col">Kasir</th>
             <th scope="col">Aksi</th>
         </tr>
     </thead>
@@ -23,40 +24,41 @@
                     <td>{{ $item->details->sum(function ($detail) {
                         return $detail->productVariant->gram ?? 0;
                     }) }}g
-                    </td>
-                    <td>{{ $item->payment_method . ' (' . $item->bank?->account_holder . ')' ?? 'Akun tidak ada' }}</td>
-                    <td>{{ money_format($item->total) }}</td>
-                    <td>
-                        <ul>
-                            @foreach ($item->details as $detail)
-                                <li>{{ $detail->productVariant?->product?->name }}
-                                    {{ $detail->productVariant?->karat?->name }}</li>
+                </td>
+                <td>{{ $item->payment_method . ' (' . $item->bank?->account_holder . ')' ?? 'Akun tidak ada' }}</td>
+                <td>{{ money_format($item->total) }}</td>
+                <td>
+                    <ul>
+                        @foreach ($item->details as $detail)
+                        <li>{{ $detail->productVariant?->product?->name }}
+                            {{ $detail->productVariant?->karat?->name }}</li>
                             @endforeach
                         </ul>
-                    </td>
-                    <td>
-                        <a href="#" class="badge badge-info btn-detail" data-id="{{ $item->id }}">
-                            <i class="fas fa-eye"></i>
-                        </a>
+                </td>
+                <td>{{ $item->user?->username ?? "Tidak ada" }}</td>
+                <td>
+                    <a href="#" class="badge badge-info btn-detail" data-id="{{ $item->id }}">
+                        <i class="fas fa-eye"></i>
+                    </a>
 
-                        <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank"
-                            class="badge badge-success">
-                            <i class="fas fa-print"></i>
+                    <a href="{{ route('penjualan.cetak', $item->id) }}" target="_blank"
+                        class="badge badge-success">
+                        <i class="fas fa-print"></i>
+                    </a>
+                    <a href="{{ route('penjualan.ubah', ['type' => $type, 'id' => $item->id]) }}"
+                        class="badge badge-success">
+                        <i class="fas fa-pencil-alt"></i>
+                    </a>
+                    <form action="{{ route('penjualan.hapus', ['type' => $type, 'id' => $item->id]) }}"
+                        class="d-inline" method="post">
+                        @csrf
+                        @method('DELETE')
+                        <a href="#" data-id="{{ $item->id }}"
+                            class="badge badge-pill badge-delete badge-danger d-inline">
+                            <i class="fas fa-trash"></i>
                         </a>
-                        <a href="{{ route('penjualan.ubah', ['type' => $type, 'id' => $item->id]) }}"
-                            class="badge badge-success">
-                            <i class="fas fa-pencil-alt"></i>
-                        </a>
-                        <form action="{{ route('penjualan.hapus', ['type' => $type, 'id' => $item->id]) }}"
-                            class="d-inline" method="post">
-                            @csrf
-                            @method('DELETE')
-                            <a href="#" data-id="{{ $item->id }}"
-                                class="badge badge-pill badge-delete badge-danger d-inline">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </form>
-                    </td>
+                    </form>
+                </td>
                 </tr>
             @endforeach
         @else
