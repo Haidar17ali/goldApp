@@ -8,6 +8,9 @@ use App\Models\Journal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Exports\JournalReportExport;
+use Maatwebsite\Excel\Facades\Excel;
+
 class JournalController extends BaseController
 {
     public function index(Request $request)
@@ -263,5 +266,62 @@ class JournalController extends BaseController
                 ->back()
                 ->withErrors($e->getMessage());
         }
+    }
+
+    public function report(Request $request)
+    {
+        $query = Journal::with([
+            'items.account'
+        ]);
+
+        // =========================
+        // DEFAULT BULAN INI
+        // =========================
+
+        $startDate = $request->start_date
+            ?? now()->startOfMonth()->toDateString();
+
+        $endDate = $request->end_date
+            ?? now()->endOfMonth()->toDateString();
+
+        // =========================
+        // FILTER TANGGAL
+        // =========================
+
+        $query->whereBetween('date', [
+            $startDate,
+            $endDate
+        ]);
+
+        $journals = $query
+            ->orderBy('date')
+            ->latest()
+            ->paginate(20);
+
+        return view(
+            'pages.journals.report',
+            compact(
+                'journals',
+                'startDate',
+                'endDate'
+            )
+        );
+    }
+
+    public function export(Request $request)
+    {
+        $startDate = $request->start_date
+            ?? now()->startOfMonth()->toDateString();
+
+        $endDate = $request->end_date
+            ?? now()->endOfMonth()->toDateString();
+
+        return Excel::download(
+            new JournalReportExport(
+                $startDate,
+                $endDate
+            ),
+            'laporan-jurnal.xlsx'
+        );
     }
 }

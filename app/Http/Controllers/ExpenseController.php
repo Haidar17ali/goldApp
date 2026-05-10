@@ -137,7 +137,6 @@ class ExpenseController extends Controller
             if ($detail->payment_type === 'cash') {
 
                 $creditAccount = '101.00.01';
-
             } else {
 
                 $bank = \App\Models\BankAccount::find($detail->bank_account_id);
@@ -208,29 +207,29 @@ class ExpenseController extends Controller
             }
 
             $totalInput = 0;
-            
+
 
             // 🔁 3. Simpan semua detail
             foreach ($request->items as $item) {
-                
+
                 $paymentType = 'cash';
                 $bankId = null;
-                
+
                 if ($item['payment_type'] != "cash") {
-                    
+
                     $paymentType = 'bank';
-                    
+
                     $bankId = str_replace('bank_', '', $item['payment_type']);
-                    }
-                    
-                    $expense->details()->create([
-                        'item_name' => $item['item_name'],
+                }
+
+                $expense->details()->create([
+                    'item_name' => $item['item_name'],
                     'amount' => $item['amount'],
                     'note' => $item['note'] ?? null,
                     'payment_type' => $paymentType,
                     'bank_account_id' => $bankId
-                    ]);
-                }
+                ]);
+            }
 
             // ➕ 4. Update total
             $expense->increment('total_amount', $totalInput);
@@ -270,10 +269,52 @@ class ExpenseController extends Controller
         ));
     }
 
-    private function handleJournalNew($expense, $amount)
+    private function handleJournalNew($expense)
     {
-        $expenseAccount = $this->getBranchExpenseAccount($expense->branch_id);
-        $cashAccount = '101.00.01';
+        $expenseAccount = $this->getBranchExpenseAccount(
+            $expense->branch_id
+        );
+
+        $lines = [];
+
+        $totalExpense = 0;
+
+        foreach ($expense->details as $detail) {
+
+            $amount = $detail->amount;
+
+            $totalExpense += $amount;
+
+            if ($detail->payment_type === 'cash') {
+
+                $creditAccount = '101.00.01';
+            } else {
+
+                $bank = \App\Models\BankAccount::find(
+                    $detail->bank_account_id
+                );
+
+                if (!$bank) {
+                    throw new \Exception(
+                        'Bank account tidak ditemukan'
+                    );
+                }
+
+                $creditAccount = $bank->account_code;
+            }
+
+            $lines[] = [
+                'account' => $creditAccount,
+                'debit' => 0,
+                'credit' => $amount,
+            ];
+        }
+
+        $lines[] = [
+            'account' => $expenseAccount,
+            'debit' => $totalExpense,
+            'credit' => 0,
+        ];
 
         \App\Helpers\AccountingHelper::post([
             'date' => $expense->date,
@@ -282,18 +323,7 @@ class ExpenseController extends Controller
             'source_type' => 'expense',
             'source_id' => $expense->id,
             'branch_id' => $expense->branch_id,
-            'lines' => [
-                [
-                    'account' => $expenseAccount,
-                    'debit' => $amount,
-                    'credit' => 0,
-                ],
-                [
-                    'account' => $cashAccount,
-                    'debit' => 0,
-                    'credit' => $amount,
-                ]
-            ]
+            'lines' => $lines
         ]);
     }
 
@@ -304,13 +334,17 @@ class ExpenseController extends Controller
             'items' => 'required|array|min:1',
             'items.*.item_name' => 'required|string',
             'items.*.amount' => 'required|numeric|min:1',
+            'items.*.payment_type' => 'required',
         ]);
 
         DB::transaction(function () use ($request, $id) {
 
             $expense = Expense::with('details')->findOrFail($id);
 
-            // 🔥 1. REVERSE JOURNAL LAMA
+            // =========================
+            // REVERSE JOURNAL LAMA
+            // =========================
+
             $journal = Journal::with('items')
                 ->where('source_type', 'expense')
                 ->where('source_id', $expense->id)
@@ -318,39 +352,76 @@ class ExpenseController extends Controller
                 ->first();
 
             if ($journal) {
-                \App\Helpers\AccountingHelper::reverse($journal, 'Edit Expense');
+                \App\Helpers\AccountingHelper::reverse(
+                    $journal,
+                    'Edit Expense'
+                );
             }
 
-            // 🔥 2. HAPUS DETAIL LAMA
+            // =========================
+            // HAPUS DETAIL LAMA
+            // =========================
+
             $expense->details()->delete();
 
-            // 🔥 3. UPDATE HEADER
+            // =========================
+            // UPDATE HEADER
+            // =========================
+
             $expense->update([
                 'date' => $request->date,
-                'total_amount' => 0 // reset dulu
+                'total_amount' => 0
             ]);
 
             $total = 0;
 
-            // 🔥 4. INSERT DETAIL BARU
+            // =========================
+            // INSERT DETAIL BARU
+            // =========================
+
             foreach ($request->items as $item) {
+
+                $paymentType = 'cash';
+                $bankId = null;
+
+                if ($item['payment_type'] != 'cash') {
+
+                    $paymentType = 'bank';
+
+                    $bankId = str_replace(
+                        'bank_',
+                        '',
+                        $item['payment_type']
+                    );
+                }
 
                 $expense->details()->create([
                     'item_name' => $item['item_name'],
                     'amount' => $item['amount'],
-                    'note' => $item['note'] ?? null
+                    'note' => $item['note'] ?? null,
+                    'payment_type' => $paymentType,
+                    'bank_account_id' => $bankId,
                 ]);
 
                 $total += $item['amount'];
             }
 
-            // 🔥 5. UPDATE TOTAL
+            // =========================
+            // UPDATE TOTAL
+            // =========================
+
             $expense->update([
                 'total_amount' => $total
             ]);
 
-            // 🔥 6. POST JOURNAL BARU
-            $this->handleJournalNew($expense, $total);
+            // reload detail terbaru
+            $expense->load('details');
+
+            // =========================
+            // POST JOURNAL BARU
+            // =========================
+
+            $this->handleJournalNew($expense);
         });
 
         return redirect()

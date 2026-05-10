@@ -516,29 +516,9 @@ return [
             'icon' => 'fas fa-book',
             'submenu' => [
                 [
-                    'text' => 'Laporan Surat Jalan',
-                    'url' => 'gold-app/report/surat-jalan',
-                    'can' => 'laporan.surat-jalan',
-                ],
-                [
-                    'text' => 'Laporan LPB',
-                    'url' => 'gold-app/report/lpb',
-                    'can' => 'laporan.lpb',
-                ],
-                [
-                    'text' => 'Laporan LPB Supplier',
-                    'url' => 'gold-app/report/lpb-supplier',
-                    'can' => 'laporan.lpb-supplier',
-                ],
-                [
-                    'text' => 'Laporan Purchase Jurnal',
-                    'url' => 'gold-app/purchase-jurnal',
-                    'can' => 'purchase-jurnal.index',
-                ],
-                [
-                    'text' => 'Laporan DP (Down Payment)',
-                    'url' => 'gold-app/report/dp',
-                    'can' => 'laporan.dp',
+                    'text' => 'Laporan Jurnal',
+                    'url' => 'gold-app/laporan-jurnal',
+                    'can' => 'jurnal.laporan',
                 ],
             ],
         ],

@@ -257,6 +257,14 @@ Route::prefix('gold-app')
         Route::delete('/jurnal/{id}', [JournalController::class, 'destroy'])
             ->name('jurnal.hapus');
 
+        // report
+        Route::get('/laporan-jurnal', [JournalController::class, 'report'])
+            ->name('jurnal.laporan');
+        Route::get('/laporan-jurnal/export', [
+            JournalController::class,
+            'export'
+        ])->name('jurnal.export');
+
         // set harga emas
         Route::get('/set-harga', [GoldPriceController::class, 'index'])->name('set-harga.index');
         Route::get('/set-harga/buat', [GoldPriceController::class, 'create'])->name('set-harga.buat');
