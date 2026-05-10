@@ -107,7 +107,7 @@ class HomeController extends BaseController
             ->where('transactions.type', 'penjualan')
             ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
 
-            ->when(!$user->hasAnyRole(['super-admin', 'spv']), function ($query) use ($user) {
+            ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
                 $query->where('transactions.created_by', $user->id);
             })
 
@@ -146,7 +146,7 @@ class HomeController extends BaseController
          */
         $cashTotal = Transaction::where('type', 'penjualan')
         ->whereBetween('created_at', [$startDateTime, $endDateTime])
-        ->when(!$user->hasAnyRole(['super-admin', 'spv']), function ($query) use ($user) {
+        ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
             $query->where('transactions.created_by', $user->id);
         })
         ->sum('cash_amount');
@@ -162,7 +162,7 @@ class HomeController extends BaseController
         ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
         ->whereNotNull('transactions.transfer_amount')
 
-        ->when(!$user->hasAnyRole(['super-admin', 'spv']), function ($query) use ($user) {
+        ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
             $query->where('transactions.created_by', $user->id);
         })
 
@@ -195,7 +195,7 @@ class HomeController extends BaseController
         ->where('transactions.type', 'purchase')
         ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
 
-        ->when(!$user->hasAnyRole(['super-admin', 'spv']), function ($query) use ($user) {
+        ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
             $query->where('transactions.created_by', $user->id);
         })
 
@@ -383,7 +383,7 @@ class HomeController extends BaseController
         ->where('transactions.type', 'penjualan')
         ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
 
-        ->when(!$user->hasAnyRole(['super-admin', 'spv']), function ($query) use ($user) {
+        ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
             $query->where('transactions.created_by', $user->id);
         })
 
