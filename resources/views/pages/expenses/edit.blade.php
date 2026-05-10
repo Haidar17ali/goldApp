@@ -30,6 +30,7 @@
                         <th>Nama</th>
                         <th>Nominal</th>
                         <th>Note</th>
+                        <th>Pembayaran</th>
                         <th>#</th>
                     </tr>
                 </thead>
@@ -50,6 +51,26 @@
                                 <input type="text" class="form-control"
                                        :name="'items['+index+'][note]'"
                                        x-model="item.note">
+                            </td>
+                            <td>
+                                <select class="form-control select-payment"
+                                        :name="'items['+index+'][payment_type]'"
+                                        x-model="item.payment_type"
+                                        required>
+
+                                    <option value="">-- Pilih Pembayaran --</option>
+
+                                    {{-- Tunai --}}
+                                    <option value="cash">Tunai</option>
+
+                                    {{-- Rekening Bank --}}
+                                    @foreach($bankAccounts as $bank)
+                                        <option value="{{ $bank->id }}">
+                                            {{ $bank->account_holder }} - {{ $bank->account_number }}
+                                        </option>
+                                    @endforeach
+
+                                </select>
                             </td>
                             <td>
                                 <button type="button" class="btn btn-danger btn-sm"
@@ -76,6 +97,13 @@
 </div>
 
 @stop
+
+@section('css')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{{-- SELECT2 BOOTSTRAP 5 THEME --}}
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+@endsection
 
 @section('js')
 <script src="https://unpkg.com/alpinejs" defer></script>

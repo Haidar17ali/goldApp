@@ -11,6 +11,8 @@ class ExpenseDetail extends Model
         'item_name',
         'note',
         'amount',
+        'payment_type',
+        'bank_account_id',
     ];
 
     public function expense()

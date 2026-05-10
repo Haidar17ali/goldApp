@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\Branch;
+use App\Models\BankAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\AccountingHelper;
@@ -39,8 +40,10 @@ class ExpenseController extends Controller
     public function create()
     {
         $branches = Branch::all();
+        $bankAccounts = BankAccount::where('is_active', true)->get();
 
-        return view('pages.expenses.create', compact('branches'));
+
+        return view('pages.expenses.create', compact('branches', 'bankAccounts'));
     }
 
     private function getBranchExpenseAccount($branchId)
@@ -53,55 +56,123 @@ class ExpenseController extends Controller
         };
     }
 
-    private function handleJournal($expense, $totalAmount)
+    // private function handleJournal($expense, $totalAmount)
+    // {
+    //     $journal = \App\Models\Journal::with('items.account')
+    //         ->where('source_type', 'expense')
+    //         ->where('source_id', $expense->id)
+    //         ->first();
+
+    //     $expenseAccount = $this->getBranchExpenseAccount($expense->branch_id);
+    //     $cashAccount = '101.00.01';
+
+    //     // 🆕 CREATE
+    //     if (!$journal) {
+
+    //         \App\Helpers\AccountingHelper::post([
+    //             'date' => $expense->date,
+    //             'reference' => $expense->code,
+    //             'description' => 'Pengeluaran ' . $expense->code,
+    //             'source_type' => 'expense',
+    //             'source_id' => $expense->id,
+    //             'branch_id' => $expense->branch_id,
+    //             'lines' => [
+    //                 [
+    //                     'account' => $expenseAccount,
+    //                     'debit' => $totalAmount,
+    //                     'credit' => 0,
+    //                 ],
+    //                 [
+    //                     'account' => $cashAccount,
+    //                     'debit' => 0,
+    //                     'credit' => $totalAmount,
+    //                 ]
+    //             ]
+    //         ]);
+    //     } else {
+
+    //         // 🔄 UPDATE EXISTING
+    //         foreach ($journal->items as $item) {
+
+    //             $code = $item->account->code;
+
+    //             if ($code === $expenseAccount) {
+    //                 $item->increment('debit', $totalAmount);
+    //             }
+
+    //             if ($code === $cashAccount) {
+    //                 $item->increment('credit', $totalAmount);
+    //             }
+    //         }
+    //     }
+    // }
+
+    private function handleJournal($expense)
     {
-        $journal = \App\Models\Journal::with('items.account')
-            ->where('source_type', 'expense')
+        $journal = \App\Models\Journal::where('source_type', 'expense')
             ->where('source_id', $expense->id)
             ->first();
 
-        $expenseAccount = $this->getBranchExpenseAccount($expense->branch_id);
-        $cashAccount = '101.00.01';
-
-        // 🆕 CREATE
-        if (!$journal) {
-
-            \App\Helpers\AccountingHelper::post([
-                'date' => $expense->date,
-                'reference' => $expense->code,
-                'description' => 'Pengeluaran ' . $expense->code,
-                'source_type' => 'expense',
-                'source_id' => $expense->id,
-                'branch_id' => $expense->branch_id,
-                'lines' => [
-                    [
-                        'account' => $expenseAccount,
-                        'debit' => $totalAmount,
-                        'credit' => 0,
-                    ],
-                    [
-                        'account' => $cashAccount,
-                        'debit' => 0,
-                        'credit' => $totalAmount,
-                    ]
-                ]
-            ]);
-        } else {
-
-            // 🔄 UPDATE EXISTING
-            foreach ($journal->items as $item) {
-
-                $code = $item->account->code;
-
-                if ($code === $expenseAccount) {
-                    $item->increment('debit', $totalAmount);
-                }
-
-                if ($code === $cashAccount) {
-                    $item->increment('credit', $totalAmount);
-                }
-            }
+        if ($journal) {
+            $journal->items()->delete();
+            $journal->delete();
         }
+
+        $expenseAccount = $this->getBranchExpenseAccount($expense->branch_id);
+
+        $lines = [];
+
+        $totalExpense = 0;
+
+        foreach ($expense->details as $detail) {
+
+            $amount = $detail->amount;
+
+            $totalExpense += $amount;
+
+            // =========================
+            // CREDIT ACCOUNT
+            // =========================
+
+            if ($detail->payment_type === 'cash') {
+
+                $creditAccount = '101.00.01';
+
+            } else {
+
+                $bank = \App\Models\BankAccount::find($detail->bank_account_id);
+
+                if (!$bank) {
+                    throw new \Exception('Bank account tidak ditemukan');
+                }
+
+                $creditAccount = $bank->account_code;
+            }
+
+            // CREDIT
+            $lines[] = [
+                'account' => $creditAccount,
+                'debit' => 0,
+                'credit' => $amount,
+            ];
+        }
+
+        // DEBIT EXPENSE
+        $lines[] = [
+            'account' => $expenseAccount,
+            'debit' => $totalExpense,
+            'credit' => 0,
+        ];
+
+        \App\Helpers\AccountingHelper::post([
+            'date' => $expense->date,
+            'reference' => $expense->code,
+            'description' => 'Pengeluaran ' . $expense->code,
+            'source_type' => 'expense',
+            'source_id' => $expense->id,
+            'branch_id' => $expense->branch_id,
+            'lines' => $lines
+        ]);
     }
 
     public function store(Request $request)
@@ -111,6 +182,7 @@ class ExpenseController extends Controller
             'items' => 'required|array|min:1',
             'items.*.item_name' => 'required|string',
             'items.*.amount' => 'required|numeric|min:1',
+            'items.*.payment_type' => 'required',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -136,18 +208,29 @@ class ExpenseController extends Controller
             }
 
             $totalInput = 0;
+            
 
             // 🔁 3. Simpan semua detail
             foreach ($request->items as $item) {
-
-                $expense->details()->create([
-                    'item_name' => $item['item_name'],
+                
+                $paymentType = 'cash';
+                $bankId = null;
+                
+                if ($item['payment_type'] != "cash") {
+                    
+                    $paymentType = 'bank';
+                    
+                    $bankId = str_replace('bank_', '', $item['payment_type']);
+                    }
+                    
+                    $expense->details()->create([
+                        'item_name' => $item['item_name'],
                     'amount' => $item['amount'],
-                    'note' => $item['note'] ?? null
-                ]);
-
-                $totalInput += $item['amount'];
-            }
+                    'note' => $item['note'] ?? null,
+                    'payment_type' => $paymentType,
+                    'bank_account_id' => $bankId
+                    ]);
+                }
 
             // ➕ 4. Update total
             $expense->increment('total_amount', $totalInput);
@@ -179,7 +262,12 @@ class ExpenseController extends Controller
     {
         $expense = Expense::with('details')->findOrFail($id);
 
-        return view('pages.expenses.edit', compact('expense'));
+        $bankAccounts = BankAccount::where('is_active', true)->get();
+
+        return view('pages.expenses.edit', compact(
+            'expense',
+            'bankAccounts'
+        ));
     }
 
     private function handleJournalNew($expense, $amount)
