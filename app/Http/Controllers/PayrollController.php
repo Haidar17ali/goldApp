@@ -10,7 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 
-class PayrollController extends Controller
+class PayrollController extends BaseController
 {
     public function index()
     {

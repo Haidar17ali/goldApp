@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Helpers\AccountingHelper;
 use App\Models\Journal;
 
-class ExpenseController extends Controller
+class ExpenseController extends BaseController
 {
     public function index(Request $request)
     {

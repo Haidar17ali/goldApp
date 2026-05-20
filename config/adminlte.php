@@ -505,11 +505,19 @@ return [
             'text' => 'Pengeluaran Toko',
             'icon' => 'fas fa-store',
             'url' => 'gold-app/expenses/',
+            'can' => 'pengeluaran-toko.index',
+        ],
+        [
+            'text' => 'Mutasi Kas',
+            'icon' => 'fas fa-money-bill',
+            'url' => 'gold-app/mutasi-kas/',
+            'can' => 'mutasi-kas.index',
         ],
         [
             'text' => 'Payroll',
             'icon' => 'fas fa-money-bill',
             'url' => 'gold-app/payroll/',
+            'can' => 'payroll.index',
         ],
         [
             'text' => 'Laporan',

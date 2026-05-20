@@ -11,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\CashMutationController;
 use App\Http\Controllers\ChartOfAccountController;
 use App\Http\Controllers\CustomerSupplierController;
 use App\Http\Controllers\ExpenseController;
@@ -301,6 +302,16 @@ Route::prefix('gold-app')
         Route::get('/expenses/{id}/edit', [ExpenseController::class, 'edit'])->name('pengeluaran-toko.edit');
         Route::patch('/expenses/{id}', [ExpenseController::class, 'update'])->name('pengeluaran-toko.update');
         Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy'])->name('pengeluaran-toko.hapus');
+
+        Route::get('/mutasi-kas', [CashMutationController::class, "index"])->name('mutasi-kas.index');
+        Route::get('/mutasi-kas/buat', [CashMutationController::class, "create"])->name('mutasi-kas.buat');
+        Route::post('/mutasi-kas/simpan', [CashMutationController::class, "store"])->name('mutasi-kas.simpan');
+        Route::get('/mutasi-kas/{cashMutation}/edit', [CashMutationController::class, 'edit'])
+            ->name('mutasi-kas.edit');
+        Route::patch('/mutasi-kas/{cashMutation}', [CashMutationController::class, 'update'])
+            ->name('mutasi-kas.update');
+        Route::delete('/mutasi-kas/{cashMutation}', [CashMutationController::class, 'destroy'])
+            ->name('mutasi-kas.hapus');
 
         // laporan accounting
         Route::get('/trial-balance', [FinancialStatementController::class, 'trialBalance'])->name('accounting.trial-balance');
