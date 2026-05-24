@@ -16,7 +16,7 @@ class StockController extends BaseController
             ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
             ->join('products as p', 'p.id', '=', 'pv.product_id')
             ->leftJoin('karats as k', 'k.id', '=', 'pv.karat_id')
-            ->where('stocks.branch_id', auth()->user()->branch_id ?? 1);
+            ->where('stocks.branch_id', auth()->user()->profile->branch_id ?? 1,);
 
         /**
          * 🔍 SEARCH
@@ -67,7 +67,7 @@ class StockController extends BaseController
             'type' => 'required|in:new,sepuh',
         ]);
 
-        $branchId = auth()->user()->branch_id ?? 1;
+        $branchId = auth()->user()->profile->branch_id ?? 1,;
 
         $query = Stock::query()
             ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')

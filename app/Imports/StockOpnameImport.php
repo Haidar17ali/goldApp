@@ -24,7 +24,7 @@ class StockOpnameImport implements ToCollection, WithHeadingRow
         DB::transaction(function () use ($rows) {
 
             $adjustment = StockAdjustment::create([
-                'branch_id' => auth()->user()->branch_id ?? 1,
+                'branch_id' => auth()->user()->profile->branch_id ?? 1,
                 'storage_location_id' => 1,
                 'adjustment_date' => now(),
                 'note' => 'Import Stock Opname',

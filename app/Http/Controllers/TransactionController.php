@@ -161,7 +161,7 @@ class TransactionController extends BaseController
                 $transaction = \App\Models\Transaction::create([
                     'type'                => $type,
                     'purchase_type'       => $purchaseType,
-                    'branch_id'           => auth()->user()->branch_id ?? 1,
+                    'branch_id'           => auth()->user()->profile->branch_id ?? 1,
                     'storage_location_id' => 1,
                     'transaction_date'    => now(),
                     'invoice_number'      => $validated['invoice_number'] ?? null,

@@ -48,7 +48,7 @@ class StockAdjustmentController extends BaseController
 
         $stock = \App\Models\Stock::where([
             'product_variant_id' => $productVariant->id,
-        ])->first();
+        ])->where("branch_id", auth()->user()->profile->branch_id ?? 1)->first();
 
         return response()->json([
             'system_qty' => $stock ? $stock->quantity : 0
@@ -77,7 +77,7 @@ class StockAdjustmentController extends BaseController
             * 1️⃣ BUAT HEADER ADJUSTMENT
             * =============================== */
             $adjustment = StockAdjustment::create([
-                'branch_id' => auth()->user()->branch_id ?? 1,
+                'branch_id' => auth()->user()->profile->branch_id ?? 1,
                 'storage_location_id' => 1,
                 'adjustment_date' => now(),
                 'note' => 'Manual Stock Opname',

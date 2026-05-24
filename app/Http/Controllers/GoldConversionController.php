@@ -97,7 +97,7 @@ class GoldConversionController extends BaseController
                         "product_variant_id" => $productVariant->id,
                     ],
                     [
-                        'branch_id' => 1,
+                        'branch_id' => auth()->user()->profile->branch_id ?? 1,
                         'storage_location_id' => 1,
                         'weight' => 0,
                         'type' => $productVariant->type,
@@ -151,7 +151,7 @@ class GoldConversionController extends BaseController
                 // =======================================================================================
                 StockHelper::moveStock(
                     $productVariant->id,
-                    auth()->user()->branch_id ?? 1,
+                    auth()->user()->profile->branch_id ?? 1,
                     1,
                     'out',
                     1,
@@ -202,7 +202,7 @@ class GoldConversionController extends BaseController
                     // stok masuk untuk item hasil pecahan
                     StockHelper::moveStock(
                         $newPV->id,
-                        auth()->user()->branch_id ?? 1,
+                        auth()->user()->profile->branch_id ?? 1,
                         1,
                         'in',
                         1,
@@ -418,7 +418,7 @@ class GoldConversionController extends BaseController
             // stok utama keluar lagi
             StockHelper::moveStock(
                 $productVariant->id,
-                auth()->user()->branch_id ?? 1,
+                auth()->user()->profile->branch_id ?? 1,
                 1,
                 'out',
                 1,
@@ -466,7 +466,7 @@ class GoldConversionController extends BaseController
                 // stok output masuk
                 StockHelper::moveStock(
                     $newPV->id,
-                    auth()->user()->branch_id ?? 1,
+                    auth()->user()->profile->branch_id ?? 1,
                     1,
                     'in',
                     1,
@@ -535,7 +535,7 @@ class GoldConversionController extends BaseController
         // rollback bahan baku (stock_id)
         StockHelper::moveStock(
             $conversion->product_variant_id,
-            auth()->user()->branch_id ?? 1,
+            auth()->user()->profile->branch_id ?? 1,
             1,
             'in',   // karena saat create dulu keluar (out)
             1,
