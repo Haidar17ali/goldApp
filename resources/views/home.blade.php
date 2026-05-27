@@ -38,6 +38,7 @@
     {{-- ===================================================== --}}
     <div class="card card-outline card-primary">
         <div class="card-body">
+
             <form method="GET" action="{{ route('home') }}" class="row g-3 align-items-end">
 
                 <div class="col-md-3">
@@ -50,7 +51,6 @@
                     <input type="date" name="end_date" class="form-control" value="{{ $endDate }}">
                 </div>
 
-                {{-- TAMBAHAN FILTER JAM --}}
                 <div class="col-md-2">
                     <label>Dari Jam</label>
                     <input type="time" name="start_hour" class="form-control" value="{{ request('start_hour') }}">
@@ -60,6 +60,22 @@
                     <label>Sampai Jam</label>
                     <input type="time" name="end_hour" class="form-control" value="{{ request('end_hour') }}">
                 </div>
+
+                @role('super-admin|SPV')
+                    <div class="col-md-2">
+                        <label>Cabang</label>
+
+                        <select name="branch_id" class="form-control">
+                            <option value="">Semua Cabang</option>
+
+                            @foreach ($branches as $branch)
+                                <option value="{{ $branch->id }}" {{ request('branch_id') == $branch->id ? 'selected' : '' }}>
+                                    {{ $branch->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endrole
 
                 <div class="col-md-2">
                     <button class="btn btn-primary w-100">
@@ -200,7 +216,7 @@
         {{-- ========================= --}}
         @role('super-admin|SPV')
             <div class="col-md-12">
-                <div class="card card-outline card-success shadow-sm">
+                <div class="shadow-sm card card-outline card-success">
                     <div class="d-flex justify-content-between align-items-center card-header">
                         <h3 class="card-title font-weight-bold">
                             <i class="mr-1 fas fa-university"></i> Saldo Kas & Bank
@@ -215,7 +231,7 @@
                         <div class="row">
                             @forelse ($cashBankSummary as $row)
                                 <div class="mb-3 col-md-4 col-sm-6">
-                                    <div class="p-3 border rounded d-flex justify-content-between align-items-center bg-light h-100 shadow-sm"
+                                    <div class="p-3 border rounded shadow-sm d-flex justify-content-between align-items-center bg-light h-100"
                                         style="transition:0.2s">
 
                                         <div>
@@ -660,7 +676,7 @@
         {{-- ===================================================== --}}
         {{-- STOK ETALASE --}}
         {{-- ===================================================== --}}
-        <div class="mt-4 card card-outline card-warning">
+        {{-- <div class="mt-4 card card-outline card-warning">
             <div class="text-center card-header">
                 <strong>STOK EMAS ETALASE</strong>
 
@@ -696,7 +712,130 @@
                     @endforelse
                 </div>
             </div>
+        </div> --}}
+    @endrole
+
+    @role('super-admin')
+
+        <div class="mt-4 card card-outline card-warning">
+
+            <div class="text-center card-header">
+                <strong>STOK EMAS ETALASE</strong>
+            </div>
+
+            <div class="card-body">
+
+                <div id="accordionBranch">
+
+                    @foreach ($stocks as $branch)
+                        {{-- CABANG --}}
+                        <div class="mb-3 card">
+
+                            <div class="card-header bg-warning">
+
+                                <button class="text-left btn btn-link text-dark w-100" data-toggle="collapse"
+                                    data-target="#branch{{ $branch->branch_id }}">
+
+                                    <strong>{{ $branch->branch_name }}</strong>
+
+                                    <span class="float-right">
+                                        {{ number_format($branch->total_gram, 2) }} gr
+                                        |
+                                        {{ (int) $branch->total_qty }} pcs
+                                    </span>
+
+                                </button>
+
+                            </div>
+
+                            <div id="branch{{ $branch->branch_id }}" class="collapse" data-parent="#accordionBranch">
+
+                                <div class="card-body">
+
+                                    {{-- PRODUCT --}}
+                                    @foreach ($stockProducts[$branch->branch_id] ?? [] as $product)
+                                        <div class="mb-2 card">
+
+                                            <div class="card-header bg-light">
+
+                                                <button class="text-left btn btn-link text-dark w-100" data-toggle="collapse"
+                                                    data-target="#product{{ $branch->branch_id }}{{ $product->product_id }}">
+
+                                                    <strong>{{ $product->product_name }}</strong>
+
+                                                    <span class="float-right">
+                                                        {{ number_format($product->total_gram, 2) }} gr
+                                                        |
+                                                        {{ (int) $product->total_qty }} pcs
+                                                    </span>
+
+                                                </button>
+
+                                            </div>
+
+                                            <div id="product{{ $branch->branch_id }}{{ $product->product_id }}"
+                                                class="collapse">
+
+                                                <div class="card-body">
+
+                                                    <div class="row">
+
+                                                        @foreach ($stockDetails[$branch->branch_id . '_' . $product->product_id] ?? [] as $detail)
+                                                            <div class="mb-3 col-md-3">
+
+                                                                <div class="border small-box bg-light">
+
+                                                                    <div class="inner">
+
+                                                                        <h5>
+                                                                            {{ number_format($detail->total_gram, 2) }} gr
+                                                                        </h5>
+
+                                                                        <div>
+                                                                            {{ (int) $detail->total_qty }} pcs
+                                                                        </div>
+
+                                                                        <div>
+                                                                            {{ strtoupper($detail->type) }}
+                                                                        </div>
+
+                                                                        <small class="text-muted">
+                                                                            Kadar {{ $detail->karat_name }}
+                                                                        </small>
+
+                                                                    </div>
+
+                                                                    <div class="icon text-warning">
+                                                                        <i class="fas fa-ring"></i>
+                                                                    </div>
+
+                                                                </div>
+
+                                                            </div>
+                                                        @endforeach
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    @endforeach
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    @endforeach
+
+                </div>
+
+            </div>
+
         </div>
+
     @endrole
 
 @stop

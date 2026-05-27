@@ -7,10 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class GoldMergeConversion extends Model
 {
     protected $fillable = [
+        'branch_id',
         'note',
         'created_by',
         'edited_by'
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function inputs()
     {

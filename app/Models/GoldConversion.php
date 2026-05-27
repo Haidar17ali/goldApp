@@ -9,6 +9,7 @@ class GoldConversion extends Model
     protected $fillable = [
         'stock_id',
         'product_variant_id',
+        'branch_id',
         'input_weight',
         'note',
         'created_by',
@@ -22,6 +23,10 @@ class GoldConversion extends Model
         return $this->belongsTo(Stock::class, 'stock_id');
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function productVariant()
     {

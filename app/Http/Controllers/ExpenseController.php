@@ -229,6 +229,7 @@ class ExpenseController extends BaseController
                     'payment_type' => $paymentType,
                     'bank_account_id' => $bankId
                 ]);
+                $totalInput += $item['amount'];
             }
 
             // ➕ 4. Update total

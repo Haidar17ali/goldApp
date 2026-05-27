@@ -34,27 +34,156 @@ class HomeController extends BaseController
     {
         $users = User::all();
 
-        $stocks = Stock::query()
-            ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
-            ->join('products as p', 'p.id', '=', 'pv.product_id')
-            ->join('karats as k', 'k.id', '=', 'pv.karat_id')
-            ->where('p.name', '!=', 'emas')
-            ->select(
-                'pv.product_id',
-                'p.name as product_name',
-                'pv.karat_id',
-                'k.name as karat_name',
-                DB::raw('SUM(stocks.quantity * pv.gram) as total_gram'),
-                DB::raw('SUM(stocks.quantity) as total_qty')
-            )
-            ->groupBy(
-                'pv.product_id',
-                'p.name',
-                'pv.karat_id',
-                'k.name'
-            )
-            ->get();
+        // $stocks = Stock::query()
+        //     ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
+        //     ->join('products as p', 'p.id', '=', 'pv.product_id')
+        //     ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+        //     ->where('p.name', '!=', 'emas')
+        //     ->select(
+        //         'pv.product_id',
+        //         'p.name as product_name',
+        //         'pv.karat_id',
+        //         'k.name as karat_name',
+        //         DB::raw('SUM(stocks.quantity * pv.gram) as total_gram'),
+        //         DB::raw('SUM(stocks.quantity) as total_qty')
+        //     )
+        //     ->groupBy(
+        //         'pv.product_id',
+        //         'p.name',
+        //         'pv.karat_id',
+        //         'k.name'
+        //     )
+        //     ->get();
 
+        $user = auth()->user();
+
+        if ($user->hasRole('super-admin')) {
+
+            // ==========================================
+            // LEVEL 1 : TOTAL STOCK PER CABANG
+            // ==========================================
+            $stocks = Stock::query()
+                ->join('branches as b', 'b.id', '=', 'stocks.branch_id')
+                ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
+                ->join('products as p', 'p.id', '=', 'pv.product_id')
+
+                ->where('p.name', '!=', 'emas')
+
+                ->select(
+                    'stocks.branch_id',
+                    'b.name as branch_name',
+
+                    DB::raw('SUM(stocks.quantity) as total_qty'),
+                    DB::raw('SUM(stocks.quantity * pv.gram) as total_gram')
+                )
+
+                ->groupBy(
+                    'stocks.branch_id',
+                    'b.name'
+                )
+
+                ->get();
+
+
+            // ==========================================
+            // LEVEL 2 : PRODUCT PER CABANG
+            // ==========================================
+            $stockProducts = Stock::query()
+                ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
+                ->join('products as p', 'p.id', '=', 'pv.product_id')
+
+                ->where('p.name', '!=', 'emas')
+
+                ->select(
+                    'stocks.branch_id',
+
+                    'pv.product_id',
+                    'p.name as product_name',
+
+                    DB::raw('SUM(stocks.quantity) as total_qty'),
+                    DB::raw('SUM(stocks.quantity * pv.gram) as total_gram')
+                )
+
+                ->groupBy(
+                    'stocks.branch_id',
+                    'pv.product_id',
+                    'p.name'
+                )
+
+                ->get()
+                ->groupBy('branch_id');
+
+
+            // ==========================================
+            // LEVEL 3 : TYPE + KADAR
+            // ==========================================
+            $stockDetails = Stock::query()
+                ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
+                ->join('products as p', 'p.id', '=', 'pv.product_id')
+                ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+
+                ->where('p.name', '!=', 'emas')
+
+                ->select(
+                    'stocks.branch_id',
+                    'pv.product_id',
+
+                    'pv.type',
+
+                    'pv.karat_id',
+                    'k.name as karat_name',
+
+                    DB::raw('SUM(stocks.quantity) as total_qty'),
+                    DB::raw('SUM(stocks.quantity * pv.gram) as total_gram')
+                )
+
+                ->groupBy(
+                    'stocks.branch_id',
+                    'pv.product_id',
+                    'pv.type',
+                    'pv.karat_id',
+                    'k.name'
+                )
+
+                ->orderBy('pv.type')
+
+                ->get()
+
+                ->groupBy(function ($item) {
+                    return $item->branch_id . '_' . $item->product_id;
+                });
+        } else {
+
+            // QUERY LAMA
+            $stocks = Stock::query()
+                ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')
+                ->join('products as p', 'p.id', '=', 'pv.product_id')
+                ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+
+                ->where('p.name', '!=', 'emas')
+
+                ->select(
+                    'pv.product_id',
+                    'p.name as product_name',
+                    'pv.karat_id',
+                    'k.name as karat_name',
+
+                    DB::raw('SUM(stocks.quantity * pv.gram) as total_gram'),
+                    DB::raw('SUM(stocks.quantity) as total_qty')
+                )
+
+                ->groupBy(
+                    'pv.product_id',
+                    'p.name',
+                    'pv.karat_id',
+                    'k.name'
+                )
+
+                ->get();
+
+            $stockProducts = collect();
+            $stockDetails = collect();
+        }
         // penjualan
         // ===============================
         // DATE RANGE (DEFAULT HARI INI)
@@ -74,29 +203,36 @@ class HomeController extends BaseController
          * PENJUALAN GROUP PRODUCT + KARAT
          * ===============================
          */
-        // $salesByProduct = TransactionDetail::query()
-        //     ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
-        //     ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
-        //     ->join('products', 'products.id', '=', 'product_variants.product_id')
-        //     ->join('karats', 'karats.id', '=', 'product_variants.karat_id')
-        //     ->where('transactions.type', 'penjualan')
-        //     ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
-        //     ->select([
-        //         'products.name as product_name',
-        //         'karats.name as karat',
-        //         DB::raw('COUNT(transaction_details.id) as qty'),
-        //         DB::raw('SUM(product_variants.gram) as total_gram'),
-        //         DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
-        //     ])
-        //     ->groupBy('products.name', 'karats.name')
-        //     ->orderBy('products.name')
-        //     ->get();
 
         $totalManik = Transaction::where('type', 'penjualan')
             ->whereBetween('created_at', [$startDateTime, $endDateTime])
             ->sum('manik_price');
 
         $user = auth()->user();
+        $userBranchId = $user->profile?->branch_id;
+
+        $selectedBranchId = request('branch_id');
+
+        $branchId = null;
+
+        if ($user->hasRole('super-admin')) {
+
+            // super admin bisa pilih branch
+            $branchId = $selectedBranchId;
+        } else {
+
+            // selain super admin wajib branch sendiri
+            $branchId = $userBranchId;
+        }
+
+        $filterBranch = function ($query) use ($branchId) {
+
+            if ($branchId) {
+                $query->where('transactions.branch_id', $branchId);
+            }
+
+            return $query;
+        };
 
         $salesByProduct = TransactionDetail::query()
             ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
@@ -123,16 +259,22 @@ class HomeController extends BaseController
                     SUM(
                         transaction_details.unit_price +
                         (
-                            COALESCE(transactions.manik_price,0) /
-                            (
-                                SELECT COUNT(*) 
-                                FROM transaction_details td2 
-                                WHERE td2.transaction_id = transactions.id
+                            COALESCE(
+                                transactions.manik_price,0
+                            ) /
+                            NULLIF(
+                                (
+                                    SELECT COUNT(*)
+                                    FROM transaction_details td2
+                                    WHERE td2.transaction_id = transactions.id
+                                ),
+                                0
                             )
                         )
                     ) as total_nominal
                 '),
             ])
+            ->when($branchId, $filterBranch)
             ->groupBy('products.name', 'karats.name')
             ->orderBy('products.name')
             ->get();
@@ -145,11 +287,14 @@ class HomeController extends BaseController
          * ===============================
          */
         $cashTotal = Transaction::where('type', 'penjualan')
-        ->whereBetween('created_at', [$startDateTime, $endDateTime])
-        ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
-            $query->where('transactions.created_by', $user->id);
-        })
-        ->sum('cash_amount');
+            ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            })
+            ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
+                $query->where('transactions.created_by', $user->id);
+            })
+            ->sum('cash_amount');
 
         /**
          * ===============================
@@ -157,21 +302,24 @@ class HomeController extends BaseController
          * ===============================
          */
         $transferByBank = Transaction::query()
-        ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
-        ->where('transactions.type', 'penjualan')
-        ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
-        ->whereNotNull('transactions.transfer_amount')
+            ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
+            ->where('transactions.type', 'penjualan')
+            ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            })
+            ->whereNotNull('transactions.transfer_amount')
 
-        ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
-            $query->where('transactions.created_by', $user->id);
-        })
+            ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
+                $query->where('transactions.created_by', $user->id);
+            })
 
-        ->select([
-            'bank_accounts.account_holder',
-            DB::raw('SUM(transactions.transfer_amount) as total_transfer')
-        ])
-        ->groupBy('bank_accounts.account_holder')
-        ->get();
+            ->select([
+                'bank_accounts.account_holder',
+                DB::raw('SUM(transactions.transfer_amount) as total_transfer')
+            ])
+            ->groupBy('bank_accounts.account_holder')
+            ->get();
 
         /**
          * ===============================
@@ -187,64 +335,88 @@ class HomeController extends BaseController
          * ===============================
          */
         $purchaseByProduct = TransactionDetail::query()
-        ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
-        ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
-        ->join('products', 'products.id', '=', 'product_variants.product_id')
-        ->join('karats', 'karats.id', '=', 'product_variants.karat_id')
+            ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
+            ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
+            ->join('products', 'products.id', '=', 'product_variants.product_id')
+            ->join('karats', 'karats.id', '=', 'product_variants.karat_id')
 
-        ->where('transactions.type', 'purchase')
-        ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
+            ->where('transactions.type', 'purchase')
+            ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            })
 
-        ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
-            $query->where('transactions.created_by', $user->id);
-        })
+            ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
+                $query->where('transactions.created_by', $user->id);
+            })
 
-        ->select([
-            'products.name as product_name',
-            'karats.name as karat',
-            DB::raw('COUNT(transaction_details.id) as qty'),
-            DB::raw('SUM(product_variants.gram) as total_gram'),
-            DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
-        ])
-        ->groupBy('products.name', 'karats.name')
-        ->orderBy('products.name')
-        ->get();
+            ->select([
+                'products.name as product_name',
+                'karats.name as karat',
+                DB::raw('COUNT(transaction_details.id) as qty'),
+                DB::raw('SUM(product_variants.gram) as total_gram'),
+                DB::raw('SUM(transaction_details.unit_price) as total_nominal'),
+            ])
+            ->groupBy('products.name', 'karats.name')
+            ->orderBy('products.name')
+            ->get();
 
         $purchaseCashTotal = Transaction::where('type', 'purchase')
-        ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            })
 
-        ->when(!$user->hasAnyRole(['super-admin', 'spv']), function ($query) use ($user) {
-            $query->where('transactions.created_by', $user->id);
-        })
+            ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
+                $query->where('transactions.created_by', $user->id);
+            })
 
-        ->sum('cash_amount');
+            ->sum('cash_amount');
 
         $purchaseTransferByBank = Transaction::query()
-        ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
-        ->where('transactions.type', 'purchase')
-        ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
-        ->whereNotNull('transactions.transfer_amount')
+            ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
+            ->where('transactions.type', 'purchase')
+            ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            })
+            ->whereNotNull('transactions.transfer_amount')
 
-        ->when(!$user->hasAnyRole(['super-admin', 'spv']), function ($query) use ($user) {
-            $query->where('transactions.created_by', $user->id);
-        })
+            ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
+                $query->where('transactions.created_by', $user->id);
+            })
 
-        ->select([
-            'bank_accounts.account_holder',
-            DB::raw('SUM(transactions.transfer_amount) as total_transfer')
-        ])
-        ->groupBy('bank_accounts.account_holder')
-        ->get();
+            ->select([
+                'bank_accounts.account_holder',
+                DB::raw('SUM(transactions.transfer_amount) as total_transfer')
+            ])
+            ->groupBy('bank_accounts.account_holder')
+            ->get();
 
         $purchaseGrandTotal = $purchaseByProduct->sum('total_nominal');
         $purchaseGrandTotalBerat = $purchaseByProduct->sum('total_gram');
 
         // masuk etalase
         $emasMasukEtalase = DB::table('gold_conversion_outputs as gco')
+
             ->join('gold_conversions as gc', 'gc.id', '=', 'gco.gold_conversion_id')
+
+            ->join('stocks as s', 's.id', '=', 'gc.stock_id')
+
             ->join('product_variants as pv', 'pv.id', '=', 'gco.product_variant_id')
+
             ->join('products as p', 'p.id', '=', 'pv.product_id')
+
             ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('gc.branch_id', $branchId);
+            })
+
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('s.branch_id', $branchId);
+            })
+
             ->whereBetween(DB::raw('DATE(gc.created_at)'), [$startDate, $endDate])
             ->select(
                 'p.name as product_name',
@@ -274,6 +446,10 @@ class HomeController extends BaseController
             ->join('product_variants as pv', 'pv.id', '=', 'gmci.product_variant_id')
             ->join('products as p', 'p.id', '=', 'pv.product_id')
             ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('gmc.branch_id', $branchId);
+            })
+            // ->join('stocks as s', 's.id', '=', 'gmc.stock_id')
             ->whereBetween(DB::raw('DATE(gmc.created_at)'), [$startDate, $endDate])
             ->select(
                 'p.name as product_name',
@@ -302,6 +478,9 @@ class HomeController extends BaseController
             ->join('product_variants', 'product_variants.id', '=', 'transaction_details.product_variant_id')
             ->where('transactions.type', 'penjualan')
             ->whereBetween('transactions.transaction_date', [$startDate, $endDate])
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('transactions.branch_id', $branchId);
+            })
 
             ->select([
                 'users.id',
@@ -321,47 +500,110 @@ class HomeController extends BaseController
 
         // produk paling laku
         $bestProducts = DB::table('transaction_details as td')
+
             ->join('transactions as t', 't.id', '=', 'td.transaction_id')
+
             ->join('product_variants as pv', 'pv.id', '=', 'td.product_variant_id')
+
             ->join('products as p', 'p.id', '=', 'pv.product_id')
+
             ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+
             ->where('t.type', 'penjualan')
+
             ->whereBetween('t.transaction_date', [$startDate, $endDate])
+
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('t.branch_id', $branchId);
+            })
+
             ->groupBy(
                 'p.id',
                 'p.name',
                 'k.name'
             )
+
             ->select(
                 'p.name as product_name',
                 'k.name as karat',
+
                 DB::raw('COUNT(td.id) as total_qty'),
+
                 DB::raw('SUM(pv.gram) as total_gram'),
+
                 DB::raw('SUM(td.unit_price) as total_nominal')
             )
+
             ->orderByDesc('total_qty')
+
             ->get();
 
+        /**
+         * ==========================================
+         * JAM PALING RAMAI
+         * ==========================================
+         */
+
         $jamPalingRamai = DB::table('transactions')
+
             ->where('type', 'penjualan')
+
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            })
+
             ->selectRaw("
-                HOUR(CONVERT_TZ(created_at, '+00:00', '+07:00')) as jam,
-                COUNT(*) as total_transaksi
-            ")
+        HOUR(CONVERT_TZ(created_at, '+00:00', '+07:00')) as jam,
+        COUNT(*) as total_transaksi
+    ")
+
             ->groupBy('jam')
+
             ->orderByDesc('total_transaksi')
+
             ->first();
 
+
+
+        /**
+         * ==========================================
+         * HARI PALING RAMAI
+         * ==========================================
+         */
+
         $hariPalingRamai = DB::table('transactions')
+
             ->where('type', 'penjualan')
+
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            })
+
             ->selectRaw("
-                DAYOFWEEK(CONVERT_TZ(created_at, '+00:00', '+07:00')) as hari_angka,
-                DAYNAME(CONVERT_TZ(created_at, '+00:00', '+07:00')) as hari,
-                COUNT(*) as total_transaksi
-            ")
+        DAYOFWEEK(CONVERT_TZ(created_at, '+00:00', '+07:00')) as hari_angka,
+
+        DAYNAME(CONVERT_TZ(created_at, '+00:00', '+07:00')) as hari,
+
+        COUNT(*) as total_transaksi
+    ")
+
             ->groupBy('hari_angka', 'hari')
+
             ->orderByDesc('total_transaksi')
+
             ->first();
+
+
+
+        /**
+         * ==========================================
+         * TRANSLATE HARI
+         * ==========================================
+         */
 
         $hariMap = [
             'Sunday' => 'Minggu',
@@ -373,31 +615,59 @@ class HomeController extends BaseController
             'Saturday' => 'Sabtu',
         ];
 
+
+
         /**
-         * ===============================
-         * PENJUALAN PER ANAK (CASH & TRANSFER)
-         * ===============================
+         * ==========================================
+         * PENJUALAN PER KARYAWAN
+         * CASH & TRANSFER
+         * ==========================================
          */
+
         $salesByEmployeePayment = Transaction::query()
-        ->join('users', 'users.id', '=', 'transactions.created_by')
-        ->where('transactions.type', 'penjualan')
-        ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
 
-        ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
-            $query->where('transactions.created_by', $user->id);
-        })
+            ->join('users', 'users.id', '=', 'transactions.created_by')
 
-        ->select([
-            'users.id',
-            'users.username as employee_name',
-            DB::raw('COUNT(transactions.id) as total_transactions'),
-            DB::raw('SUM(COALESCE(transactions.cash_amount,0)) as total_cash'),
-            DB::raw('SUM(COALESCE(transactions.transfer_amount,0)) as total_transfer'),
-            DB::raw('SUM(COALESCE(transactions.cash_amount,0) + COALESCE(transactions.transfer_amount,0)) as total_setoran')
-        ])
-        ->groupBy('users.id', 'users.username')
-        ->orderByDesc('total_setoran')
-        ->get();
+            ->leftJoin('profiles', 'profiles.user_id', '=', 'users.id')
+
+            ->where('transactions.type', 'penjualan')
+
+            ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
+
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where('transactions.branch_id', $branchId);
+            })
+
+            ->select([
+
+                'users.id',
+
+                DB::raw('COALESCE(profiles.nama, users.username) as employee_name'),
+
+                DB::raw('COUNT(transactions.id) as total_transactions'),
+
+                DB::raw('SUM(COALESCE(transactions.cash_amount,0)) as total_cash'),
+
+                DB::raw('SUM(COALESCE(transactions.transfer_amount,0)) as total_transfer'),
+
+                DB::raw('
+            SUM(
+                COALESCE(transactions.cash_amount,0)
+                +
+                COALESCE(transactions.transfer_amount,0)
+            ) as total_setoran
+        ')
+            ])
+
+            ->groupBy(
+                'users.id',
+                'profiles.nama',
+                'users.username'
+            )
+
+            ->orderByDesc('total_setoran')
+
+            ->get();
 
         $cashBankJournals = Journal::query()
             ->whereHas('items.account', function ($q) {
@@ -424,7 +694,10 @@ class HomeController extends BaseController
             ->groupBy('coa.id', 'coa.name')
             ->get();
 
+        $branches = \App\Models\Branch::orderBy('name')->get();
+
         return view('home', compact([
+            'branches',
             'salesByProduct',
             'salesByEmployeePayment',
             'cashTotal',
@@ -453,7 +726,8 @@ class HomeController extends BaseController
             'purchaseTransferByBank',
             'purchaseGrandTotal',
             'purchaseGrandTotalBerat',
-
+            'stockProducts',
+            'stockDetails',
 
         ]));
     }

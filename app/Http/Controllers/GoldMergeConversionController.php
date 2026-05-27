@@ -57,6 +57,7 @@ class GoldMergeConversionController extends BaseController
         DB::transaction(function () use ($validated) {
 
             $conversion = GoldMergeConversion::create([
+                'branch_id' => auth()->user()->profile->branch_id,
                 'note' => $validated['note'] ?? null,
                 'created_by' => auth()->id(),
             ]);
@@ -73,7 +74,7 @@ class GoldMergeConversionController extends BaseController
 
                 StockHelper::moveStock(
                     $pv->id,
-                    1, // etalase
+                    auth()->user()->profile->branch_id, // etalase
                     1,
                     'out',
                     $row["qty"],
@@ -127,7 +128,7 @@ class GoldMergeConversionController extends BaseController
 
                 StockHelper::moveStock(
                     $pvGold->id, // emas
-                    1, // brankas
+                    auth()->user()->profile->branch_id, // brankas
                     1,
                     'in',
                     $row["qty"],
@@ -197,7 +198,7 @@ class GoldMergeConversionController extends BaseController
 
                 StockHelper::moveStock(
                     $pv->id,
-                    1, // etalase
+                    auth()->user()->profile->branch_id, // etalase
                     1,
                     'in',
                     $input->qty,
@@ -241,7 +242,7 @@ class GoldMergeConversionController extends BaseController
                     if ($pvGold) {
                         StockHelper::moveStock(
                             $pvGold->id,
-                            1, // brankas
+                            auth()->user()->profile->branch_id, // brankas
                             1,
                             'out',
                             1,
@@ -281,7 +282,7 @@ class GoldMergeConversionController extends BaseController
 
                 StockHelper::moveStock(
                     $pv->id,
-                    1, // etalase
+                    auth()->user()->profile->branch_id, // etalase
                     1,
                     'out',
                     $row['qty'],
@@ -331,7 +332,7 @@ class GoldMergeConversionController extends BaseController
 
                 StockHelper::moveStock(
                     $pvGold->id,
-                    1, // brankas
+                    auth()->user()->profile->branch_id, // brankas
                     1,
                     'in',
                     1,
@@ -394,7 +395,7 @@ class GoldMergeConversionController extends BaseController
                     if ($pvGold && $totalWeight > 0) {
                         StockHelper::moveStock(
                             $pvGold->id,
-                            1, // brankas
+                            auth()->user()->profile->branch_id, // brankas
                             1,
                             'out',
                             1,
@@ -417,7 +418,7 @@ class GoldMergeConversionController extends BaseController
 
                 StockHelper::moveStock(
                     $pv->id,
-                    1, // etalase
+                    auth()->user()->profile->branch_id, // etalase
                     1,
                     'in',
                     $input->qty,

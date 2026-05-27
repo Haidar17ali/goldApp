@@ -117,6 +117,7 @@ class GoldConversionController extends BaseController
                 $conversion = GoldConversion::create([
                     'stock_id'      => $stock->id,
                     'product_variant_id'    => $productVariant->id,
+                    'branch_id' => auth()->user()->profile->branch_id,
                     'input_weight'  => $totalWeight,
                     'note'          => $validated['note'] ?? null,
                     'created_by'    => auth()->id(),
@@ -519,7 +520,7 @@ class GoldConversionController extends BaseController
         foreach ($conversion->outputs as $old) {
             StockHelper::moveStock(
                 $old->product_variant_id,
-                1,
+                auth()->user()->profile->branch_id,
                 1,
                 'out',            // kebalikan dari proses input
                 1,

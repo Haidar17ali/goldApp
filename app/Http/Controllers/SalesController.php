@@ -39,15 +39,33 @@ class SalesController extends BaseController
         $bankAccounts = BankAccount::orderBy("id", "desc")->get();
         $invoiceNumber = $this->generateUniqueInvoiceNumber();
 
+        $branchId = auth()->user()->profile->branch_id;
+
         // $products = Product::orderBy('name')->pluck('name')->toArray();
         // $karats = Karat::orderBy('name')->pluck('name')->toArray();
+        // $productVariants = ProductVariant::with([
+        //     'product:id,name',
+        //     'karat:id,name',
+        //     'stocks' => function ($q) {
+        //         $q->where('quantity', '>', 0);
+        //     }
+        // ])->where("gram", "!=", null)->get();
+
         $productVariants = ProductVariant::with([
             'product:id,name',
             'karat:id,name',
-            'stocks' => function ($q) {
-                $q->where('quantity', '>', 0);
+            'stocks' => function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId)
+                    ->where('quantity', '>', 0);
             }
-        ])->where("gram", "!=", null)->get();
+        ])
+            ->whereHas('stocks', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId)
+                    ->where('quantity', '>', 0);
+            })
+            ->whereNotNull('gram')
+            ->get();
+
         $customers = CustomerSupplier::orderBy("id", "desc")->get();
 
         return view('pages.sales.create', compact('invoiceNumber', 'bankAccounts', "type", "customers", "productVariants"));
@@ -150,7 +168,7 @@ class SalesController extends BaseController
             }
 
             $user = auth()->user();
-            
+
 
             if (!$user->profile || !$user->profile->branch_id) {
                 throw new \Exception('User belum memiliki branch / profile');
@@ -511,7 +529,7 @@ class SalesController extends BaseController
                 'manik_price' => $manikPrice,
                 'updated_by' => auth()->id(),
             ]);
-            
+
             $branchId = $transaction->branch_id;
 
             // ================= REVERSE JOURNAL LAMA =================
