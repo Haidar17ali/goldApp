@@ -28,13 +28,13 @@
 
                 <select id="variantSelect" class="form-control" multiple>
                     @foreach ($variants as $v)
-                        <option value="{{ $v->id }}" data-stock="{{ $v->stocks?->quantity ?? 0 }}">
+                        <option value="{{ $v->id }}" data-stock="{{ $v->stocks->sum('quantity') }}">
                             {{ $v->product->name }}
                             {{ $v->karat?->name }}
                             {{ ucfirst($v->type) }}
                             {{ $v->gram }}g
                             {{ $v->barcode }}
-                            Stock: {{ $v->stocks?->quantity ?? 0 }}
+                            Stock: {{ $v->stocks->sum('quantity') }}
                         </option>
                     @endforeach
                 </select>
