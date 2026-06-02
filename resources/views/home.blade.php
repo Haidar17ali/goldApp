@@ -61,7 +61,7 @@
                     <input type="time" name="end_hour" class="form-control" value="{{ request('end_hour') }}">
                 </div>
 
-                @role('super-admin|SPV')
+                @role('super-admin')
                     <div class="col-md-2">
                         <label>Cabang</label>
 

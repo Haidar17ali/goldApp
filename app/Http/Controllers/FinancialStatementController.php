@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\DB;
 class FinancialStatementController extends Controller
 {
 
-    public function trialBalance($startDate = null, $endDate = null)
+    public function trialBalance(Request $request)
     {
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
         $accounts = $this->getTrialBalanceData($startDate, $endDate);
 
         return view('pages.Report.accounting.trial-balance', compact('accounts'));
