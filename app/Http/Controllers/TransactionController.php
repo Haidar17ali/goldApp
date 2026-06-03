@@ -317,10 +317,17 @@ class TransactionController extends BaseController
                     'debit' => $totalInventory
                 ];
 
+                $cashAccounts = [
+                    1 => '101.00.01',   // Pasuruan\
+                    2 => '101.00.011',  // Sandang Ayu
+                ];
+
+                $cashAccount = $cashAccounts[$transaction->branch_id] ?? '101.00.00';
+
                 // ================== KAS ==================
                 if ($transaction->cash_amount > 0) {
                     $lines[] = [
-                        'account' => '101.00.01', // kas tunai
+                        'account' => $cashAccount, // kas tunai
                         'credit' => $transaction->cash_amount
                     ];
                 }
@@ -687,10 +694,17 @@ class TransactionController extends BaseController
                     'debit' => $totalInventory
                 ];
 
+                $cashAccounts = [
+                    1 => '101.00.01',   // Pasuruan\
+                    2 => '101.00.011',  // Sandang Ayu
+                ];
+
+                $cashAccount = $cashAccounts[$transaction->branch_id] ?? '101.00.00';
+
                 // ================== KAS ==================
                 if ($transaction->cash_amount > 0) {
                     $lines[] = [
-                        'account' => '101.00.01', // kas tunai
+                        'account' => $cashAccount, // kas tunai
                         'credit' => $transaction->cash_amount
                     ];
                 }

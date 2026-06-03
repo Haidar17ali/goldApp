@@ -135,8 +135,12 @@ class ExpenseController extends BaseController
             // =========================
 
             if ($detail->payment_type === 'cash') {
+                $cashAccounts = [
+                    1 => '101.00.01',   // Pasuruan\
+                    2 => '101.00.011',  // Sandang Ayu
+                ];
 
-                $creditAccount = '101.00.01';
+                $creditAccount = $cashAccounts[$expense->branch_id] ?? '101.00.00';
             } else {
 
                 $bank = \App\Models\BankAccount::find($detail->bank_account_id);
@@ -288,7 +292,12 @@ class ExpenseController extends BaseController
 
             if ($detail->payment_type === 'cash') {
 
-                $creditAccount = '101.00.01';
+                $cashAccounts = [
+                    1 => '101.00.01',   // Pasuruan\
+                    2 => '101.00.011',  // Sandang Ayu
+                ];
+
+                $creditAccount = $cashAccounts[$expense->branch_id] ?? '101.00.00';
             } else {
 
                 $bank = \App\Models\BankAccount::find(

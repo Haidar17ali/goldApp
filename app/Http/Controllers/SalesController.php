@@ -256,6 +256,14 @@ class SalesController extends BaseController
                 3 => '501.00.03', // sa
             ];
 
+            $cashAccounts = [
+                1 => '101.00.01',   // Pasuruan
+                2 => '101.00.011',  // Sandang Ayu
+            ];
+
+            $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
+
+
             $salesAccount = $salesAccounts[$branchId] ?? '501.01.00';
 
             $lines = [];
@@ -263,7 +271,7 @@ class SalesController extends BaseController
             // ================== KAS ==================
             if ($transaction->cash_amount > 0) {
                 $lines[] = [
-                    'account' => '101.00.01', // kas tunai
+                    'account' => $cashAccount, // kas tunai
                     'debit' => $transaction->cash_amount
                 ];
             }
@@ -601,12 +609,19 @@ class SalesController extends BaseController
 
             $salesAccount = $salesAccounts[$branchId] ?? '501.01.00';
 
+            $cashAccounts = [
+                1 => '101.00.01',   // Pasuruan\
+                2 => '101.00.011',  // Sandang Ayu
+            ];
+
+            $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
+
             $lines = [];
 
             // ================== KAS ==================
             if ($transaction->cash_amount > 0) {
                 $lines[] = [
-                    'account' => '101.00.01', // kas tunai
+                    'account' => $cashAccount, // kas tunai
                     'debit' => $transaction->cash_amount
                 ];
             }

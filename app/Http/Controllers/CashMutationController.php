@@ -49,13 +49,23 @@ class CashMutationController extends BaseController
                 'note' => $request->note,
             ]);
 
+            $user = auth()->user();
+            $branchId = $user->profile->branch_id;
+
+            $cashAccounts = [
+                1 => '101.00.01',   // Pasuruan
+                2 => '101.00.011',  // Sandang Ayu
+            ];
+
+            $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
+
             $fromCode = $request->from_bank_account_id
                 ? BankAccount::find($request->from_bank_account_id)->account_code
-                : '101.00.01';
+                : $cashAccount;
 
             $toCode = $request->to_bank_account_id
                 ? BankAccount::find($request->to_bank_account_id)->account_code
-                : '101.00.01';
+                : $cashAccount;
 
             AccountingHelper::post([
                 'date' => $request->date,
@@ -133,14 +143,23 @@ class CashMutationController extends BaseController
             ]);
 
             // coa asal
+            $user = auth()->user();
+            $branchId = $user->profile->branch_id;
+
+            $cashAccounts = [
+                1 => '101.00.01',   // Pasuruan
+                2 => '101.00.011',  // Sandang Ayu
+            ];
+
+            $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
+
             $fromCode = $request->from_bank_account_id
                 ? BankAccount::find($request->from_bank_account_id)->account_code
-                : '101.00.01';
+                : $cashAccount;
 
-            // coa tujuan
             $toCode = $request->to_bank_account_id
                 ? BankAccount::find($request->to_bank_account_id)->account_code
-                : '101.00.01';
+                : $cashAccount;
 
             // jurnal baru
             AccountingHelper::post([
