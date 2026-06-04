@@ -39,6 +39,25 @@
                                     value="{{ old('account_code', $rekening->account_code) }}">
                                 <span class="text-danger error-text" id="account_code_error"></span>
                             </div>
+
+                            <label for="branch_id" class="col-sm-2 col-form-label">
+                                Cabang
+                            </label>
+
+                            <div class="col-sm-4">
+                                <select name="branch_id" id="branch_id" class="form-control select2">
+                                    <option value="">-- Pilih Cabang --</option>
+
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}"
+                                            {{ old('branch_id', $rekening->branch_id) == $branch->id ? 'selected' : '' }}>
+                                            {{ $branch->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <span class="text-danger error-text" id="branch_id_error"></span>
+                            </div>
                         </div>
                         <div class="form-group row">
                             <label for="bank_name" class="col-sm-2 col-form-label">Nama Bank</label>
@@ -66,7 +85,8 @@
                                     <option value="">-- Pilih Status --</option>
                                     <option {{ $rekening->is_active == '1' ? 'selected' : '' }} value="1">Aktif
                                     </option>
-                                    <option {{ $rekening->is_active == '0' ? 'selected' : '' }} value="0">Non-aktif
+                                    <option {{ $rekening->is_active == '0' ? 'selected' : '' }} value="0">
+                                        Non-aktif
                                     </option>
                                 </select>
                                 <span class="text-danger error-text" id="is_active_error"></span>

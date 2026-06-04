@@ -137,7 +137,7 @@ class ExpenseController extends BaseController
             if ($detail->payment_type === 'cash') {
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
-                    2 => '101.00.011',  // Sandang Ayu
+                    2 => '101.00.08',  // Sandang Ayu
                 ];
 
                 $creditAccount = $cashAccounts[$expense->branch_id] ?? '101.00.00';
@@ -294,7 +294,7 @@ class ExpenseController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
-                    2 => '101.00.011',  // Sandang Ayu
+                    2 => '101.00.08',  // Sandang Ayu
                 ];
 
                 $creditAccount = $cashAccounts[$expense->branch_id] ?? '101.00.00';

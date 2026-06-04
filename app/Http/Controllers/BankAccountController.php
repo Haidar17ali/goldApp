@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BankAccount;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 
 class BankAccountController extends BaseController
@@ -16,12 +17,15 @@ class BankAccountController extends BaseController
     {
         return view('pages.bank-accounts.create', [
             'account' => new BankAccount(),
+            'branches' => Branch::orderBy('name')
+                ->get(),
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'branch_id'      => 'exists:branches,id',
             'account_code' => 'required|string|max:50',
             'bank_name' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',
@@ -38,12 +42,15 @@ class BankAccountController extends BaseController
     {
         return view('pages.bank-accounts.edit', [
             'rekening' => $bankAccount,
+            'branches' => Branch::orderBy('name')
+                ->get(),
         ]);
     }
 
     public function update(Request $request, BankAccount $bankAccount)
     {
         $validated = $request->validate([
+            'branch_id'      => 'exists:branches,id',
             'account_code' => 'required|string|max:50',
             'bank_name' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',

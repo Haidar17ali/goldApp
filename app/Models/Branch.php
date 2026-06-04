@@ -16,4 +16,9 @@ class Branch extends Model
     {
         return $this->hasMany(Profile::class);
     }
+
+    public function bankAccounts()
+    {
+        return $this->hasMany(BankAccount::class);
+    }
 }

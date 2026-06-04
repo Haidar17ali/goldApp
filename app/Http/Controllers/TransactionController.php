@@ -319,7 +319,7 @@ class TransactionController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
-                    2 => '101.00.011',  // Sandang Ayu
+                    2 => '101.00.08',  // Sandang Ayu
                 ];
 
                 $cashAccount = $cashAccounts[$transaction->branch_id] ?? '101.00.00';
@@ -696,7 +696,7 @@ class TransactionController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
-                    2 => '101.00.011',  // Sandang Ayu
+                    2 => '101.00.08',  // Sandang Ayu
                 ];
 
                 $cashAccount = $cashAccounts[$transaction->branch_id] ?? '101.00.00';

@@ -54,7 +54,7 @@ class CashMutationController extends BaseController
 
             $cashAccounts = [
                 1 => '101.00.01',   // Pasuruan
-                2 => '101.00.011',  // Sandang Ayu
+                2 => '101.00.08',  // Sandang Ayu
             ];
 
             $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
@@ -148,7 +148,7 @@ class CashMutationController extends BaseController
 
             $cashAccounts = [
                 1 => '101.00.01',   // Pasuruan
-                2 => '101.00.011',  // Sandang Ayu
+                2 => '101.00.08',  // Sandang Ayu
             ];
 
             $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';

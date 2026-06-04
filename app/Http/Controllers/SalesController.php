@@ -36,7 +36,7 @@ class SalesController extends BaseController
 
     public function create($type)
     {
-        $bankAccounts = BankAccount::orderBy("id", "desc")->get();
+        $bankAccounts = BankAccount::orderBy("id", "desc")->where("branch_id", Auth::user()->profile->branch_id)->get();
         $invoiceNumber = $this->generateUniqueInvoiceNumber();
 
         $branchId = auth()->user()->profile->branch_id;
@@ -258,7 +258,7 @@ class SalesController extends BaseController
 
             $cashAccounts = [
                 1 => '101.00.01',   // Pasuruan
-                2 => '101.00.011',  // Sandang Ayu
+                2 => '101.00.08',  // Sandang Ayu
             ];
 
             $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
@@ -361,7 +361,7 @@ class SalesController extends BaseController
             'customer'
         ])->findOrFail($id);
 
-        $bankAccounts = BankAccount::orderBy("id", "desc")->get();
+        $bankAccounts = BankAccount::orderBy("id", "desc")->where("branch_id", Auth::user()->profile->branch_id)->get();
 
         $productVariants = ProductVariant::with([
             'product:id,name',
@@ -611,7 +611,7 @@ class SalesController extends BaseController
 
             $cashAccounts = [
                 1 => '101.00.01',   // Pasuruan\
-                2 => '101.00.011',  // Sandang Ayu
+                2 => '101.00.08',  // Sandang Ayu
             ];
 
             $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
