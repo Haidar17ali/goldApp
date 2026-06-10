@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\AccountingHelper;
 use App\Models\Journal;
+use Illuminate\Support\Facades\Auth;
 
 class ExpenseController extends BaseController
 {
@@ -40,7 +41,7 @@ class ExpenseController extends BaseController
     public function create()
     {
         $branches = Branch::all();
-        $bankAccounts = BankAccount::where('is_active', true)->get();
+        $bankAccounts = BankAccount::where('is_active', true)->where("branch_id", Auth::user()->profile->branch_id)->get();
 
 
         return view('pages.expenses.create', compact('branches', 'bankAccounts'));
@@ -266,7 +267,7 @@ class ExpenseController extends BaseController
     {
         $expense = Expense::with('details')->findOrFail($id);
 
-        $bankAccounts = BankAccount::where('is_active', true)->get();
+        $bankAccounts = BankAccount::where('is_active', true)->where("branch_id", Auth::user()->profile->branch_id)->get();
 
         return view('pages.expenses.edit', compact(
             'expense',
@@ -359,6 +360,7 @@ class ExpenseController extends BaseController
                 ->where('source_type', 'expense')
                 ->where('source_id', $expense->id)
                 ->whereNull('reversal_of')
+                ->orderBy("id", "desc")
                 ->first();
 
             if ($journal) {

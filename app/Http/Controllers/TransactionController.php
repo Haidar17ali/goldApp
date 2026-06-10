@@ -39,7 +39,7 @@ class TransactionController extends BaseController
 
     public function create($type, $purchaseType)
     {
-        $bankAccounts = BankAccount::orderBy("id", "desc")->get();
+        $bankAccounts = BankAccount::orderBy("id", "desc")->where("branch_id", Auth::user()->profile->branch_id)->get();
         $invoiceNumber = $this->generateUniqueInvoiceNumber();
 
         // ambil daftar products & karats untuk dropdown (kirim sebagai array nama)
