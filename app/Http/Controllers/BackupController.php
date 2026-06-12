@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Storage;
@@ -53,4 +54,3 @@ class BackupController extends BaseController
         return response()->download(storage_path("app/private/Laravel/{$fileName}"))->deleteFileAfterSend(true);
     }
 }
-
