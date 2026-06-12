@@ -343,6 +343,7 @@ class GoldConversionController extends BaseController
                 ->where('source_type', 'GoldConversion')
                 ->where('source_id', $conversion->id)
                 ->where('is_reversal', false)
+                ->orderBy("id", "desc")
                 ->first();
 
             if ($journal) {

@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AccountingHelper;
+use App\Helpers\GoldHelper;
 use App\Helpers\StockHelper;
 use App\Models\GoldMergeConversion;
 use App\Models\GoldMergeConversionInput;
+use App\Models\Journal;
 use App\Models\Stock;
 use App\Models\Product;
 use App\Models\Karat;
@@ -98,7 +101,7 @@ class GoldMergeConversionController extends BaseController
                     'karat_id' => $pv->karat_id,
                     'type'     => $pv->type,
                     'qty'      => $row['qty'],
-                    'weight'   => $pv->weight * $row['qty'],
+                    'weight'   => $pv->gram * $row['qty'],
                 ];
             })->groupBy('karat_id');
 
@@ -123,7 +126,14 @@ class GoldMergeConversionController extends BaseController
             );
 
 
+            $totalNilai = 0;
             foreach ($grouped as $karatId => $items) {
+
+                foreach ($items as $item) {
+
+                    $harga = GoldHelper::getHargaByKarat($item["karat_id"]);
+                    $totalNilai += $harga * $item["weight"];
+                }
 
                 $totalWeight = $items->sum('weight');
 
@@ -141,6 +151,46 @@ class GoldMergeConversionController extends BaseController
                     $pv->type
                 );
             }
+
+            $persediaanAccounts = [
+                1 => '103.01.001',
+                2 => '103.01.002',
+                3 => '103.01.003',
+            ];
+
+            $persediaanSepuhAccounts = [
+                1 => '103.02.001',
+                2 => '103.02.002',
+                3 => '103.02.003',
+            ];
+
+            $persediaanAccount =
+                $persediaanAccounts[auth()->user()->profile->branch_id] ?? '103.00.00';
+
+            $persediaanSepuhAccount =
+                $persediaanSepuhAccounts[auth()->user()->profile->branch_id] ?? '103.00.00';
+
+            AccountingHelper::post([
+                'date' => now(),
+                'reference' => 'GMC-' . $conversion->id,
+                'description' => 'Merge emas etalase menjadi gelondongan',
+                'source_type' => 'GoldMergeConversion',
+                'source_id' => $conversion->id,
+                'lines' => [
+                    [
+                        'account' => $persediaanSepuhAccount,
+                        'debit' => $totalNilai,
+                        'credit' => 0,
+                        'description' => 'Penambahan emas gelondongan'
+                    ],
+                    [
+                        'account' => $persediaanAccount,
+                        'debit' => 0,
+                        'credit' => $totalNilai,
+                        'description' => 'Pengurangan persediaan etalase'
+                    ]
+                ]
+            ]);
         });
 
         return redirect()->route('keluar-etalase.index')->with('status', 'saved');
@@ -189,6 +239,20 @@ class GoldMergeConversionController extends BaseController
         ]);
 
         DB::transaction(function () use ($validated, $conversion) {
+
+            $journal = Journal::with('items')
+                ->where('source_type', 'GoldMergeConversion')
+                ->where('source_id', $conversion->id)
+                ->where('is_reversal', false)
+                ->orderBy("id", "desc")
+                ->first();
+
+            if ($journal) {
+                AccountingHelper::reverse(
+                    $journal,
+                    'Reversal edit Gold Merge Conversion'
+                );
+            }
 
             // ==================================================
             // 1. ROLLBACK STOK LAMA (KELUAR ETALASE) masukan etalase lagi
@@ -313,7 +377,14 @@ class GoldMergeConversionController extends BaseController
                 ];
             })->groupBy('karat_id');
 
+            $totalNilai = 0;
             foreach ($grouped as $karatId => $items) {
+
+                foreach ($items as $item) {
+
+                    $harga = GoldHelper::getHargaByKarat($item["karat_id"]);
+                    $totalNilai += $harga * $item["weight"];
+                }
 
                 $totalWeight = $items->sum('weight');
 
@@ -345,6 +416,47 @@ class GoldMergeConversionController extends BaseController
                     $pvGold->type
                 );
             }
+
+
+            $persediaanAccounts = [
+                1 => '103.01.001',
+                2 => '103.01.002',
+                3 => '103.01.003',
+            ];
+
+            $persediaanSepuhAccounts = [
+                1 => '103.02.001',
+                2 => '103.02.002',
+                3 => '103.02.003',
+            ];
+
+            $persediaanAccount =
+                $persediaanAccounts[auth()->user()->profile->branch_id] ?? '103.00.00';
+
+            $persediaanSepuhAccount =
+                $persediaanSepuhAccounts[auth()->user()->profile->branch_id] ?? '103.00.00';
+
+            AccountingHelper::post([
+                'date' => now(),
+                'reference' => 'GMC-' . $conversion->id,
+                'description' => 'Edit Merge emas etalase menjadi gelondongan',
+                'source_type' => 'GoldMergeConversion',
+                'source_id' => $conversion->id,
+                'lines' => [
+                    [
+                        'account' => $persediaanSepuhAccount,
+                        'debit' => $totalNilai,
+                        'credit' => 0,
+                        'description' => 'Penambahan emas gelondongan (edit)'
+                    ],
+                    [
+                        'account' => $persediaanAccount,
+                        'debit' => 0,
+                        'credit' => $totalNilai,
+                        'description' => 'Pengurangan persediaan etalase (edit)'
+                    ]
+                ]
+            ]);
         });
 
         return redirect()
@@ -363,6 +475,19 @@ class GoldMergeConversionController extends BaseController
         $conversion = GoldMergeConversion::with('inputs.productVariant')->findOrFail($id);
 
         DB::transaction(function () use ($conversion) {
+
+            $journal = Journal::where('source_type', 'GoldMergeConversion')
+                ->where('source_id', $conversion->id)
+                ->whereNull('reversal_of')
+                ->latest()
+                ->first();
+
+            if ($journal) {
+                AccountingHelper::reverse(
+                    $journal,
+                    'Hapus Gold Merge Conversion'
+                );
+            }
 
             // =============================================
             // 1. GROUP INPUT → HITUNG TOTAL EMAS
