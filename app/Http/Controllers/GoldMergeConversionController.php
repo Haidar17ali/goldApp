@@ -35,6 +35,7 @@ class GoldMergeConversionController extends BaseController
         return view('pages.gold-merge.create', [
             'productVariants' => ProductVariant::where('gram', "!=", null)->whereHas('stocks', function ($q) {
                 $q->where('quantity', '>', 0);
+                $q->where("branch_id", auth()->user()->profile->branch_id);
             })->get(),
         ]);
     }

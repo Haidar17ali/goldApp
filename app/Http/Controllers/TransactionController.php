@@ -308,9 +308,9 @@ class TransactionController extends BaseController
                 $selisih = $totalInventory - $totalBeli;
 
                 $persediaanSepuhAccounts = [
-                    1 => '103.01.001', // Pasuruan
-                    2 => '103.01.002', // Paserpan
-                    3 => '103.01.003', // Sandang Ayu
+                    1 => '103.02.001', // Pasuruan
+                    2 => '103.02.002', // Paserpan
+                    3 => '103.02.003', // Sandang Ayu
                 ];
 
                 $persediaanSepuhAccount = $persediaanSepuhAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
@@ -702,9 +702,9 @@ class TransactionController extends BaseController
                 $selisih = $totalInventory - $totalBeli;
 
                 $persediaanSepuhAccounts = [
-                    1 => '103.01.001', // Pasuruan
-                    2 => '103.01.002', // Paserpan
-                    3 => '103.01.003', // Sandang Ayu
+                    1 => '103.02.001', // Pasuruan
+                    2 => '103.02.002', // Paserpan
+                    3 => '103.02.003', // Sandang Ayu
                 ];
 
                 $persediaanSepuhAccount = $persediaanSepuhAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
