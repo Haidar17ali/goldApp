@@ -67,7 +67,7 @@ class StockController extends BaseController
             'type' => 'required|in:new,sepuh',
         ]);
 
-        $branchId = auth()->user()->profile->branch_id ?? 1,;
+        $branchId = auth()->user()->profile->branch_id ?? 1;
 
         $query = Stock::query()
             ->join('product_variants as pv', 'pv.id', '=', 'stocks.product_variant_id')

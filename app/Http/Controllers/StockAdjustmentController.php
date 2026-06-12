@@ -192,19 +192,36 @@ class StockAdjustmentController extends BaseController
                 );
             }
 
+            $revaluationAccounts = [
+                1 => '501.02.001', // Pasuruan
+                2 => '501.02.002', // Paserpan
+                3 => '501.02.003', // Sandang Ayu
+            ];
+
+            $persediaanAccounts = [
+                1 => '103.01.001', // Pasuruan
+                2 => '103.01.002', // Paserpan
+                3 => '103.01.003', // Sandang Ayu
+            ];
+
+
+            $revaluationAccount = $revaluationAccounts[$adjustment->branch_id] ?? '501.00.00';
+            $persediaanAccount = $persediaanAccounts[$adjustment->branch_id] ?? '101.00.00';
+
+
             $lines = [];
 
             // jika stok bertambah
             if ($totalPlus > 0) {
                 $lines[] = [
-                    'account' => '103.00.01',
+                    'account' => $persediaanAccount,
                     'debit' => $totalPlus,
                     'credit' => 0,
                     'description' => 'Penyesuaian stok opname (lebih)'
                 ];
 
                 $lines[] = [
-                    'account' => '501.00.04', // akun selisih
+                    'account' => $revaluationAccount, // akun selisih
                     'debit' => 0,
                     'credit' => $totalPlus,
                     'description' => 'Selisih stok opname'
@@ -214,14 +231,14 @@ class StockAdjustmentController extends BaseController
             // jika stok berkurang
             if ($totalMinus > 0) {
                 $lines[] = [
-                    'account' => '501.00.04',
+                    'account' => $revaluationAccount,
                     'debit' => $totalMinus,
                     'credit' => 0,
                     'description' => 'Selisih stok opname'
                 ];
 
                 $lines[] = [
-                    'account' => '103.00.01',
+                    'account' => $persediaanAccount,
                     'debit' => 0,
                     'credit' => $totalMinus,
                     'description' => 'Penyesuaian stok opname (kurang)'

@@ -220,7 +220,7 @@ class SalesController extends BaseController
                     'transaction_id' => $transaction->id,
                     'product_variant_id' => $detail['variant_id'],
                     'unit_price' => $detail['harga_jual'],
-                    'type' => 'new',
+                    'type' => $variant->type,
                 ]);
 
                 $branchId = $transaction->branch_id;
@@ -235,7 +235,7 @@ class SalesController extends BaseController
                     $transaction->id,
                     'Penjualan',
                     auth()->id(),
-                    'new'
+                    $variant->type
                 );
             }
 
@@ -251,15 +251,24 @@ class SalesController extends BaseController
             $hppAccount = $hppAccounts[$branchId] ?? '502.01.00';
 
             $salesAccounts = [
-                2 => '501.00.01', // paserpan
-                1 => '501.00.02', // pasuruan
-                3 => '501.00.03', // sa
+                2 => '501.01.002', // paserpan
+                1 => '501.01.001', // pasuruan
+                3 => '501.01.003', // sa
             ];
 
             $cashAccounts = [
                 1 => '101.00.01',   // Pasuruan
                 2 => '101.00.08',  // Sandang Ayu
             ];
+
+            $persediaanAccounts = [
+                1 => '103.01.001', // Pasuruan
+                2 => '103.01.002', // Paserpan
+                3 => '103.01.003', // Sandang Ayu
+            ];
+
+            $persediaanAccount = $persediaanAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+
 
             $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
 
@@ -305,7 +314,7 @@ class SalesController extends BaseController
 
             // ================== PERSEDIAAN ==================
             $lines[] = [
-                'account' => '103.00.01',
+                'account' => $persediaanAccount,
                 'credit' => $totalHpp
             ];
 
@@ -572,7 +581,7 @@ class SalesController extends BaseController
                     'transaction_id' => $transaction->id,
                     'product_variant_id' => $detail['variant_id'],
                     'unit_price' => $detail['harga_jual'],
-                    'type' => 'new',
+                    'type' => $variant->type,
                 ]);
 
                 StockHelper::stockOut(
@@ -585,7 +594,7 @@ class SalesController extends BaseController
                     $transaction->id,
                     'Update Penjualan',
                     auth()->id(),
-                    'new'
+                    $variant->type
                 );
             }
 
@@ -602,9 +611,9 @@ class SalesController extends BaseController
             $hppAccount = $hppAccounts[$branchId] ?? '502.01.00';
 
             $salesAccounts = [
-                2 => '501.00.01', // paserpan
-                1 => '501.00.02', // pasuruan
-                3 => '501.00.03', // sa
+                2 => '501.01.002', // paserpan
+                1 => '501.01.001', // pasuruan
+                3 => '501.01.003', // sa
             ];
 
             $salesAccount = $salesAccounts[$branchId] ?? '501.01.00';
@@ -615,6 +624,15 @@ class SalesController extends BaseController
             ];
 
             $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
+
+            $persediaanAccounts = [
+                1 => '103.01.001', // Pasuruan
+                2 => '103.01.002', // Paserpan
+                3 => '103.01.003', // Sandang Ayu
+            ];
+
+            $persediaanAccount = $persediaanAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+
 
             $lines = [];
 
@@ -655,7 +673,7 @@ class SalesController extends BaseController
 
             // ================== PERSEDIAAN ==================
             $lines[] = [
-                'account' => '103.00.01',
+                'account' => $persediaanAccount,
                 'credit' => $totalHpp
             ];
 

@@ -32,7 +32,7 @@ class FinancialStatementController extends Controller
                     ->when($endDate, fn($q) => $q->whereHas('journal', fn($j) => $j->whereDate('date', '<=', $endDate)));
             }], 'credit');
 
-        $accounts = $query->get();
+        $accounts = $query->orderBy("code")->get();
 
         $accounts->transform(function ($acc) {
             $debit = $acc->total_debit ?? 0;

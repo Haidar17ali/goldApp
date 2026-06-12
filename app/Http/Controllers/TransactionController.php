@@ -307,13 +307,21 @@ class TransactionController extends BaseController
 
                 $selisih = $totalInventory - $totalBeli;
 
+                $persediaanSepuhAccounts = [
+                    1 => '103.01.001', // Pasuruan
+                    2 => '103.01.002', // Paserpan
+                    3 => '103.01.003', // Sandang Ayu
+                ];
+
+                $persediaanSepuhAccount = $persediaanSepuhAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+
 
                 // 🔹 Persediaan (SELALU DEBIT)
                 $lines = [];
 
                 // ================== PERSEDIAAN ==================
                 $lines[] = [
-                    'account' => '103.00.02',
+                    'account' => $persediaanSepuhAccount,
                     'debit' => $totalInventory
                 ];
 
@@ -322,7 +330,15 @@ class TransactionController extends BaseController
                     2 => '101.00.08',  // Sandang Ayu
                 ];
 
+                $revaluationAccounts = [
+                    1 => '501.02.001', // Pasuruan
+                    2 => '501.02.002', // Paserpan
+                    3 => '501.02.003', // Sandang Ayu
+                ];
+
                 $cashAccount = $cashAccounts[$transaction->branch_id] ?? '101.00.00';
+
+                $revaluationAccount = $revaluationAccounts[$transaction->branch_id] ?? '501.00.00';
 
                 // ================== KAS ==================
                 if ($transaction->cash_amount > 0) {
@@ -351,13 +367,13 @@ class TransactionController extends BaseController
                 if ($selisih > 0) {
                     // untung
                     $lines[] = [
-                        'account' => '501.00.04',
+                        'account' => $revaluationAccount,
                         'credit' => $selisih
                     ];
                 } elseif ($selisih < 0) {
                     // rugi
                     $lines[] = [
-                        'account' => '501.00.04',
+                        'account' => $revaluationAccount,
                         'debit' => abs($selisih)
                     ];
                 }
@@ -685,12 +701,20 @@ class TransactionController extends BaseController
 
                 $selisih = $totalInventory - $totalBeli;
 
+                $persediaanSepuhAccounts = [
+                    1 => '103.01.001', // Pasuruan
+                    2 => '103.01.002', // Paserpan
+                    3 => '103.01.003', // Sandang Ayu
+                ];
+
+                $persediaanSepuhAccount = $persediaanSepuhAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+
                 // 🔹 Persediaan (SELALU DEBIT)
                 $lines = [];
 
                 // ================== PERSEDIAAN ==================
                 $lines[] = [
-                    'account' => '103.00.02',
+                    'account' => $persediaanSepuhAccount,
                     'debit' => $totalInventory
                 ];
 
@@ -699,7 +723,15 @@ class TransactionController extends BaseController
                     2 => '101.00.08',  // Sandang Ayu
                 ];
 
+                $revaluationAccounts = [
+                    1 => '501.02.001', // Pasuruan
+                    2 => '501.02.002', // Paserpan
+                    3 => '501.02.003', // Sandang Ayu
+                ];
+
                 $cashAccount = $cashAccounts[$transaction->branch_id] ?? '101.00.00';
+
+                $revaluationAccount = $revaluationAccounts[$transaction->branch_id] ?? '501.00.00';
 
                 // ================== KAS ==================
                 if ($transaction->cash_amount > 0) {
@@ -728,13 +760,13 @@ class TransactionController extends BaseController
                 if ($selisih > 0) {
                     // untung
                     $lines[] = [
-                        'account' => '501.00.04',
+                        'account' => $revaluationAccount,
                         'credit' => $selisih
                     ];
                 } elseif ($selisih < 0) {
                     // rugi
                     $lines[] = [
-                        'account' => '501.00.04',
+                        'account' => $revaluationAccount,
                         'debit' => abs($selisih)
                     ];
                 }

@@ -59,9 +59,9 @@ class ChartOfAccountSeeder extends Seeder
             // LABA / RUGI
             ['code' => '500.00.00', 'name' => 'Laba / Rugi', 'parent' => null],
             ['code' => '501.00.00', 'name' => 'Penjualan', 'parent' => '500.00.00'],
-            ['code' => '501.00.01', 'name' => 'Penjualan Paserpan', 'parent' => '501.00.00'],
-            ['code' => '501.00.02', 'name' => 'Penjualan Pasuruan', 'parent' => '501.00.00'],
-            ['code' => '501.00.03', 'name' => 'Penjualan SA', 'parent' => '501.00.00'],
+            ['code' => '501.01.002', 'name' => 'Penjualan Paserpan', 'parent' => '501.00.00'],
+            ['code' => '501.01.001', 'name' => 'Penjualan Pasuruan', 'parent' => '501.00.00'],
+            ['code' => '501.01.003', 'name' => 'Penjualan SA', 'parent' => '501.00.00'],
             ['code' => '501.00.04', 'name' => 'Keuntungan Kenaikan Persediaan', 'parent' => '501.00.00'],
             ['code' => '501.00.05', 'name' => 'Penjualan Online', 'parent' => '501.00.00'],
 

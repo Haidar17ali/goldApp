@@ -123,6 +123,22 @@ class GoldConversionController extends BaseController
                     'created_by'    => auth()->id(),
                 ]);
 
+                $persediaanAccounts = [
+                    1 => '103.01.001', // Pasuruan
+                    2 => '103.01.002', // Paserpan
+                    3 => '103.01.003', // Sandang Ayu
+                ];
+
+                $persediaanAccount = $persediaanAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+
+                $persediaanSepuhAccounts = [
+                    1 => '103.01.001', // Pasuruan
+                    2 => '103.01.002', // Paserpan
+                    3 => '103.01.003', // Sandang Ayu
+                ];
+
+                $persediaanSepuhAccount = $persediaanSepuhAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+
                 // input jurnal
                 AccountingHelper::post([
                     'date' => now(),
@@ -132,13 +148,13 @@ class GoldConversionController extends BaseController
                     'source_id' => $conversion->id,
                     'lines' => [
                         [
-                            'account' => '103.00.01', // Persediaan Etalase
+                            'account' => $persediaanAccount, // Persediaan Etalase
                             'debit' => $totalNilai,
                             'credit' => 0,
                             'description' => 'Hasil pecahan masuk etalase'
                         ],
                         [
-                            'account' => '103.00.02', // Persediaan Gelondongan
+                            'account' => $persediaanSepuhAccount, // Persediaan Gelondongan
                             'debit' => 0,
                             'credit' => $totalNilai,
                             'description' => 'Pengurangan gelondongan'
@@ -391,6 +407,22 @@ class GoldConversionController extends BaseController
                 'edited_by'    => auth()->id(),
             ]);
 
+            $persediaanAccounts = [
+                1 => '103.01.001', // Pasuruan
+                2 => '103.01.002', // Paserpan
+                3 => '103.01.003', // Sandang Ayu
+            ];
+
+            $persediaanAccount = $persediaanAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+
+            $persediaanSepuhAccounts = [
+                1 => '103.01.001', // Pasuruan
+                2 => '103.01.002', // Paserpan
+                3 => '103.01.003', // Sandang Ayu
+            ];
+
+            $persediaanSepuhAccount = $persediaanSepuhAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+
             AccountingHelper::post([
                 'date' => now(),
                 'reference' => 'GC-' . $conversion->id,
@@ -399,13 +431,13 @@ class GoldConversionController extends BaseController
                 'source_id' => $conversion->id,
                 'lines' => [
                     [
-                        'account' => '103.00.01',
+                        'account' => $persediaanAccount,
                         'debit' => $totalNilai,
                         'credit' => 0,
                         'description' => 'Hasil pecahan masuk etalase (edit)'
                     ],
                     [
-                        'account' => '103.00.02',
+                        'account' => $persediaanSepuhAccount,
                         'debit' => 0,
                         'credit' => $totalNilai,
                         'description' => 'Pengurangan gelondongan (edit)'
