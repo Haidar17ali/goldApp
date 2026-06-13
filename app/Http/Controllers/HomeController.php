@@ -302,25 +302,25 @@ class HomeController extends BaseController
          * ===============================
          */
         $transferByBank = Transaction::query()
-            ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
+        ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
             ->where('transactions.type', 'penjualan')
             ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
             ->when($branchId, function ($q) use ($branchId) {
-                $q->where('branch_id', $branchId);
+                $q->where('transactions.branch_id', $branchId);
             })
             ->whereNotNull('transactions.transfer_amount')
 
             ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
                 $query->where('transactions.created_by', $user->id);
-            })
-
-            ->select([
-                'bank_accounts.account_holder',
+                })
+                
+                ->select([
+                    'bank_accounts.account_holder',
                 DB::raw('SUM(transactions.transfer_amount) as total_transfer')
             ])
             ->groupBy('bank_accounts.account_holder')
             ->get();
-
+            
         /**
          * ===============================
          * GRAND TOTAL
@@ -378,7 +378,7 @@ class HomeController extends BaseController
             ->where('transactions.type', 'purchase')
             ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
             ->when($branchId, function ($q) use ($branchId) {
-                $q->where('branch_id', $branchId);
+                $q->where('transactions.branch_id', $branchId);
             })
             ->whereNotNull('transactions.transfer_amount')
 
