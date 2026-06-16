@@ -672,11 +672,12 @@
         </div>
     @endunlessrole
 
-    @role('super-admin|SPV')
+    @role('SPV')
         {{-- ===================================================== --}}
         {{-- STOK ETALASE --}}
         {{-- ===================================================== --}}
-        {{-- <div class="mt-4 card card-outline card-warning">
+        
+        <div class="mt-4 card card-outline card-warning">
             <div class="text-center card-header">
                 <strong>STOK EMAS ETALASE</strong>
 
@@ -712,7 +713,7 @@
                     @endforelse
                 </div>
             </div>
-        </div> --}}
+        </div>
     @endrole
 
     @role('super-admin')
