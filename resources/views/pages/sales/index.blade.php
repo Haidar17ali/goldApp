@@ -124,6 +124,7 @@
                         model: model,
                         search: search,
                         type: "{{ $type }}",
+                        branch_id: "{{auth()->user()->profile->branch_id}}",
                         columns: [
                             'id',
                             'transaction_date',

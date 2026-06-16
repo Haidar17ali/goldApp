@@ -8,6 +8,7 @@
 
 @section('content')
 
+@if(auth()->user()->hasRole('super-admin'))
 <form method="GET" class="mb-3">
     <div class="row">
         <div class="col-md-3">
@@ -35,6 +36,7 @@
         </div>
     </div>
 </form>
+@endif
 
 <div class="card">
     <div class="card-header">

@@ -31,6 +31,10 @@ class ExpenseController extends BaseController
             ]);
         }
 
+        if(auth()->user()->hasAnyRole(['pramuniaga', 'SPV'])){
+            $query->where("branch_id", auth()->user()->profile->branch_id);
+        }
+
         $expenses = $query->paginate(10);
         $branches = Branch::all();
 

@@ -125,6 +125,7 @@
                         search: search,
                         type: "{{$type}}",
                         purchase_type: "{{$purchaseType}}",
+                        branch_id: "{{auth()->user()->profile->branch_id}}",
                         columns: [
                             'id',
                             'transaction_date',

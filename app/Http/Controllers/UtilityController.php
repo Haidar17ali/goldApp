@@ -331,6 +331,7 @@ class UtilityController extends BaseController
         $from = $request->input('from');
         $modelKey = $request->input('model');
         $type = $request->input('type');
+        $branch = $request->input('branch_id');
         $purchaseType = $request->input('purchase_type');
         $isEdit = $request->edit;
         $page = $request->page ?? 1;
@@ -398,7 +399,7 @@ class UtilityController extends BaseController
         //         ->orderBy("id", "desc")->paginate(10);
         // });
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type, $purchaseType, $modelKey) {
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($modelClass, $columns, $relations, $search, $withRelations, $type, $purchaseType, $modelKey, $branch) {
             $query = App::make($modelClass)::select($columns)->with($withRelations)
                 ->when(in_array('parent_id', $columns), function ($query) {
                     $query->whereNull('parent_id');
@@ -423,6 +424,9 @@ class UtilityController extends BaseController
                 })
                 ->when($type, function ($query) use ($type) {
                     $query->where('type', $type);
+                })
+                ->when($branch, function ($query) use ($branch) {
+                    $query->where('branch_id', $branch);
                 })
                 ->when($purchaseType, function ($query) use ($purchaseType) {
                     $query->where('purchase_type', $purchaseType);

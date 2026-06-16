@@ -123,6 +123,7 @@
                     data: {
                         model: model,
                         search: search,
+                        branch_id: "{{auth()->user()->profile->branch_id}}",
                         columns: [
                             'id',
                             'stock_id',

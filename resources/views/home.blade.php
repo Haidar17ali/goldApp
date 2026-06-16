@@ -680,9 +680,9 @@
             <div class="text-center card-header">
                 <strong>STOK EMAS ETALASE</strong>
 
-                <a href="{{ route('stock.export') }}" class="float-right btn btn-success btn-sm btn-rounded"><i
+                <!-- <a href="{{ route('stock.export') }}" class="float-right btn btn-success btn-sm btn-rounded"><i
                         class="fas fa-file-excel"></i>
-                    Ekspor Stock</a>
+                    Ekspor Stock</a> -->
             </div>
 
             <div class="card-body">
@@ -721,6 +721,10 @@
 
             <div class="text-center card-header">
                 <strong>STOK EMAS ETALASE</strong>
+
+                <!-- <a href="{{ route('stock.export') }}" class="float-right btn btn-success btn-sm btn-rounded"><i
+                        class="fas fa-file-excel"></i>
+                    Ekspor Stock</a> -->
             </div>
 
             <div class="card-body">
