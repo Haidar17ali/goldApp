@@ -161,24 +161,24 @@ class HomeController extends BaseController
                 ->join('karats as k', 'k.id', '=', 'pv.karat_id')
 
                 ->where('p.name', '!=', 'emas')
-
+                
                 ->select(
                     'pv.product_id',
                     'p.name as product_name',
                     'pv.karat_id',
                     'k.name as karat_name',
-
+                    
                     DB::raw('SUM(stocks.quantity * pv.gram) as total_gram'),
                     DB::raw('SUM(stocks.quantity) as total_qty')
                 )
-
+                
                 ->groupBy(
                     'pv.product_id',
                     'p.name',
                     'pv.karat_id',
                     'k.name'
                 )
-
+                ->where("branch_id", auth()->user()->profile->branch_id)
                 ->get();
 
             $stockProducts = collect();
