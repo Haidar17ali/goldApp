@@ -327,8 +327,9 @@ class TransactionController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
-                    2 => '101.00.08',  // Sandang Ayu
+                    3 => '101.00.08',  // Sandang Ayu
                 ];
+
 
                 $revaluationAccounts = [
                     1 => '501.02.001', // Pasuruan
@@ -720,7 +721,7 @@ class TransactionController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
-                    2 => '101.00.08',  // Sandang Ayu
+                    3 => '101.00.08',  // Sandang Ayu
                 ];
 
                 $revaluationAccounts = [

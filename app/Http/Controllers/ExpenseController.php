@@ -31,7 +31,7 @@ class ExpenseController extends BaseController
             ]);
         }
 
-        if(auth()->user()->hasAnyRole(['pramuniaga', 'SPV'])){
+        if (auth()->user()->hasAnyRole(['pramuniaga', 'SPV'])) {
             $query->where("branch_id", auth()->user()->profile->branch_id);
         }
 
@@ -142,7 +142,7 @@ class ExpenseController extends BaseController
             if ($detail->payment_type === 'cash') {
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
-                    2 => '101.00.08',  // Sandang Ayu
+                    3 => '101.00.08',  // Sandang Ayu
                 ];
 
                 $creditAccount = $cashAccounts[$expense->branch_id] ?? '101.00.00';
@@ -299,7 +299,7 @@ class ExpenseController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
-                    2 => '101.00.08',  // Sandang Ayu
+                    3 => '101.00.08',  // Sandang Ayu
                 ];
 
                 $creditAccount = $cashAccounts[$expense->branch_id] ?? '101.00.00';

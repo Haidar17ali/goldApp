@@ -258,7 +258,7 @@ class SalesController extends BaseController
 
             $cashAccounts = [
                 1 => '101.00.01',   // Pasuruan
-                2 => '101.00.08',  // Sandang Ayu
+                3 => '101.00.08',  // Sandang Ayu
             ];
 
             $persediaanAccounts = [
@@ -620,7 +620,7 @@ class SalesController extends BaseController
 
             $cashAccounts = [
                 1 => '101.00.01',   // Pasuruan\
-                2 => '101.00.08',  // Sandang Ayu
+                3 => '101.00.08',  // Sandang Ayu
             ];
 
             $cashAccount = $cashAccounts[$branchId] ?? '101.00.00';
