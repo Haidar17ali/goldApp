@@ -161,17 +161,17 @@ class HomeController extends BaseController
                 ->join('karats as k', 'k.id', '=', 'pv.karat_id')
 
                 ->where('p.name', '!=', 'emas')
-                
+
                 ->select(
                     'pv.product_id',
                     'p.name as product_name',
                     'pv.karat_id',
                     'k.name as karat_name',
-                    
+
                     DB::raw('SUM(stocks.quantity * pv.gram) as total_gram'),
                     DB::raw('SUM(stocks.quantity) as total_qty')
                 )
-                
+
                 ->groupBy(
                     'pv.product_id',
                     'p.name',
@@ -302,7 +302,7 @@ class HomeController extends BaseController
          * ===============================
          */
         $transferByBank = Transaction::query()
-        ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
+            ->join('bank_accounts', 'bank_accounts.id', '=', 'transactions.bank_account_id')
             ->where('transactions.type', 'penjualan')
             ->whereBetween('transactions.created_at', [$startDateTime, $endDateTime])
             ->when($branchId, function ($q) use ($branchId) {
@@ -312,15 +312,15 @@ class HomeController extends BaseController
 
             ->when(!$user->hasAnyRole(['super-admin', 'SPV']), function ($query) use ($user) {
                 $query->where('transactions.created_by', $user->id);
-                })
-                
-                ->select([
-                    'bank_accounts.account_holder',
+            })
+
+            ->select([
+                'bank_accounts.account_holder',
                 DB::raw('SUM(transactions.transfer_amount) as total_transfer')
             ])
             ->groupBy('bank_accounts.account_holder')
             ->get();
-            
+
         /**
          * ===============================
          * GRAND TOTAL
@@ -413,9 +413,9 @@ class HomeController extends BaseController
                 $q->where('gc.branch_id', $branchId);
             })
 
-            ->when($branchId, function ($q) use ($branchId) {
-                $q->where('s.branch_id', $branchId);
-            })
+            // ->when($branchId, function ($q) use ($branchId) {
+            //     $q->where('s.branch_id', $branchId);
+            // })
 
             ->whereBetween(DB::raw('DATE(gc.created_at)'), [$startDate, $endDate])
             ->select(
