@@ -680,19 +680,104 @@ class HomeController extends BaseController
             ->latest()
             ->get();
 
-        $cashBankSummary = DB::table('journal_items as ji')
-            ->join('chart_of_accounts as coa', 'coa.id', '=', 'ji.chart_of_account_id')
+        // $cashBankSummary = DB::table('journal_items as ji')
+        //     ->join('chart_of_accounts as coa', 'coa.id', '=', 'ji.chart_of_account_id')
 
-            ->where('coa.parent_id', 2)
-            ->where('ji.created_at', '<=', $endDateTime) // 🔥 kunci utama
+        //     ->where('coa.parent_id', 2)
+        //     ->where('ji.created_at', '<=', $endDateTime) // 🔥 kunci utama
 
-            ->select(
-                'coa.id',
-                'coa.name',
-                DB::raw('SUM(ji.debit - ji.credit) as balance')
-            )
-            ->groupBy('coa.id', 'coa.name')
-            ->get();
+        //     ->select(
+        //         'coa.id',
+        //         'coa.name',
+        //         DB::raw('SUM(ji.debit - ji.credit) as balance')
+        //     )
+        //     ->groupBy('coa.id', 'coa.name')
+        //     ->get();
+
+        $branchId = auth()->user()->profile->branch_id;
+
+        $user = auth()->user();
+
+        if ($user->hasRole('super-admin')) {
+
+            /*
+    |--------------------------------------------------------------------------
+    | Total saldo per cabang
+    |--------------------------------------------------------------------------
+    */
+
+            $cashBankBranches = DB::table('journal_items as ji')
+                ->join('chart_of_accounts as coa', 'coa.id', '=', 'ji.chart_of_account_id')
+                ->join('branches as b', 'b.id', '=', 'coa.branch_id')
+
+                ->where('coa.parent_id', 2)
+                ->where('ji.created_at', '<=', $endDateTime)
+
+                ->select(
+                    'b.id',
+                    'b.name',
+                    DB::raw('SUM(ji.debit - ji.credit) as balance')
+                )
+
+                ->groupBy('b.id', 'b.name')
+                ->orderBy('b.name')
+                ->get();
+
+            /*
+    |--------------------------------------------------------------------------
+    | Detail rekening default (cabang pertama)
+    |--------------------------------------------------------------------------
+    */
+
+            $selectedBranch = request('branch_id') ?? $cashBankBranches->first()?->id;
+
+            $cashBankSummary = DB::table('journal_items as ji')
+                ->join('chart_of_accounts as coa', 'coa.id', '=', 'ji.chart_of_account_id')
+
+                ->where('coa.parent_id', 2)
+                ->where('coa.branch_id', $selectedBranch)
+                ->where('ji.created_at', '<=', $endDateTime)
+
+                ->select(
+                    'coa.id',
+                    'coa.name',
+                    DB::raw('SUM(ji.debit - ji.credit) as balance')
+                )
+
+                ->groupBy('coa.id', 'coa.name')
+                ->orderBy('coa.code')
+                ->get();
+        } else {
+
+            /*
+    |--------------------------------------------------------------------------
+    | User Cabang
+    |--------------------------------------------------------------------------
+    */
+
+            $branchId = $user->profile->branch_id;
+
+            $cashBankBranches = collect();
+
+            $cashBankSummary = DB::table('journal_items as ji')
+                ->join('chart_of_accounts as coa', 'coa.id', '=', 'ji.chart_of_account_id')
+
+                ->where('coa.parent_id', 2)
+                ->where('coa.branch_id', $branchId)
+                ->where('ji.created_at', '<=', $endDateTime)
+
+                ->select(
+                    'coa.id',
+                    'coa.name',
+                    DB::raw('SUM(ji.debit - ji.credit) as balance')
+                )
+
+                ->groupBy('coa.id', 'coa.name')
+                ->orderBy('coa.code')
+                ->get();
+
+            $selectedBranch = $branchId;
+        }
 
         $branches = \App\Models\Branch::orderBy('name')->get();
 
@@ -719,6 +804,8 @@ class HomeController extends BaseController
             'totalEmasKeluar',
             'cashBankJournals',
             'cashBankSummary',
+            'cashBankBranches',
+            'selectedBranch',
 
             // 🔥 TAMBAHAN PEMBELIAN
             'purchaseByProduct',

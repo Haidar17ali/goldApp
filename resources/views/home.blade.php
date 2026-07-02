@@ -207,62 +207,184 @@
     {{-- ===================================================== --}}
     {{-- KAS & BANK (COA PARENT = 2) --}}
     {{-- ===================================================== --}}
-    <h4 class="mt-4 mb-3">🏦 Kas & Bank</h4>
 
+    <h4 class="mt-4 mb-3">
+        🏦 Kas & Bank
+    </h4>
+
+    {{-- ========================= --}}
+    {{-- CARD TOTAL PER CABANG --}}
+    {{-- ========================= --}}
+    @role('super-admin')
+
+        <div class="mb-4 row">
+
+            @foreach ($cashBankBranches as $branch)
+                <div class="mb-3 col-lg-4">
+
+                    <a href="{{ request()->fullUrlWithQuery(['branch_id' => $branch->id]) }}" style="text-decoration:none">
+
+                        <div class="shadow-sm card branch-card {{ $selectedBranch == $branch->id ? 'active' : '' }}">
+
+                            <div class="card-body">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <div>
+
+                                        <small class="{{ $selectedBranch == $branch->id ? '' : 'text-muted' }}">
+                                            CABANG
+                                        </small>
+
+                                        <h4 class="mb-1">
+                                            {{ $branch->name }}
+                                        </h4>
+
+                                        <h3 class="mb-0 font-weight-bold">
+
+                                            Rp {{ number_format($branch->balance, 0, ',', '.') }}
+
+                                        </h3>
+
+                                    </div>
+
+                                    <div>
+
+                                        <i class="opacity-50 fas fa-building fa-3x"></i>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </a>
+
+                </div>
+            @endforeach
+
+        </div>
+
+    @endrole
+
+
+
+    {{-- ========================= --}}
+    {{-- DETAIL KAS & BANK --}}
+    {{-- ========================= --}}
     <div class="row">
 
-        {{-- ========================= --}}
-        {{-- SALDO PER BANK --}}
-        {{-- ========================= --}}
-        @role('super-admin|SPV')
-            <div class="col-md-12">
-                <div class="shadow-sm card card-outline card-success">
-                    <div class="d-flex justify-content-between align-items-center card-header">
-                        <h3 class="card-title font-weight-bold">
-                            <i class="mr-1 fas fa-university"></i> Saldo Kas & Bank
-                        </h3>
+        <div class="col-md-12">
 
-                        <span class="badge badge-success">
-                            Total: Rp {{ number_format($cashBankSummary->sum('balance'), 0, ',', '.') }}
-                        </span>
+            <div class="shadow-sm card card-outline card-success">
+
+                <div class="py-3 bg-white border-0 card-header">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <h4 class="mb-1">
+
+                                <i class="mr-2 fas fa-wallet text-success"></i>
+
+                                Saldo Kas & Bank
+
+                            </h4>
+
+                            <small class="text-muted">
+
+                                Posisi saldo rekening saat ini
+
+                            </small>
+
+                        </div>
+
+                        <div>
+
+                            <span class="p-3 badge badge-success">
+
+                                Total
+
+                                <br>
+
+                                Rp {{ number_format($cashBankSummary->sum('balance'), 0, ',', '.') }}
+
+                            </span>
+
+                        </div>
+
                     </div>
 
-                    <div class="card-body">
-                        <div class="row">
-                            @forelse ($cashBankSummary as $row)
-                                <div class="mb-3 col-md-4 col-sm-6">
-                                    <div class="p-3 border rounded shadow-sm d-flex justify-content-between align-items-center bg-light h-100"
-                                        style="transition:0.2s">
+                </div>
 
-                                        <div>
-                                            <div class="text-uppercase text-muted small">
-                                                {{ $row->name }}
+                <div class="card-body">
+
+                    <div class="row">
+
+                        @forelse ($cashBankSummary as $row)
+                            <div class="mb-4 col-xl-4 col-lg-6">
+
+                                <div class="shadow-sm card account-card">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-center">
+
+                                            <div>
+
+                                                <small class="text-uppercase text-muted">
+
+                                                    {{ $row->name }}
+
+                                                </small>
+
+                                                <h3
+                                                    class="mt-2 font-weight-bold {{ $row->balance >= 0 ? 'balance-positive' : 'balance-negative' }}">
+
+                                                    Rp {{ number_format($row->balance, 0, ',', '.') }}
+
+                                                </h3>
+
                                             </div>
 
-                                            <div class="font-weight-bold"
-                                                style="font-size:18px;
-                                     color: {{ $row->balance < 0 ? '#dc3545' : '#28a745' }}">
+                                            <div class="account-icon">
 
-                                                Rp {{ number_format($row->balance, 0, ',', '.') }}
+                                                @if (Str::contains(strtolower($row->name), 'kas'))
+                                                    <i class="fas fa-wallet text-success"></i>
+                                                @else
+                                                    <i class="fas fa-university text-primary"></i>
+                                                @endif
+
                                             </div>
-                                        </div>
 
-                                        <div>
-                                            <i class="fas fa-wallet fa-2x text-secondary"></i>
                                         </div>
 
                                     </div>
+
                                 </div>
-                            @empty
-                                <div class="text-center col-12 text-muted">
-                                    Tidak ada data kas/bank
-                                </div>
-                            @endforelse
-                        </div>
+
+                            </div>
+
+                        @empty
+
+                            <div class="text-center col-12 text-muted">
+
+                                Tidak ada data kas/bank
+
+                            </div>
+                        @endforelse
+
                     </div>
+
                 </div>
+
             </div>
-        @endrole
+
+        </div>
+
     </div>
 
     {{-- ===================================================== --}}
@@ -682,8 +804,8 @@
                 <strong>STOK EMAS ETALASE</strong>
 
                 <!-- <a href="{{ route('stock.export') }}" class="float-right btn btn-success btn-sm btn-rounded"><i
-                                class="fas fa-file-excel"></i>
-                            Ekspor Stock</a> -->
+                                                                                class="fas fa-file-excel"></i>
+                                                                            Ekspor Stock</a> -->
             </div>
 
             <div class="card-body">
@@ -844,6 +966,61 @@
     @endrole
 
 @stop
+
+@section('css')
+    <style>
+        .branch-card {
+            transition: .25s;
+            border-radius: 15px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .branch-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 .6rem 1.2rem rgba(0, 0, 0, .12);
+        }
+
+        .branch-card.active {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .branch-card.active .text-muted {
+            color: rgba(255, 255, 255, .8) !important;
+        }
+
+        .account-card {
+            border-radius: 15px;
+            transition: .25s;
+            border: none;
+        }
+
+        .account-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .1);
+        }
+
+        .account-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            background: #f4f6f9;
+        }
+
+        .balance-positive {
+            color: #28a745;
+        }
+
+        .balance-negative {
+            color: #dc3545;
+        }
+    </style>
+@endsection
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

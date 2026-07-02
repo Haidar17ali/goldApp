@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\AccountingHelper;
+use App\Models\Branch;
+use App\Models\ChartOfAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -130,24 +132,33 @@ class GoldPriceController extends Controller
             // =========================
             // AKUN PER CABANG
             // =========================
-            $persediaanAccounts = [
-                1 => '103.01.001', // Pasuruan
-                2 => '103.01.002', // Paserpan
-                3 => '103.01.003', // Sandang Ayu
-            ];
+            // $persediaanAccounts = [
+            //     1 => '103.01.001', // Pasuruan
+            //     2 => '103.01.002', // Paserpan
+            //     3 => '103.01.003', // Sandang Ayu
+            // ];
 
-            $persediaanAccount = $persediaanAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
+            // $persediaanAccount = $persediaanAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';
 
-            $revaluationAccounts = [
-                1 => '501.02.001', // Pasuruan
-                2 => '501.02.002', // Paserpan
-                3 => '501.02.003', // Sandang Ayu
-            ];
+            // $revaluationAccounts = [
+            //     1 => '501.02.001', // Pasuruan
+            //     2 => '501.02.002', // Paserpan
+            //     3 => '501.02.003', // Sandang Ayu
+            // ];
 
             // =========================
             // LOOP CABANG
             // =========================
-            foreach (\App\Models\Branch::all() as $index => $branch) {
+            foreach (Branch::all() as $index => $branch) {
+                // dd(Branch::all());
+                $persediaanAccount = ChartOfAccount::where('branch_id', $branch->id)
+                    ->where('code', 'like', '103.01.%')
+                    ->first();
+
+
+                $revaluationAccount = ChartOfAccount::where('branch_id', $branch->id)
+                    ->where('code', 'like', '501.02.%')
+                    ->first();
 
                 $revaluationAmount = 0;
 
@@ -236,7 +247,7 @@ class GoldPriceController extends Controller
                     ];
 
                     $lines[] = [
-                        'account' => $revaluationAccounts[$branch->id],
+                        'account' => $revaluationAccount,
                         'credit'  => abs($revaluationAmount),
                     ];
                 }
@@ -247,21 +258,14 @@ class GoldPriceController extends Controller
                 else {
 
                     $lines[] = [
-                        'account' => $revaluationAccounts[$branch->id],
+                        'account' => $revaluationAccount->code,
                         'debit'   => abs($revaluationAmount),
                     ];
 
                     $lines[] = [
-                        'account' => $persediaanAccount,
+                        'account' => $persediaanAccount->code,
                         'credit'  => abs($revaluationAmount),
                     ];
-                }
-
-                if ($index == 1) {
-                    # code...
-
-                    dd($stocks);
-                    dd($lines);
                 }
 
                 AccountingHelper::post([

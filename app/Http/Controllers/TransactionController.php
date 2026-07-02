@@ -327,6 +327,8 @@ class TransactionController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
+
+                    2 => '101.00.06', // Pasuruan
                     3 => '101.00.08',  // Sandang Ayu
                 ];
 
@@ -721,6 +723,8 @@ class TransactionController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
+
+                    2 => '101.00.06', // Pasuruan
                     3 => '101.00.08',  // Sandang Ayu
                 ];
 

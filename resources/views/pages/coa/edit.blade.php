@@ -62,10 +62,30 @@
 
                         @foreach ($parents as $parent)
                             <option value="{{ $parent->id }}" data-category="{{ $parent->category }}"
+                                data-branch="{{ $parent->branch_id }}"
                                 {{ $account->parent_id == $parent->id ? 'selected' : '' }}>
 
                                 {{ $parent->code }} - {{ $parent->name }}
 
+                            </option>
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Cabang</label>
+
+                    <select name="branch_id" id="branch_id" class="form-control select2">
+
+                        <option value="">Global</option>
+
+                        @foreach ($branches as $branch)
+                            <option value="{{ $branch->id }}"
+                                {{ old('branch_id', $account->branch_id) == $branch->id ? 'selected' : '' }}>
+                                {{ $branch->code }} - {{ $branch->name }}
                             </option>
                         @endforeach
 
@@ -120,36 +140,78 @@
 
             $('#parent_id').select2({
                 width: '100%',
-                theme: "bootstrap-5",
-                placeholder: "Pilih akun induk",
+                theme: 'bootstrap-5',
+                placeholder: 'Pilih akun induk',
                 allowClear: true
             });
 
-
-            $('#parent_id').on('select2:open', function() {
-
-                setTimeout(function() {
-
-                    document
-                        .querySelector('.select2-container--open .select2-search__field')
-                        .focus()
-
-                }, 0)
-
+            $('#branch_id').select2({
+                width: '100%',
+                theme: 'bootstrap-5',
+                placeholder: 'Pilih Cabang',
+                allowClear: true
             });
 
+            $('#parent_id').on('select2:open', function() {
+                setTimeout(function() {
+                    document.querySelector(
+                        '.select2-container--open .select2-search__field'
+                    ).focus();
+                }, 0);
+            });
+
+            function toggleBranch() {
+
+                let selected = $('#parent_id').find(':selected');
+                let branch = selected.data('branch');
+
+                // Root Account
+                if ($('#parent_id').val() == '') {
+
+                    $('#branch_id')
+                        .val('')
+                        .trigger('change')
+                        .prop('disabled', true);
+
+                    return;
+                }
+
+                // Parent milik cabang tertentu
+                if (branch) {
+
+                    $('#branch_id')
+                        .val(branch)
+                        .trigger('change')
+                        .prop('disabled', true);
+
+                }
+                // Parent global
+                else {
+
+                    $('#branch_id')
+                        .prop('disabled', false);
+
+                }
+            }
+
+            toggleBranch();
 
             $('#parent_id').on('change', function() {
 
-                let selected = $(this).find(':selected')
-                let category = selected.data('category')
+                let selected = $(this).find(':selected');
+
+                let category = selected.data('category');
 
                 if (category) {
-
-                    $('#category').val(category)
-
+                    $('#category').val(category);
                 }
 
+                toggleBranch();
+
+            });
+
+            $('form').on('submit', function() {
+                $('#branch_id').prop('disabled', false);
             });
 
         });

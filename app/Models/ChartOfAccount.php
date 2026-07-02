@@ -13,6 +13,7 @@ class ChartOfAccount extends Model
         "category",
         "normal_balance",
         "parent_id",
+        "branch_id",
         "is_active"
     ];
 
@@ -21,6 +22,11 @@ class ChartOfAccount extends Model
     | RELATION
     |--------------------------------------------------------------------------
     */
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function parent()
     {

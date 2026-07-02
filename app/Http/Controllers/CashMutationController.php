@@ -53,7 +53,8 @@ class CashMutationController extends BaseController
             $branchId = $user->profile->branch_id;
 
             $cashAccounts = [
-                1 => '101.00.01',   // Pasuruan
+                1 => '101.00.01',
+                2 => '101.00.06', // Pasuruan\
                 3 => '101.00.08',  // Sandang Ayu
             ];
 
@@ -148,6 +149,8 @@ class CashMutationController extends BaseController
 
             $cashAccounts = [
                 1 => '101.00.01',   // Pasuruan
+
+                2 => '101.00.06', // Pasuruan
                 3 => '101.00.08',  // Sandang Ayu
             ];
 

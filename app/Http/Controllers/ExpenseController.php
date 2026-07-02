@@ -142,6 +142,8 @@ class ExpenseController extends BaseController
             if ($detail->payment_type === 'cash') {
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
+
+                    2 => '101.00.06', // Pasuruan
                     3 => '101.00.08',  // Sandang Ayu
                 ];
 
@@ -271,7 +273,12 @@ class ExpenseController extends BaseController
     {
         $expense = Expense::with('details')->findOrFail($id);
 
-        $bankAccounts = BankAccount::where('is_active', true)->where("branch_id", Auth::user()->profile->branch_id)->get();
+        $bankAccounts = BankAccount::where('is_active', true)
+            ->when(
+                !Auth::user()->hasRole('super-admin'),
+                fn($q) => $q->where('branch_id', Auth::user()->profile->branch_id)
+            )
+            ->get();
 
         return view('pages.expenses.edit', compact(
             'expense',
@@ -299,6 +306,8 @@ class ExpenseController extends BaseController
 
                 $cashAccounts = [
                     1 => '101.00.01',   // Pasuruan\
+
+                    2 => '101.00.06', // Pasuruan
                     3 => '101.00.08',  // Sandang Ayu
                 ];
 

@@ -21,4 +21,9 @@ class Branch extends Model
     {
         return $this->hasMany(BankAccount::class);
     }
+
+    public function chartOfAccounts()
+    {
+        return $this->hasMany(ChartOfAccount::class);
+    }
 }

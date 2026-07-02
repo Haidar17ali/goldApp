@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
 use App\Models\ChartOfAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,8 +33,10 @@ class ChartOfAccountController extends BaseController
     public function create()
     {
         $parents = ChartOfAccount::orderBy('code')->get();
+        $branches = Branch::orderBy('name')->get();
 
-        return view('pages.coa.create', compact('parents'));
+
+        return view('pages.coa.create', compact('parents', "branches"));
     }
 
     public function store(Request $request)
@@ -44,6 +47,11 @@ class ChartOfAccountController extends BaseController
                 'string',
                 'max:50',
                 'unique:chart_of_accounts,code'
+            ],
+
+            'branch_id' => [
+                'nullable',
+                'exists:branches,id'
             ],
 
             'name' => [
@@ -95,6 +103,7 @@ class ChartOfAccountController extends BaseController
                 'category' => $validated['category'],
                 'normal_balance' => $normalBalance,
                 'parent_id' => $validated['parent_id'] ?? null,
+                'branch_id' => $validated['branch_id'] ?? null,
                 'is_active' => $validated['is_active'],
             ]);
 
@@ -122,7 +131,10 @@ class ChartOfAccountController extends BaseController
             ->orderBy('code')
             ->get();
 
-        return view('pages.coa.edit', compact('account', 'parents'));
+        $branches = Branch::orderBy('name')->get();
+
+
+        return view('pages.coa.edit', compact('account', 'parents', 'branches'));
     }
 
     public function update(Request $request, $id)
@@ -135,6 +147,11 @@ class ChartOfAccountController extends BaseController
                 'string',
                 'max:50',
                 'unique:chart_of_accounts,code,' . $account->id
+            ],
+
+            'branch_id' => [
+                'nullable',
+                'exists:branches,id'
             ],
 
             'name' => [
@@ -198,6 +215,7 @@ class ChartOfAccountController extends BaseController
                 'category' => $validated['category'],
                 'normal_balance' => $normalBalance,
                 'parent_id' => $validated['parent_id'] ?? null,
+                'branch_id' => $validated['branch_id'] ?? null,
                 'is_active' => $validated['is_active'],
             ]);
 

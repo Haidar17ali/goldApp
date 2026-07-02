@@ -52,9 +52,28 @@
                         <option value="">Root Account</option>
 
                         @foreach ($parents as $parent)
-                            <option value="{{ $parent->id }}" data-category="{{ $parent->category }}">
+                            <option value="{{ $parent->id }}" data-category="{{ $parent->category }}"
+                                data-branch="{{ $parent->branch_id }}">
                                 {{ str_repeat('— ', $parent->level ?? 0) }}
                                 {{ $parent->code }} - {{ $parent->name }}
+                            </option>
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Cabang</label>
+
+                    <select name="branch_id" id="branch_id" class="form-control select2">
+
+                        <option value="">Global</option>
+
+                        @foreach ($branches as $branch)
+                            <option value="{{ $branch->id }}">
+                                {{ $branch->code }} - {{ $branch->name }}
                             </option>
                         @endforeach
 
@@ -101,34 +120,80 @@
 
             $('#parent_id').select2({
                 width: '100%',
-                theme: "bootstrap-5",
-                placeholder: "Pilih akun induk",
+                theme: 'bootstrap-5',
+                placeholder: 'Pilih akun induk',
                 allowClear: true
             });
 
-            // auto focus search
+            $('#branch_id').select2({
+                width: '100%',
+                theme: 'bootstrap-5',
+                placeholder: 'Pilih Cabang',
+                allowClear: true
+            });
+
             $('#parent_id').on('select2:open', function() {
                 setTimeout(function() {
-                    document.querySelector('.select2-container--open .select2-search__field')
-                        .focus();
+                    document.querySelector(
+                        '.select2-container--open .select2-search__field'
+                    ).focus();
                 }, 0);
             });
 
 
-            // auto category mengikuti parent
-            $('#parent_id').on('change', function() {
+            function toggleBranch() {
 
-                let selected = $(this).find(':selected')
-                let category = selected.data('category')
+                let selected = $('#parent_id').find(':selected');
+                let branch = selected.data('branch');
 
-                if (category) {
+                // Root Account
+                if ($('#parent_id').val() == '') {
 
-                    $('#category').val(category)
+                    $('#branch_id')
+                        .val('')
+                        .trigger('change')
+                        .prop('disabled', true);
+
+                    return;
+                }
+
+                // Parent milik cabang tertentu
+                if (branch) {
+
+                    $('#branch_id')
+                        .val(branch)
+                        .trigger('change')
+                        .prop('disabled', true);
 
                 }
+                // Parent global
+                else {
+
+                    $('#branch_id')
+                        .prop('disabled', false);
+
+                }
+            }
+
+            toggleBranch();
+
+            $('#parent_id').on('change', function() {
+
+                let selected = $(this).find(':selected');
+
+                let category = selected.data('category');
+
+                if (category) {
+                    $('#category').val(category);
+                }
+
+                toggleBranch();
 
             });
 
+            $('form').on('submit', function() {
+                $('#branch_id').prop('disabled', false);
+            });
         });
     </script>
 @stop
