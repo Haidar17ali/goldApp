@@ -26,4 +26,14 @@ class Branch extends Model
     {
         return $this->hasMany(ChartOfAccount::class);
     }
+
+    public function transferOuts()
+    {
+        return $this->hasMany(TransferStock::class, 'from_branch_id');
+    }
+
+    public function transferIns()
+    {
+        return $this->hasMany(TransferStock::class, 'to_branch_id');
+    }
 }

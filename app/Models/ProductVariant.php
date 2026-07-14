@@ -30,4 +30,9 @@ class ProductVariant extends Model
     {
         return $this->hasMany(Stock::class);
     }
+
+    public function transferDetails()
+    {
+        return $this->hasMany(TransferStockDetail::class);
+    }
 }

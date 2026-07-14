@@ -127,6 +127,7 @@ class GoldConversionController extends BaseController
                     1 => '103.01.001', // Pasuruan
                     2 => '103.01.002', // Paserpan
                     3 => '103.01.003', // Sandang Ayu
+                    4 => '103.03.001', // Sandang Ayu
                 ];
 
                 $persediaanAccount = $persediaanAccounts[auth()->user()->profile->branch_id ?? 1] ?? '103.00.00';

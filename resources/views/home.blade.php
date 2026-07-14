@@ -208,9 +208,12 @@
     {{-- KAS & BANK (COA PARENT = 2) --}}
     {{-- ===================================================== --}}
 
-    <h4 class="mt-4 mb-3">
-        🏦 Kas & Bank
-    </h4>
+
+    @role('super-admin|SPV')
+        <h4 class="mt-4 mb-3">
+            🏦 Kas & Bank
+        </h4>
+    @endrole
 
     {{-- ========================= --}}
     {{-- CARD TOTAL PER CABANG --}}
@@ -271,92 +274,95 @@
 
 
 
-    {{-- ========================= --}}
-    {{-- DETAIL KAS & BANK --}}
-    {{-- ========================= --}}
-    <div class="row">
+    @role('super-admin|SPV')
+        {{-- ========================= --}}
+        {{-- DETAIL KAS & BANK --}}
+        {{-- ========================= --}}
+        <div class="row">
 
-        <div class="col-md-12">
+            <div class="col-md-12">
 
-            <div class="shadow-sm card card-outline card-success">
+                <div class="shadow-sm card card-outline card-success">
 
-                <div class="py-3 bg-white border-0 card-header">
+                    <div class="py-3 bg-white border-0 card-header">
 
-                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-center">
 
-                        <div>
+                            <div>
 
-                            <h4 class="mb-1">
+                                <h4 class="mb-1">
 
-                                <i class="mr-2 fas fa-wallet text-success"></i>
+                                    <i class="mr-2 fas fa-wallet text-success"></i>
 
-                                Saldo Kas & Bank
+                                    Saldo Kas & Bank
 
-                            </h4>
+                                </h4>
 
-                            <small class="text-muted">
+                                <small class="text-muted">
 
-                                Posisi saldo rekening saat ini
+                                    Posisi saldo rekening saat ini
 
-                            </small>
+                                </small>
 
-                        </div>
+                            </div>
 
-                        <div>
+                            <div>
 
-                            <span class="p-3 badge badge-success">
+                                <span class="p-3 badge badge-success">
 
-                                Total
+                                    Total
 
-                                <br>
+                                    <br>
 
-                                Rp {{ number_format($cashBankSummary->sum('balance'), 0, ',', '.') }}
+                                    Rp {{ number_format($cashBankSummary->sum('balance'), 0, ',', '.') }}
 
-                            </span>
+                                </span>
+
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
+                    <div class="card-body">
 
-                <div class="card-body">
+                        <div class="row">
 
-                    <div class="row">
+                            @forelse ($cashBankSummary as $row)
+                                <div class="mb-4 col-xl-4 col-lg-6">
 
-                        @forelse ($cashBankSummary as $row)
-                            <div class="mb-4 col-xl-4 col-lg-6">
+                                    <div class="shadow-sm card account-card">
 
-                                <div class="shadow-sm card account-card">
+                                        <div class="card-body">
 
-                                    <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
 
-                                        <div class="d-flex justify-content-between align-items-center">
+                                                <div>
 
-                                            <div>
+                                                    <small class="text-uppercase text-muted">
 
-                                                <small class="text-uppercase text-muted">
+                                                        {{ $row->name }}
 
-                                                    {{ $row->name }}
+                                                    </small>
 
-                                                </small>
+                                                    <h3
+                                                        class="mt-2 font-weight-bold {{ $row->balance >= 0 ? 'balance-positive' : 'balance-negative' }}">
 
-                                                <h3
-                                                    class="mt-2 font-weight-bold {{ $row->balance >= 0 ? 'balance-positive' : 'balance-negative' }}">
+                                                        Rp {{ number_format($row->balance, 0, ',', '.') }}
 
-                                                    Rp {{ number_format($row->balance, 0, ',', '.') }}
+                                                    </h3>
 
-                                                </h3>
+                                                </div>
 
-                                            </div>
+                                                <div class="account-icon">
 
-                                            <div class="account-icon">
+                                                    @if (Str::contains(strtolower($row->name), 'kas'))
+                                                        <i class="fas fa-wallet text-success"></i>
+                                                    @else
+                                                        <i class="fas fa-university text-primary"></i>
+                                                    @endif
 
-                                                @if (Str::contains(strtolower($row->name), 'kas'))
-                                                    <i class="fas fa-wallet text-success"></i>
-                                                @else
-                                                    <i class="fas fa-university text-primary"></i>
-                                                @endif
+                                                </div>
 
                                             </div>
 
@@ -366,16 +372,16 @@
 
                                 </div>
 
-                            </div>
+                            @empty
 
-                        @empty
+                                <div class="text-center col-12 text-muted">
 
-                            <div class="text-center col-12 text-muted">
+                                    Tidak ada data kas/bank
 
-                                Tidak ada data kas/bank
+                                </div>
+                            @endforelse
 
-                            </div>
-                        @endforelse
+                        </div>
 
                     </div>
 
@@ -384,8 +390,7 @@
             </div>
 
         </div>
-
-    </div>
+    @endrole
 
     {{-- ===================================================== --}}
     {{-- PEMBELIAN --}}
@@ -804,8 +809,8 @@
                 <strong>STOK EMAS ETALASE</strong>
 
                 <!-- <a href="{{ route('stock.export') }}" class="float-right btn btn-success btn-sm btn-rounded"><i
-                                                                                class="fas fa-file-excel"></i>
-                                                                            Ekspor Stock</a> -->
+                                                                                                        class="fas fa-file-excel"></i>
+                                                                                                    Ekspor Stock</a> -->
             </div>
 
             <div class="card-body">

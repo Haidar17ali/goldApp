@@ -408,6 +408,11 @@ return [
                     'text' => 'No Rek',
                     'url' => 'gold-app/rekening',
                     'can' => 'rekening.index',
+                ],
+                [
+                    'text' => 'Marketplace',
+                    'url' => 'gold-app/marketplace',
+                    'can' => 'marketplace.index',
                 ]
             ],
         ],
@@ -439,6 +444,11 @@ return [
                         ],
                     ],
                 ],
+                [
+                    'text' => 'Penjualan Online',
+                    'key' => 'penjualan-online',
+                    'icon' => 'fas fa-store',
+                ]
                 // [
                 //     'text' => 'Peminjaman & Pengembalian',
                 //     'icon' => 'fas fa-handshake',
@@ -498,6 +508,12 @@ return [
                     'url' => 'gold-app/keluar-etalase',
                     'icon' => 'fas fa-tools',
                     'can' => 'keluar-etalase.index',
+                ],
+                [
+                    'text' => 'Mutasi Stok',
+                    'url' => 'gold-app/mutasi-stok',
+                    'icon' => 'fas fa-tools',
+                    'can' => 'mutasi-stok.index',
                 ],
             ],
         ],
@@ -582,6 +598,7 @@ return [
     */
 
     'filters' => [
+
         JeroenNoten\LaravelAdminLte\Menu\Filters\GateFilter::class,
         JeroenNoten\LaravelAdminLte\Menu\Filters\HrefFilter::class,
         JeroenNoten\LaravelAdminLte\Menu\Filters\SearchFilter::class,

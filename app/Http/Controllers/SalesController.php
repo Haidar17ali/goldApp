@@ -41,16 +41,6 @@ class SalesController extends BaseController
 
         $branchId = auth()->user()->profile->branch_id;
 
-        // $products = Product::orderBy('name')->pluck('name')->toArray();
-        // $karats = Karat::orderBy('name')->pluck('name')->toArray();
-        // $productVariants = ProductVariant::with([
-        //     'product:id,name',
-        //     'karat:id,name',
-        //     'stocks' => function ($q) {
-        //         $q->where('quantity', '>', 0);
-        //     }
-        // ])->where("gram", "!=", null)->get();
-
         $productVariants = ProductVariant::with([
             'product:id,name',
             'karat:id,name',

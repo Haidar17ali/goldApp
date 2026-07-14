@@ -21,12 +21,16 @@ use App\Http\Controllers\GoldMergeConversionController;
 use App\Http\Controllers\GoldManagementController;
 use App\Http\Controllers\GoldPriceController;
 use App\Http\Controllers\JournalController;
+use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\OnlineTransactionController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StorageLocationController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\TransferStockController;
+use App\Models\TransferStock;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -118,6 +122,14 @@ Route::prefix('gold-app')
         Route::patch('/customer-supplier/{type}/{id}/ubah', [CustomerSupplierController::class, 'update'])->name('customer-supplier.update');
         Route::delete('/customer-supplier/{type}/{id}/hapus', [CustomerSupplierController::class, 'destroy'])->name('customer-supplier.hapus');
 
+        // marketplace
+        Route::get("/marketplace", [MarketplaceController::class, 'index'])->name("marketplace.index");
+        Route::get('/marketplace/buat', [MarketplaceController::class, 'create'])->name('marketplace.buat');
+        Route::post('/marketplace/buat', [MarketplaceController::class, 'store'])->name('marketplace.simpan');
+        Route::get('/marketplace/{marketplace}/ubah', [MarketplaceController::class, 'edit'])->name('marketplace.ubah');
+        Route::patch('/marketplace/{marketplace}/ubah', [MarketplaceController::class, 'update'])->name('marketplace.update');
+        Route::delete('/marketplace/{marketplace}/hapus', [MarketplaceController::class, 'destroy'])->name('marketplace.hapus');
+
 
         // product variant
         Route::get("/varian-produk", [ProductVariantController::class, 'index'])->name("varian-produk.index");
@@ -157,6 +169,20 @@ Route::prefix('gold-app')
         Route::get('penjualan/cetak/{id}', [SalesController::class, "print"])->name("penjualan.cetak");
         Route::get('/penjualan/{id}/detail', [SalesController::class, 'show'])
             ->name('penjualan.detail');
+
+        //penjualan online
+        Route::get("/online/penjualan/{id}", [OnlineTransactionController::class, "index"])->name("penjualan.online.index");
+        Route::get("/online/penjualan/buat/{id}", [OnlineTransactionController::class, "create"])->name("penjualan.online.buat");
+        Route::post("/online/penjualan/simpan/{id}", [OnlineTransactionController::class, "store"])->name("penjualan.online.simpan");
+
+        // mutasi stock
+        Route::get("/mutasi-stok", [TransferStockController::class, "index"])->name("mutasi-stok.index");
+        Route::get("/mutasi-stok/buat", [TransferStockController::class, "create"])->name("mutasi-stok.buat");
+        Route::post("/mutasi-stok/simpan", [TransferStockController::class, "store"])->name("mutasi-stok.simpan");
+        Route::delete("/mutasi-stok/{id}/detail", [TransferStockController::class, "show"])->name("mutasi-stok.detail");
+        Route::get("/mutasi-stok/{id}/ubah", [TransferStockController::class, "edit"])->name("mutasi-stok.ubah");
+        Route::patch("/mutasi-stok/{id}/update", [TransferStockController::class, "update"])->name("mutasi-stok.update");
+        Route::delete("/mutasi-stok/{id}/hapus", [TransferStockController::class, "destroy"])->name("mutasi-stok.hapus");
 
         // opname
         Route::get("/opname", [StockAdjustmentController::class, 'index'])->name("opname.index");
