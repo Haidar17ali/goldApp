@@ -5,6 +5,11 @@
         <thead class="thead-light">
 
             <tr>
+                <th width="40">
+
+                    <input type="checkbox" id="checkAll">
+
+                </th>
 
                 <th width="50">
                     #
@@ -72,6 +77,11 @@
                 @endphp
 
                 <tr>
+                    <td class="text-center">
+
+                        <input type="checkbox" class="transaction-check" value="{{ $transaction->id }}">
+
+                    </td>
 
                     <td class="text-center">
 
@@ -254,11 +264,21 @@
 
                                 </a>
 
-                                <a href="#" class="dropdown-item">
+                                <a href="{{ route('penjualan.online.edit', ['olshopId' => $id, 'id' => $transaction->id]) }}"
+                                    class="dropdown-item">
 
                                     <i class="mr-2 fas fa-edit"></i>
 
                                     Edit
+
+                                </a>
+                                <a href="#" class="dropdown-item text-danger btn-delete"
+                                    data-id="{{ $transaction->id }}"
+                                    data-url="{{ route('penjualan.online.hapus', ['olshopId' => $id, 'id' => $transaction->id]) }}">
+
+                                    <i class="mr-2 fas fa-trash"></i>
+
+                                    Hapus
 
                                 </a>
 

@@ -174,6 +174,10 @@ Route::prefix('gold-app')
         Route::get("/online/penjualan/{id}", [OnlineTransactionController::class, "index"])->name("penjualan.online.index");
         Route::get("/online/penjualan/buat/{id}", [OnlineTransactionController::class, "create"])->name("penjualan.online.buat");
         Route::post("/online/penjualan/simpan/{id}", [OnlineTransactionController::class, "store"])->name("penjualan.online.simpan");
+        Route::post("/online/penjualan/simpan/{id}", [OnlineTransactionController::class, "store"])->name("penjualan.online.simpan");
+        Route::get("/online/penjualan/{olshopId}/edit/{id}", [OnlineTransactionController::class, "edit"])->name("penjualan.online.edit");
+        Route::patch("/online/penjualan/{olshopId}/update/{id}", [OnlineTransactionController::class, "update"])->name("penjualan.online.update");
+        Route::delete("/online/penjualan/{olshopId}/hapus/{id}", [OnlineTransactionController::class, "destroy"])->name("penjualan.online.hapus");
 
         // mutasi stock
         Route::get("/mutasi-stok", [TransferStockController::class, "index"])->name("mutasi-stok.index");

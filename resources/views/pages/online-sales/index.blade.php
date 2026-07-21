@@ -53,6 +53,24 @@
 
         <div class="card-header">
 
+            <div class="d-flex justify-content-between align-items-center">
+
+                <h3 class="card-title">
+                    <i class="mr-1 fas fa-list"></i>
+                    Daftar Transaksi
+                </h3>
+
+                <button id="btnKasOnline" class="btn btn-success btn-sm d-none">
+
+                    <i class="fas fa-wallet"></i>
+
+                    Jadikan Kas Online
+                    (<span id="selectedCount">0</span>)
+
+                </button>
+
+            </div>
+
             <h3 class="card-title">
 
                 <i class="mr-1 fas fa-list"></i>

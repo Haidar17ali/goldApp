@@ -1,9 +1,11 @@
 @extends('adminlte::page')
 
-@section('title', 'Tambah Transaksi')
+@section('title', isset($transaction) ? 'Edit Transaksi' : 'Tambah Transaksi')
 
 @section('content_header')
-    <h1 class="fw-bold">Tambah Transaksi Penjualan</h1>
+    <h1 class="fw-bold">
+        {{ isset($transaction) ? 'Edit Transaksi Penjualan' : 'Tambah Transaksi Penjualan' }}
+    </h1>
 @stop
 
 @section('content')
@@ -16,16 +18,23 @@
                 </div>
             @endif
 
-            <form id="transactionForm" method="POST" action="{{ route('penjualan.online.simpan', ['id' => $id]) }}"
+            <form id="transactionForm" method="POST"
+                action="{{ isset($transaction)
+                    ? route('penjualan.online.update', ['olshopId' => $olshopId, 'id' => $transaction->id])
+                    : route('penjualan.online.simpan', ['id' => $id]) }}"
                 enctype="multipart/form-data">
+
                 @csrf
 
+                @if (isset($transaction))
+                    @method('patch')
+                @endif
                 {{-- ================= HEADER ================= --}}
                 <div class="mb-4 row">
                     <div class="col-md-4">
                         <label class="fw-semibold">Nomor Invoice</label>
                         <input type="text" readonly name="invoice_number" class="form-control form-control-lg"
-                            value="{{ $invoiceNumber }}" required>
+                            value="{{ old('invoice_number', $transaction->invoice_number ?? $invoiceNumber) }}">
                     </div>
 
                     <div class="col-md-4 position-relative" x-data="customerInput({{ Js::from($customers) }})">
@@ -33,7 +42,7 @@
                         <label class="fw-semibold">Customer</label>
 
                         <input type="text" name="customer_name" x-model="query" @input="search" @focus="search"
-                            class="form-control form-control-lg" placeholder="Ketik / pilih customer" required>
+                            class="form-control form-control-lg" placeholder="Ketik / pilih customer">
 
                         <!-- DROPDOWN -->
                         <div class="shadow list-group position-absolute w-100" x-show="show" @click.outside="show = false"
@@ -56,7 +65,7 @@
                     <div class="col-md-4">
                         <label class="fw-semibold">Catatan</label>
                         <input type="text" name="note" class="form-control form-control-lg"
-                            placeholder="Catatan tambahan (opsional)">
+                            value="{{ old('note', $transaction->note ?? '') }}">
                     </div>
                 </div>
 
@@ -64,28 +73,20 @@
                 <div class="mb-4 row">
                     <div class="col-md-4">
                         <label class="fw-semibold">No. Telp</label>
-                        <input type="text" name="customer_phone" id="customerPhone" class="form-control form-control-lg"
-                            placeholder="Nomor telepon customer">
+                        <input type="text" id="customerPhone" name="customer_phone" class="form-control form-control-lg"
+                            value="{{ old('customer_phone', $transaction->customer_phone ?? '') }}">
                     </div>
 
                     <div class="col-md-8">
                         <label class="fw-semibold">Alamat</label>
-                        <input type="text" name="customer_address" id="customerAddress"
-                            class="form-control form-control-lg" placeholder="Alamat customer">
+                        <input type="text" id="customerAddress" name="customer_address"
+                            class="form-control form-control-lg"
+                            value="{{ old('customer_address', $transaction->customer_address ?? '') }}">
                     </div>
                 </div>
 
                 <hr class="my-4">
 
-                {{-- <div x-data="barcodeInput()" class="mb-4 position-relative">
-
-                    <label class="fw-semibold">Scan Barcode / Ketik Barang</label>
-
-                    <input type="text" x-model="query" @input="search" @keydown.enter.prevent="selectFirst"
-                        class="form-control form-control-lg" placeholder="Scan barcode atau ketik nama barang" autofocus>
-
-                    
-                </div> --}}
 
                 <div x-data="barcodeInput()" class="mb-4 position-relative">
 
@@ -160,8 +161,9 @@
 
                         <div class="mb-2 col-md-12">
                             <label class="fw-semibold">Harga Manik</label>
-                            <input type="text" name="manik_price" id="hargaManik"
-                                class="form-control form-control-lg" placeholder="30000">
+                            <input type="text" id="hargaManik" name="manik_price"
+                                class="form-control form-control-lg"
+                                value="{{ old('manik_price', $transaction->manik_price ?? 0) }}">
                         </div>
 
                         <div class="mb-4 text-end">
@@ -173,10 +175,6 @@
                         </div>
                     </div>
 
-                    {{-- <div class="mb-3 text-end">
-                    <button type="button" id="addRow" class="btn btn-success btn-lg">
-                        <i class="fas fa-plus"></i> Tambah Baris
-                    </button> --}}
                 </div>
 
                 {{-- ================= PAYMENT ================= --}}
@@ -193,7 +191,11 @@
 
                 <div class="text-end">
                     <button type="submit" class="px-5 btn btn-primary btn-lg">
-                        <i class="fas fa-save me-1"></i> Simpan Transaksi
+
+                        <i class="fas fa-save"></i>
+
+                        {{ isset($transaction) ? 'Update Transaksi' : 'Simpan Transaksi' }}
+
                     </button>
                 </div>
             </form>
@@ -241,69 +243,6 @@
 
 
     <script>
-        // function barcodeInput() {
-        //     return {
-        //         query: '',
-        //         results: [],
-        //         showDropdown: false,
-        //         variants: window.PRODUCT_VARIANTS || [],
-
-        //         search() {
-        //             const q = this.query.trim().toLowerCase();
-        //             const terms = q.split(/\s+/); // pecah per spasi
-
-        //             // ===== EXACT MATCH (SCAN BARCODE / SKU)
-        //             const exact = this.variants.find(v =>
-        //                 v.barcode?.toLowerCase() === q ||
-        //                 v.sku?.toLowerCase() === q
-        //             );
-
-        //             if (exact) {
-        //                 this.select(exact);
-        //                 return;
-        //             }
-
-        //             if (q.length < 2) {
-        //                 this.showDropdown = false;
-        //                 return;
-        //             }
-
-        //             this.results = this.variants.filter(v => {
-        //                 // gabungkan semua field yang mau dicari
-        //                 const searchableText = `
-    //                     ${v.product?.name ?? ''}
-    //                     ${v.karat?.name ?? ''}
-    //                     ${v.gram ?? ''}
-    //                     ${v.sku ?? ''}
-    //                     ${v.barcode ?? ''}
-    //                 `.toLowerCase();
-
-        //                 // SEMUA kata harus ada
-        //                 return terms.every(term => searchableText.includes(term));
-        //             }).slice(0, 10);
-
-        //             this.showDropdown = this.results.length > 0;
-        //         },
-
-
-        //         select(item) {
-        //             window.addItemToTable(item);
-        //             this.reset();
-        //         },
-
-        //         selectFirst() {
-        //             if (this.results.length === 1) {
-        //                 this.select(this.results[0]);
-        //             }
-        //         },
-
-        //         reset() {
-        //             this.query = '';
-        //             this.results = [];
-        //             this.showDropdown = false;
-        //         }
-        //     }
-        // }
         function barcodeInput() {
             return {
                 query: '',
@@ -436,16 +375,6 @@
             const tableBody = document.querySelector('#detailTable tbody');
             const rowIndex = tableBody.children.length;
 
-            // CEGAH DUPLIKAT
-            // if ([...tableBody.querySelectorAll('input[name$="[variant_id]"]')]
-            //     .some(i => i.value == item.id)) {
-            //     Swal.fire({
-            //         icon: 'warning',
-            //         title: 'Barang sudah ditambahkan'
-            //     });
-            //     return;
-            // }
-
             const tr = document.createElement('tr');
 
             tr.innerHTML = `
@@ -536,83 +465,32 @@
             tableBody = document.querySelector('#detailTable tbody');
             grandTotalEl = document.getElementById('grandTotalJual');
 
-            // let rowIndex = 0;
-
-            // function createRow() {
-            //     const tr = document.createElement('tr');
-
-            //     tr.innerHTML = `
-        //         <td>
-        //             <select class="form-control form-control-lg select-product"
-        //                 name="details[${rowIndex}][product_name]">
-        //                 <option value="">-- pilih / ketik produk --</option>
-        //                 ${products.map(p => `<option value="${p}">${p}</option>`).join('')}
-        //             </select>
-        //         </td>
-
-        //         <td>
-        //             <select class="form-control form-control-lg select-karat"
-        //                 name="details[${rowIndex}][karat_name]">
-        //                 <option value="">-- pilih / ketik karat --</option>
-        //                 ${karats.map(k => `<option value="${k}">${k}</option>`).join('')}
-        //             </select>
-        //         </td>
-
-        //         <td>
-        //             <input type="number" step="0.001"
-        //                 class="form-control form-control-lg gram"
-        //                 name="details[${rowIndex}][gram]">
-        //         </td>
-
-        //         <td>
-        //             <input type="number" step="0.01"
-        //                 class="form-control form-control-lg harga-jual"
-        //                 name="details[${rowIndex}][harga_jual]">
-        //         </td>
-
-        //         <td class="text-center">
-        //             <button type="button"
-        //                 class="btn btn-danger btn-lg remove-row">
-        //                 <i class="fas fa-trash"></i>
-        //             </button>
-        //         </td>
-        //     `;
-
-            //     tableBody.appendChild(tr);
-
-            //     $(tr).find('select').select2({
-            //         tags: true,
-            //         width: '100%'
-            //     });
-
-            //     tr.querySelector('.harga-jual')
-            //         .addEventListener('input', updateGrandTotal);
-
-            //     tr.querySelector('.remove-row')
-            //         .addEventListener('click', () => {
-            //             tr.remove();
-            //             updateGrandTotal();
-            //         });
-
-            //     rowIndex++;
-            // }
-
-            // createRow();
-            // document.getElementById('addRow')
-            //     .addEventListener('click', createRow);
-
-            // // ===== Customer Select2 =====
-            // $('#customerSelect').select2({
-            //     tags: true,
-            //     width: '100%',
-            //     placeholder: '-- pilih / ketik customer --'
-            // });
-
             $('#customerSelect').on('change', function() {
                 const selected = $(this).find(':selected');
                 $('#customerPhone').val(selected.data('phone') || '');
                 $('#customerAddress').val(selected.data('address') || '');
             });
+            @if (isset($transaction))
+
+                const oldItems = @json($transaction->details);
+
+                oldItems.forEach(detail => {
+
+                    const item = window.PRODUCT_VARIANTS.find(v =>
+                        v.id == detail.product_variant_id
+                    );
+
+                    if (!item) return;
+
+                    item.default_price = detail.unit_price;
+
+                    window.addItemToTable(item);
+
+                });
+                setTimeout(() => {
+                    updateGrandTotal();
+                }, 100);
+            @endif
         });
     </script>
 
@@ -654,31 +532,49 @@
     <script>
         function customerInput(customers) {
             return {
-                query: '',
+                query: @json(old('customer_name', $transaction->customer->name ?? '')),
+
                 results: [],
                 show: false,
 
+                init() {
+
+                    @if (isset($transaction) && $transaction->customer)
+
+                        document.getElementById('customerPhone').value =
+                            @json($transaction->customer->phone_number);
+
+                        document.getElementById('customerAddress').value =
+                            @json($transaction->customer->address);
+                    @endif
+
+                },
+
                 search() {
                     if (!this.query) {
-                        this.results = []
-                        this.show = false
-                        return
+                        this.results = [];
+                        this.show = false;
+                        return;
                     }
 
                     this.results = customers.filter(c =>
                         c.name.toLowerCase().includes(this.query.toLowerCase())
-                    )
+                    );
 
-                    this.show = true
+                    this.show = true;
                 },
 
                 select(item) {
-                    this.query = item.name
-                    this.show = false
 
-                    // AUTO ISI
-                    document.getElementById('customerPhone').value = item.phone_number ?? ''
-                    document.getElementById('customerAddress').value = item.address ?? ''
+                    this.query = item.name;
+
+                    this.show = false;
+
+                    document.getElementById('customerPhone').value =
+                        item.phone_number ?? '';
+
+                    document.getElementById('customerAddress').value =
+                        item.address ?? '';
                 }
             }
         }

@@ -21,7 +21,8 @@
                 <label>Uang Dibayar Pembeli</label>
 
                 <input type="number" class="form-control form-control-lg" id="buyerPaid" name="marketplace_total"
-                    min="0" step="0.01" value="0">
+                    min="0" step="0.01"
+                    value="{{ old('marketplace_total', $transaction->transactionMarketplace->marketplace_total ?? 0) }}">
 
             </div>
 
@@ -30,7 +31,8 @@
                 <label>Uang yang Kita Terima</label>
 
                 <input type="number" class="form-control form-control-lg" id="receivedAmount" name="received_amount"
-                    min="0" step="0.01" value="0">
+                    min="0" step="0.01"
+                    value="{{ old('received_amount', $transaction->transactionMarketplace->received_amount ?? 0) }}">
 
             </div>
 
