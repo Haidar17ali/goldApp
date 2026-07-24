@@ -397,27 +397,53 @@ class HomeController extends BaseController
         $purchaseGrandTotalBerat = $purchaseByProduct->sum('total_gram');
 
         // masuk etalase
+        // $emasMasukEtalase = DB::table('gold_conversion_outputs as gco')
+
+        //     ->join('gold_conversions as gc', 'gc.id', '=', 'gco.gold_conversion_id')
+
+        //     ->join('stocks as s', 's.id', '=', 'gc.stock_id')
+
+        //     ->join('product_variants as pv', 'pv.id', '=', 'gco.product_variant_id')
+
+        //     ->join('products as p', 'p.id', '=', 'pv.product_id')
+
+        //     ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+
+        //     ->when($branchId, function ($q) use ($branchId) {
+        //         $q->where('gc.branch_id', $branchId);
+        //     })
+
+        //     // ->when($branchId, function ($q) use ($branchId) {
+        //     //     $q->where('s.branch_id', $branchId);
+        //     // })
+
+        //     ->whereBetween(DB::raw('DATE(gc.created_at)'), [$startDate, $endDate])
+        //     ->select(
+        //         'p.name as product_name',
+        //         'k.name as karat',
+        //         DB::raw('COUNT(gco.id) as qty'),
+        //         DB::raw('SUM(gco.weight) as total_gram')
+        //     )
+        //     ->groupBy(
+        //         'p.name',
+        //         'k.name'
+        //     )
+        //     ->orderBy('p.name')
+        //     ->get();
+
         $emasMasukEtalase = DB::table('gold_conversion_outputs as gco')
-
             ->join('gold_conversions as gc', 'gc.id', '=', 'gco.gold_conversion_id')
-
             ->join('stocks as s', 's.id', '=', 'gc.stock_id')
-
             ->join('product_variants as pv', 'pv.id', '=', 'gco.product_variant_id')
-
             ->join('products as p', 'p.id', '=', 'pv.product_id')
-
             ->join('karats as k', 'k.id', '=', 'pv.karat_id')
 
             ->when($branchId, function ($q) use ($branchId) {
                 $q->where('gc.branch_id', $branchId);
             })
 
-            // ->when($branchId, function ($q) use ($branchId) {
-            //     $q->where('s.branch_id', $branchId);
-            // })
+            ->whereBetween('gc.created_at', [$startDateTime, $endDateTime])
 
-            ->whereBetween(DB::raw('DATE(gc.created_at)'), [$startDate, $endDate])
             ->select(
                 'p.name as product_name',
                 'k.name as karat',
@@ -446,11 +472,13 @@ class HomeController extends BaseController
             ->join('product_variants as pv', 'pv.id', '=', 'gmci.product_variant_id')
             ->join('products as p', 'p.id', '=', 'pv.product_id')
             ->join('karats as k', 'k.id', '=', 'pv.karat_id')
+
             ->when($branchId, function ($q) use ($branchId) {
                 $q->where('gmc.branch_id', $branchId);
             })
-            // ->join('stocks as s', 's.id', '=', 'gmc.stock_id')
-            ->whereBetween(DB::raw('DATE(gmc.created_at)'), [$startDate, $endDate])
+
+            ->whereBetween('gmc.created_at', [$startDateTime, $endDateTime])
+
             ->select(
                 'p.name as product_name',
                 'k.name as karat',

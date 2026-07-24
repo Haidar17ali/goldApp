@@ -547,29 +547,6 @@ class OnlineSaleHelper
         float $totalHpp
     ): void {
         $coa = self::getCoaMapping($marketplaceId);
-        dd([
-                    'account' => $coa['receivable'],
-                    'debit' => $transaction->total+($transaction->transactionMarketplace->received_amount - $transaction->total),
-                ],
-
-                [
-                    'account' => $coa['hpp'],
-                    'debit' => $totalHpp,
-                ],
-
-                [
-                    'account' => $coa['sales'],
-                    'credit' => $transaction->total,
-                ],
-                [
-                    'account' => $coa['kas_kembalian_online'],
-                    'credit' => $transaction->total,
-                ],
-
-                [
-                    'account' => $coa['stock'],
-                    'credit' => $totalHpp,
-                ],);
 
 
         AccountingHelper::post([
@@ -588,7 +565,7 @@ class OnlineSaleHelper
 
                 [
                     'account' => $coa['receivable'],
-                    'debit' => $transaction->total+($transaction->transactionMarketplace->received_amount - $transaction->total),
+                    'debit' => $transaction->total + ($transaction->transactionMarketplace->received_amount - $transaction->total),
                 ],
 
                 [
@@ -602,7 +579,7 @@ class OnlineSaleHelper
                 ],
                 [
                     'account' => $coa['kas_kembalian_online'],
-                    'credit' => $transaction->total,
+                    'credit' => $transaction->transactionMarketplace->received_amount - $transaction->total,
                 ],
 
                 [
@@ -674,6 +651,7 @@ class OnlineSaleHelper
                 'marketplace_total' => $marketplaceTotal,
 
                 'received_amount' => $receivedAmount,
+                'payment_status' => "Pending",
 
             ]
 

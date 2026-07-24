@@ -90,7 +90,7 @@
                                             class="form-control form-control-lg select2-product" required>
                                             @foreach ($products as $p)
                                                 <option value="{{ $p->id }}"
-                                                    {{ $p->id == $d->product_id ? 'selected' : '' }}>
+                                                    {{ $p->id == $d->productVariant->product_id ? 'selected' : '' }}>
                                                     {{ $p->name }}
                                                 </option>
                                             @endforeach

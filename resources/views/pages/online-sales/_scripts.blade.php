@@ -254,7 +254,29 @@
 
         });
 
-        console.log(ids);
+        if (ids.length == 0) {
+            return;
+        }
+
+        $.ajax({
+
+            url: "{{ route('penjualan.online.ubah-status') }}",
+            type: "POST",
+
+            data: {
+                ids: ids,
+                _token: "{{ csrf_token() }}"
+            },
+
+            success: function(res) {
+
+                alert(res.message);
+
+                location.reload();
+
+            }
+
+        });
 
         // nanti redirect atau ajax
     });

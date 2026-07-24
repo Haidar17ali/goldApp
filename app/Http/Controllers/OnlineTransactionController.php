@@ -149,6 +149,7 @@ class OnlineTransactionController extends Controller
             ->latest('transaction_date')
             ->paginate(20)
             ->withQueryString();
+        // dd($marketplace);
 
         return view(
             'pages.online-sales.index',
@@ -393,5 +394,94 @@ class OnlineTransactionController extends Controller
 
             ], 500);
         }
+    }
+
+    public function kasOnline(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['exists:transactions,id'],
+        ]);
+
+        DB::transaction(function () use ($request) {
+
+            $transactions = Transaction::with('transactionMarketplace')
+                ->whereIn('id', $request->ids)
+                ->get();
+
+            foreach ($transactions as $transaction) {
+
+                // Ambil data marketplace dari relasi
+                $marketplace = $transaction->transactionMarketplace;
+
+                // Tidak ada data marketplace
+                if (!$marketplace) {
+                    continue;
+                }
+
+                // Sudah success
+                if ($marketplace->payment_status === 'success') {
+                    continue;
+                }
+
+                // Nominal tidak valid
+                if ($marketplace->received_amount <= 0) {
+                    continue;
+                }
+
+                $journal = Journal::where('source_type', TransactionMarketplace::class)
+                    ->where('source_id', $marketplace->id)
+                    ->latest()
+                    ->first();
+
+                if (
+                    $journal &&
+                    stripos($journal->description, '[HAPUS]') === false
+                ) {
+                    continue;
+                }
+
+                // Update status pembayaran marketplace
+                $marketplace->update([
+                    'payment_status' => 'sukses',
+                    'settlement_at'  => now(),
+                ]);
+
+                // Posting jurnal
+                AccountingHelper::post([
+
+                    'date' => now(),
+
+                    'reference' => $transaction->invoice_number,
+
+                    'description' => 'Saldo Masuk Kas Online ',
+
+                    'source_type' => TransactionMarketplace::class,
+
+                    'source_id' => $marketplace->id,
+
+                    'lines' => [
+
+                        [
+                            'account' => '101.00.12', // Kas Online
+                            'debit' => $marketplace->received_amount,
+                            'credit' => 0,
+                            'description' => 'Kas Online',
+                        ],
+
+                        [
+                            'account' => '102.00.01', // Piutang Online
+                            'debit' => 0,
+                            'credit' => $marketplace->received_amount,
+                            'description' => 'Piutang Online',
+                        ],
+
+                    ]
+
+                ]);
+            }
+        });
+
+        return back()->with('success', 'Kas Online berhasil diproses.');
     }
 }

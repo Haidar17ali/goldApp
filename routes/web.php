@@ -178,6 +178,7 @@ Route::prefix('gold-app')
         Route::get("/online/penjualan/{olshopId}/edit/{id}", [OnlineTransactionController::class, "edit"])->name("penjualan.online.edit");
         Route::patch("/online/penjualan/{olshopId}/update/{id}", [OnlineTransactionController::class, "update"])->name("penjualan.online.update");
         Route::delete("/online/penjualan/{olshopId}/hapus/{id}", [OnlineTransactionController::class, "destroy"])->name("penjualan.online.hapus");
+        Route::post('/online/penjualan/ubah/status/kas-online', [OnlineTransactionController::class, 'kasOnline'])->name('penjualan.online.ubah-status');
 
         // mutasi stock
         Route::get("/mutasi-stok", [TransferStockController::class, "index"])->name("mutasi-stok.index");

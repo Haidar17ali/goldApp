@@ -55,7 +55,7 @@
                 </th>
 
                 <th width="130">
-                    Status
+                    Status Pembayaran
                 </th>
 
                 <th width="90">
@@ -220,25 +220,21 @@
 
                         @php
 
-                            $status = strtoupper($marketplace?->order_status);
+                            $status = strtolower($marketplace?->payment_status);
 
                             $badge = 'secondary';
 
-                            if ($status == 'COMPLETED') {
+                            if ($status == 'sukses') {
                                 $badge = 'success';
-                            } elseif ($status == 'PROCESSING') {
+                            } elseif ($status == 'pending') {
                                 $badge = 'warning';
-                            } elseif ($status == 'SHIPPED') {
-                                $badge = 'info';
-                            } elseif ($status == 'CANCELLED') {
-                                $badge = 'danger';
                             }
 
                         @endphp
 
                         <span class="badge badge-{{ $badge }}">
 
-                            {{ $marketplace?->order_status ?? '-' }}
+                            {{ $marketplace?->payment_status ?? '-' }}
 
                         </span>
 

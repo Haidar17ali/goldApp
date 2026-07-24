@@ -66,17 +66,17 @@
 
                         <option value="">Semua</option>
 
-                        <option value="UNPAID" @selected(request('payment_status') == 'UNPAID')>
-                            Belum Dibayar
+                        <option value="pending" @selected(request('payment_status') == 'pending')>
+                            Pending
                         </option>
 
-                        <option value="PAID" @selected(request('payment_status') == 'PAID')>
-                            Sudah Dibayar
+                        <option value="sukses" @selected(request('payment_status') == 'sukses')>
+                            Sukses
                         </option>
 
-                        <option value="REFUND" @selected(request('payment_status') == 'REFUND')>
+                        {{-- <option value="REFUND" @selected(request('payment_status') == 'REFUND')>
                             Refund
-                        </option>
+                        </option> --}}
 
                     </select>
 

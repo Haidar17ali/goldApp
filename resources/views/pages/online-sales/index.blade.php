@@ -64,20 +64,12 @@
 
                     <i class="fas fa-wallet"></i>
 
-                    Jadikan Kas Online
+                    Ubah Status Pembayaran
                     (<span id="selectedCount">0</span>)
 
                 </button>
 
             </div>
-
-            <h3 class="card-title">
-
-                <i class="mr-1 fas fa-list"></i>
-
-                Daftar Transaksi
-
-            </h3>
 
         </div>
 
